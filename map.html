@@ -45,11 +45,10 @@
             overflow: hidden;
         }
 
-        /* Ensures the SVG map scales properly, filling the container without distortion. */
-        .map-container svg {
-            width: 100%;
-            height: auto;
-            max-height: 500px;
+        /* Ensure the map doesn't get obscured */
+        .map-container {
+        position: relative;
+        z-index: 1; /* Map should be under the info containers */
         }
 
         /* The info container uses a grid layout to arrange information about the selected country.
@@ -63,7 +62,7 @@
             padding: 20px;
             background-color: #000;
             overflow-y: auto;
-            max-height: calc(100vh - 400px); 
+            max-height: 36vh;
         }
         
         /* Country information section, displaying the selected country's name, continent, and capital. */
@@ -75,33 +74,33 @@
             padding: 10px;
             display: flex;
             align-items: center;
+            overflow-y: auto;
         }
-
-        /* Placeholder for the country flag. Positioned next to the country name for easy identification. */
-        .flag {
-            background-color: #D9D9D9;
-            width: 60px;
-            height: 60px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            color: black;
-            margin-right: 10px;
-        }
-
-        /* Displays the country name and grows to fill available space in the flex container. */
-        .country-name {
-            flex-grow: 1;
-        }
-
-        /* Language information section, showing the primary language(s) spoken in the country. */
         .population-info {
             border-radius: 4px;
-            grid-column: 2 / 3;
+            grid-column: 2 / 2;
             grid-row: 1 / 2;
+            flex: 1 1 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            /* text-align: center; */
+        }        
+        .reproduction {
+            border-radius: 4px;
             background-color: #2C2C2C;
             padding: 10px;
+            text-align: center;
+            align-content: center;
         }
+        .population {
+            border-radius: 4px;
+            background-color: #2C2C2C;
+            padding: 10px;
+            text-align: center;
+            align-content: center;
+        }
+
 
         /* A section dedicated to various country statistics such as population, GDP, and revenue.
            Uses a grid layout with equal-sized columns to organize the stats. */
@@ -131,6 +130,18 @@
             padding: 10px;
             overflow-y: auto;
         }
+
+        /* Placeholder for the country flag. Positioned next to the country name for easy identification. */
+        /* .flag {
+            background-color: #D9D9D9;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: black;
+            margin-right: 10px;
+        } */
 
         /* Charts section, located on the right side. It holds visual representations of data and a pagination system for switching between them. */
         .charts {
@@ -215,14 +226,18 @@
                 <div class="country-name">CONTINENT / NAME / CAPITOL</div>
                 <!-- Displays the country's name, continent, and capital city. -->
             </div>
-            <div class="population-info">POPULATION / GROSS REPRODUCTION RATE</div>
-            <!-- Displays the language(s) spoken in the country. -->
+            <div class="population-info">
+                <div class="population">POPULATION</div>
+                <div class="reproduction">REPRODUCTION</div>
+            </div>
+            <!-- <div class="reproduction-info">GROSS REPRODUCTION RATE</div> -->
+            <!-- Displays the population and gross reproduction rate in the country. -->
 
             <!-- A grid of stats about the selected country, such as population, GDP, and revenue. -->
             <div class="stats">
                 <div class="stat" id="gdp">GDP</div>
                 <div class="stat" id="revenue">REVENUE</div>
-                <div class="stat" id="povertyPopulation">POVERTY POP.</div>
+                <div class="stat" id="povertyPopulation">POP. IN POVERTY</div>
             </div>
 
             <!-- Area for showing background information or an introduction to the country. -->
@@ -334,8 +349,11 @@
                ${data.Government.Capital.name.text}
             `);
             // Update the language information in the UI
-            d3.select('.population-info').text(`
-                Pop.: ${data['People and Society'].Population.total.text} / Reprod. Rate: ${data['People and Society']['Gross reproduction rate'].text}
+            d3.select('.population').text(`
+                Population: ${data['People and Society'].Population.total.text}
+            `);
+            d3.select('.reproduction').text(`
+                Reprod. Rate: ${data['People and Society']['Gross reproduction rate'].text}
             `);
             // Update the background information in the UI
             d3.select('.background-info').text(`
