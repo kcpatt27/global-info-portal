@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<!-- Defines that the document is HTML5 and helps the browser understand how to render the page. -->
+<html lang="en">
+<!-- The 'lang' attribute specifies the language of the document as English. This helps with accessibility tools and SEO. -->
+<head>
+    <meta charset="UTF-8">
+    <!-- Sets the character encoding of the page to UTF-8, ensuring special characters are displayed correctly. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Ensures the webpage is responsive and adjusts to different screen sizes, especially on mobile devices. -->
+    <title>Global Information Portal</title>
+    <!-- The title of the page, shown on the browser tab and used for SEO purposes. -->
+
+    <style>
+        /* General reset for body and html to remove default margins and paddings. 
+           Ensures the layout takes up 100% of the height of the viewport. */
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: Arial, sans-serif;
+            color: white;
+            background-color: #1E1E1E;
+        }
+
+        /* Main container for the content. It's a flex container with a column layout,
+           occupying the full height of the viewport and centered horizontally. */
+        .container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Styles for the map container. It sets a minimum height and uses flexbox to center 
+           its content (SVG map), ensuring it's positioned properly within the layout. */
+        .map-container {
+            flex: 0 1 auto;
+            min-height: 300px;
+            background-color: #000;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Ensures the SVG map scales properly, filling the container without distortion. */
+        .map-container svg {
+            width: 100%;
+            height: auto;
+            max-height: 500px;
+        }
+
+        /* The info container uses a grid layout to arrange information about the selected country.
+           It dynamically adjusts to the height of the screen, with space for scrolling if content overflows. */
+        .info-container {
+            flex: 1 1 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: auto auto 1fr;
+            gap: 10px;
+            padding: 20px;
+            background-color: #000;
+            overflow-y: auto;
+            max-height: calc(100vh - 400px); 
+        }
+        
+        /* Country information section, displaying the selected country's name, continent, and capital. */
+        .country-info {
+            border-radius: 4px;
+            grid-column: 1 / 2;
+            grid-row: 1 / 2;
+            background-color: #2C2C2C;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+        }
+
+        /* Placeholder for the country flag. Positioned next to the country name for easy identification. */
+        .flag {
+            background-color: #D9D9D9;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: black;
+            margin-right: 10px;
+        }
+
+        /* Displays the country name and grows to fill available space in the flex container. */
+        .country-name {
+            flex-grow: 1;
+        }
+
+        /* Language information section, showing the primary language(s) spoken in the country. */
+        .population-info {
+            border-radius: 4px;
+            grid-column: 2 / 3;
+            grid-row: 1 / 2;
+            background-color: #2C2C2C;
+            padding: 10px;
+        }
+
+        /* A section dedicated to various country statistics such as population, GDP, and revenue.
+           Uses a grid layout with equal-sized columns to organize the stats. */
+        .stats {
+            grid-column: 1 / 2;
+            grid-row: 2 / 3;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 5px;
+        }
+
+        /* Individual stat card, each displaying one piece of information such as population, GDP, etc. */
+        .stat {
+            border-radius: 4px;
+            background-color: #2C2C2C;
+            padding: 10px;
+            font-size: 12px;
+        }
+
+        /* Section for displaying an introduction or background about the country.
+           This area can scroll if the content overflows. */
+        .background-info {
+            border-radius: 4px;
+            grid-column: 1 / 2;
+            grid-row: 3 / 4;
+            background-color: #2C2C2C;
+            padding: 10px;
+            overflow-y: auto;
+        }
+
+        /* Charts section, located on the right side. It holds visual representations of data and a pagination system for switching between them. */
+        .charts {
+            border-radius: 4px;
+            grid-column: 2 / 3;
+            grid-row: 2 / 4;
+            background-color: #2C2C2C;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        /* The chart area where data is displayed visually (e.g., bar charts). */
+        .chart {
+            border-radius: 4px;
+            background-color: #3C3C3C;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 5px;
+            font-size: 12px;
+            height: 100%;
+        }
+
+        /* Pagination dots allow users to switch between multiple charts. 
+           They are visually represented as small circles. */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            margin-top: 10px;
+        }
+
+        /* Each dot in the pagination, allowing users to select a different chart. */
+        .pagination-dot {
+            width: 10px;
+            height: 10px;
+            background-color: #D9D9D9;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        /* Changes the dot color when the user clicks to indicate active selection. */
+        .pagination-dot:active {
+            background-color: #4242e4;
+        }
+
+        /* Style for the globe (sphere) element in the SVG, giving it a specific color. */
+        .sphere {
+            fill: #4242e4;
+        }
+
+        /* Default style for countries on the map, with a light green fill and a thin black stroke. */
+        .country {
+            fill: lightgreen;
+            stroke: black;
+            stroke-width: 0.32px;
+        }
+
+        /* When hovering over a country on the map, the color changes to red to indicate interactivity. */
+        .country:hover {
+            fill: red;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <!-- Main content container, containing both the map and country information sections. -->
+        <div class="map-container">
+            <!-- Map container holding the SVG map. It's flexibly sized and centered within the viewport. -->
+            <svg width="960" height="500" viewBox="0 0 960 500" preserveAspectRatio="xMidYMid meet"></svg>
+            <!-- The SVG tag contains the world map generated by D3.js. The viewBox ensures the map scales properly. -->
+        </div>
+
+        <!-- Information container, holding data about the selected country such as name, population, and charts. -->
+        <div class="info-container">
+            <div class="country-info">
+                <!-- Placeholder for the flag and name of the selected country. -->
+                <!-- <div class="flag">FLAG</div> -->
+                <div class="country-name">CONTINENT / NAME / CAPITOL</div>
+                <!-- Displays the country's name, continent, and capital city. -->
+            </div>
+            <div class="population-info">POPULATION / GROSS REPRODUCTION RATE</div>
+            <!-- Displays the language(s) spoken in the country. -->
+
+            <!-- A grid of stats about the selected country, such as population, GDP, and revenue. -->
+            <div class="stats">
+                <div class="stat" id="gdp">GDP</div>
+                <div class="stat" id="revenue">REVENUE</div>
+                <div class="stat" id="povertyPopulation">POVERTY POP.</div>
+            </div>
+
+            <!-- Area for showing background information or an introduction to the country. -->
+            <div class="background-info">INTRODUCTION / BACKGROUND</div>
+
+            <!-- Charts section with pagination for navigating between different data visualizations. -->
+            <div class="charts">
+                <div class="chart"></div>
+                <div class="pagination">
+                    <!-- Pagination dots for switching between charts. -->
+                    <div class="pagination-dot"></div>
+                    <div class="pagination-dot"></div>
+                    <div class="pagination-dot"></div>
+                    <div class="pagination-dot"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- External JavaScript libraries for D3.js and TopoJSON. These are loaded via minimized links. -->
+    <script src="https://unpkg.com/d3@5.6.0/dist/d3.min.js"></script>
+    <script src="https://unpkg.com/topojson@3.0.2/dist/topojson.min.js"></script>
+    <script>
+        // JavaScript Code
+        // Initialize the D3.js SVG container where the world map will be rendered
+        const svg = d3.select('svg'); 
+        const width = 960; // Set the width of the map
+        const height = 500; // Set the height of the map
+    
+        // Define a geographic projection using the Natural Earth projection for rendering the map
+        const projection = d3.geoNaturalEarth1()
+            .scale(width / 6) // Scale the map to fit within the width of the SVG
+            .translate([width / 2, height / 2]); // Center the map within the SVG
+        
+        // Create a path generator function that will draw the map using the projection
+        const pathGenerator = d3.geoPath().projection(projection);
+    
+        // Add a 'sphere' representing the entire globe as a background to the SVG
+        svg.append('path')
+            .attr('class', 'sphere') // Set a class for styling the sphere
+            .attr('d', pathGenerator({ type: 'Sphere' })); // Use path generator to draw the sphere
+    
+        /**
+         * Load geographic and country data from external sources.
+         * Fetches both a TSV file (with country metadata) and a TopoJSON file (with country shapes).
+         * @returns {Object} Parsed TSV and TopoJSON data.
+         */
+        async function loadData() {
+            try {
+                const [jsonResponse, correctA2Response] = await Promise.all([
+                    // Fetch the TopoJSON file containing geographic country shapes
+                    fetch('https://raw.githubusercontent.com/kcpatt27/world-atlas-2-world-factbook/main/world%20atlas%20json%2050m'),
+                    // Fetch the TSV file with the correct a2Codes
+                    fetch('https://raw.githubusercontent.com/kcpatt27/world-atlas-2-world-factbook/main/world%20atlas%20tsv_rows.tsv')
+                ]);
+    
+                // Parse the fetched TopoJSON data into a JSON object
+                const topoJSONdata = await jsonResponse.json();
+                // Parse the fetched TSV with A2 data
+                const a2Data = await correctA2Response.text();
+    
+                return { topoJSONdata, a2Data: d3.tsvParse(a2Data) }; // Return the parsed data
+            } catch (error) {
+                console.error('Failed to load data', error); // Log any errors that occur during the fetch
+                return { topoJSONdata: null, a2Data: null }; // Return null if data couldn't be loaded
+            }
+        }
+
+        /**
+         * Fetch data from the CIA World Factbook based on the continent and country code.
+         * @param {string} continent - The continent name.
+         * @param {string} a2Code - The 2-letter country code (ISO 3166-1 alpha-2).
+         * @returns {Object} The JSON data for the requested country.
+         */
+        async function getFactbookData(folder, a2Code) {
+            // Format the continent and country code to match the structure in the factbook repository
+            const formattedFolder = folder.replace(/\s+/g, '-').toLowerCase();
+            const lowercaseA2Code = a2Code.toLowerCase();
+            const url = `https://raw.githubusercontent.com/factbook/factbook.json/master/${formattedFolder}/${lowercaseA2Code}.json`;
+            
+            // Fetch the country data from the URL
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`); // Throw an error if the request fails
+            }
+    
+            return response.json(); // Return the parsed JSON response
+        }
+    
+        // Variables for managing charts and the current chart index
+        let currentChartIndex = 0; 
+        const chartData = [];
+    
+        /**
+         * Render charts using the data from the World Factbook for the selected country.
+         * Displays country name, capital, languages, and background info.
+         * Also updates chart data for GDP, Revenue, Population, and Area.
+         * @param {Object} data - The JSON data from the World Factbook for the selected country.
+         */
+        function renderCharts(data, continent) {
+            console.log('Factbook Data:', data); // Debug log to verify data
+            
+            // Update the country info and capital in the UI
+            const background = data.Introduction.Background.text;
+            const formattedBackground = background.replace(/<p>/g, '').replace(/<\/p>/g, '').replace(/<br>/g, '\n').replace(/<\/br>/g, '\n');
+
+            d3.select('.country-info').text(`
+               ${continent} / ${data.Government['Country name']['conventional short form'].text} / 
+               ${data.Government.Capital.name.text}
+            `);
+            // Update the language information in the UI
+            d3.select('.population-info').text(`
+                Pop.: ${data['People and Society'].Population.total.text} / Reprod. Rate: ${data['People and Society']['Gross reproduction rate'].text}
+            `);
+            // Update the background information in the UI
+            d3.select('.background-info').text(`
+                ${formattedBackground}
+            `);
+            // Update the population, revenue and gdp stats
+            d3.select('#povertyPopulation').text(`Population Below Poverty: ${data.Economy['Population below poverty line'].text}`);
+            d3.select('#revenue').text(`Revenue: ${data.Economy.Budget.revenues.text}`);
+            d3.select('#gdp').text(`GDP: ${data.Economy['Real GDP (purchasing power parity)']['Real GDP (purchasing power parity) 2023'].text}`);
+    
+            // Clear previous chart data and add new chart data
+            chartData.length = 0; 
+            chartData.push(
+                { title: 'GDP', value: data.Economy['Real GDP (purchasing power parity)']['Real GDP (purchasing power parity) 2023'].text },
+                { title: 'Revenue', value: data.Economy.Budget.revenues.text },
+                { title: 'Population', value: data['People and Society'].Population.total.text },
+                { title: 'Area', value: data.Geography.Area.total.text }
+            );
+    
+            showChart(0); // Show the first chart by default
+        }
+    
+        /**
+         * Show the chart for the specified index.
+         * @param {number} index - The index of the chart to display.
+         */
+        function showChart(index) {
+            currentChartIndex = index; // Update the current chart index
+            const chartContainer = d3.select('.chart');
+            
+            // Display the chart title and value in the UI
+            chartContainer.html(`<div>${chartData[index].title}: ${chartData[index].value}</div>`);
+    
+            // Update the pagination dots to reflect the active chart
+            d3.selectAll('.pagination-dot').classed('active', (d, i) => i === index);
+        }
+    
+        // Add click event listeners to pagination dots for chart navigation
+        d3.selectAll('.pagination-dot').on('click', function(d, i) {
+            showChart(i); // Show the corresponding chart when a dot is clicked
+        });
+    
+        /**
+         * Render countries on the map using D3 and TopoJSON data.
+         * When a country is clicked, fetch and display its data from the World Factbook.
+         */
+        async function renderCountries() {
+            // Load the country data and map shapes
+            const { topoJSONdata, a2Data } = await loadData();
+    
+            // Handle case where data is not loaded properly
+            if (!topoJSONdata || !a2Data) {
+                console.error('Data is not loaded properly.');
+                return;
+            }
+
+            // Map corrected A2 Code data to a dictionary using the country's numeric ISO code (iso_n3)
+            const countryInfo = a2Data.reduce((acc, d) => {
+              acc[d.iso_n3] = {
+                 name: d.name,
+                 folder: d.folder,
+                 a2Code: d.iso_a2,
+                 continent: d.continent,
+                 type: d.type,
+                 income: d.income_grp,
+                 economy: d.economy
+              };
+              return acc;
+            }, {});
+    
+            // Convert TopoJSON data into GeoJSON features for D3 to process
+            const countries = topojson.feature(topoJSONdata, topoJSONdata.objects.countries);
+    
+            // Render the country shapes on the map and add click events for each country
+            svg.selectAll('path.country')
+                .data(countries.features)
+                .enter().append('path')
+                .attr('class', 'country') // Add a class for styling the countries
+                .attr('d', pathGenerator) // Use the path generator to draw the country shapes
+                .on('click', async function (d) {
+                    // When a country is clicked, fetch and display its data
+                    const country = countryInfo[d.id];
+
+                    // console.log('OG Country Info:', country); // for debugging
+                    console.log('Country Info for URL:', country); // for debugging
+
+                    if (country) {
+                        try {
+                            const folder = country.folder;
+                            console.log(folder);
+                            const a2Code = country.a2Code;
+                            const continent = country.continent;
+                            const factbookData = await getFactbookData(folder, a2Code);
+                            renderCharts(factbookData, continent); // Render the charts with the fetched data
+                        } catch (error) {
+                            console.error('Error fetching factbook data:', error);
+                            // Show an error message if data is not available for the country
+                            d3.select('.chart').html('<div>Data not available for this country</div>');
+                        }
+                    } else {
+                        console.log('Country data not found.');
+                        // Show a message if the country data is missing
+                        d3.select('.chart').html('<div>Country data not found</div>');
+                    }
+                })
+                .append('title') // Add a tooltip with the country name and code
+                .text(d => {
+                    const country = countryInfo[d.id];
+                    return country ? `${country.name} (${country.a2Code})` : 'Country Unknown';
+                });
+        }
+    
+        // Render the map and countries when the page loads
+        renderCountries();
+    </script>    
+</body>
+</html>
