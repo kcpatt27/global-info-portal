@@ -186,8 +186,8 @@
         }
 
         /* Changes the dot color when the user clicks to indicate active selection. */
-        .pagination-dot:active {
-            background-color: #4242e4;
+        .pagination-dot.active {
+            background-color: #4242e4; /* Purple color */
         }
 
         /* Style for the globe (sphere) element in the SVG, giving it a specific color. */
@@ -205,6 +205,21 @@
         /* When hovering over a country on the map, the color changes to red to indicate interactivity. */
         .country:hover {
             fill: red;
+        }
+
+        /* Ensure the chart container has a defined height */
+        .chart {
+            height: 180px; /* Adjust as needed */
+        }
+
+        /* Hide all charts by default */
+        .chart {
+            display: none;
+        }
+
+        /* Show only the active chart */
+        .chart.active {
+            display: block;
         }
     </style>
 </head>
@@ -245,13 +260,16 @@
 
             <!-- Charts section with pagination for navigating between different data visualizations. -->
             <div class="charts">
-                <div class="chart"></div>
+                <div class="chart" id="chart1"></div>
+                <div class="chart" id="chart2"></div>
+                <div class="chart" id="chart3"></div>
+                <div class="chart" id="chart4"></div>
                 <div class="pagination">
                     <!-- Pagination dots for switching between charts. -->
-                    <div class="pagination-dot"></div>
-                    <div class="pagination-dot"></div>
-                    <div class="pagination-dot"></div>
-                    <div class="pagination-dot"></div>
+                    <div class="pagination-dot" data-chart="0"></div>
+                    <div class="pagination-dot" data-chart="1"></div>
+                    <div class="pagination-dot" data-chart="2"></div>
+                    <div class="pagination-dot" data-chart="3"></div>
                 </div>
             </div>
         </div>
@@ -262,6 +280,9 @@
     <script src="https://unpkg.com/topojson@3.0.2/dist/topojson.min.js"></script>
     <script>
         // JavaScript Code
+        const jsonURL = "https://raw.githubusercontent.com/kcpatt27/world-atlas-2-world-factbook/main/world%20atlas%20json%2050m";
+        const tsvURL = "https://raw.githubusercontent.com/kcpatt27/world-atlas-2-world-factbook/main/world%20atlas%20tsv_rows.tsv";
+
         // Initialize the D3.js SVG container where the world map will be rendered
         const svg = d3.select('svg'); 
         const width = 960; // Set the width of the map
@@ -280,6 +301,87 @@
             .attr('class', 'sphere') // Set a class for styling the sphere
             .attr('d', pathGenerator({ type: 'Sphere' })); // Use path generator to draw the sphere
     
+        // Function to convert expenditure/revenue strings to numeric values
+        function convertToNumber(value) {
+            // Remove the year in parentheses (e.g., "(2023 est.)")
+            const cleanedValue = value.replace(/\(\d{4} est.\)/, '').trim();
+            
+            // Extract numeric part and remove non-numeric characters like commas and currency symbols
+            let number = parseFloat(cleanedValue.replace(/[^0-9.]/g, ''));
+
+            // Apply the correct multiplier for billion, trillion, etc.
+            if (cleanedValue.includes('billion')) {
+                number *= 1e9;
+            } else if (cleanedValue.includes('trillion')) {
+                number *= 1e12;
+            } else if (cleanedValue.includes('million')) {
+                number *= 1e6;
+            }
+            
+            return number;
+        }
+
+        // Function to fetch and process data from each country-specific JSON URL
+        async function fetchAndProcessData(url, a2Code) {
+            const response = await fetch(url);
+            const data = await response.json();
+
+            // Extract the relevant text values
+            const expenditures = data.Economy.expenditures.text;
+            const revenues = data.Economy.revenues.text;
+
+            // Convert both strings to numbers
+            const expendituresNumber = convertToNumber(expenditures);
+            const revenuesNumber = convertToNumber(revenues);
+
+            // Return the processed expenditures and revenues as an object
+            return {
+                expenditures: expendituresNumber,
+                revenues: revenuesNumber
+            };
+        }
+
+        // Function to fetch the TSV file, parse it, and return an array of countries
+        async function fetchTSV(tsvURL) {
+            const response = await fetch(tsvURL);
+            const tsvText = await response.text();
+
+            // Split by line and then by tab to create an array of country objects
+            const countries = tsvText.split('\n').map(line => {
+                const [folder, a2Code, name] = line.split('\t');
+                return { folder, a2Code, name };
+            });
+
+            return countries;
+        }
+
+        // Function to fetch data for all countries and store it in a Map
+        async function fetchAllCountriesData(tsvURL) {
+            const countryDataMap = new Map();  // Data structure to store the results
+            const countries = await fetchTSV(tsvURL);  // Parse the TSV
+
+            // Loop through each country and fetch its data
+            for (const country of countries) {
+                const { folder, a2Code, name } = country;  // Extract the folder, a2Code, and name
+                const url = `https://raw.githubusercontent.com/factbook/factbook.json/master/${folder}/${a2Code}.json`;  // Build URL dynamically
+
+                // Fetch and process the country's data
+                const processedData = await fetchAndProcessData(url, a2Code);
+                
+                // Store the data using a2Code or name as the key
+                countryDataMap.set(a2Code, { ...processedData, name });  // Or use `name` if you prefer
+            }
+
+            return Array.from(countryDataMap.values());
+        }
+
+        // Example usage:
+        fetchAllCountriesData(tsvURL).then(countryDataMap => {
+            console.log(countryDataMap);
+            // Accessing data for a specific country
+            console.log(countryDataMap.get('CN'));  // Access by a2Code (e.g., 'CN' for China)
+        });
+
         /**
          * Load geographic and country data from external sources.
          * Fetches both a TSV file (with country metadata) and a TopoJSON file (with country shapes).
@@ -289,9 +391,9 @@
             try {
                 const [jsonResponse, correctA2Response] = await Promise.all([
                     // Fetch the TopoJSON file containing geographic country shapes
-                    fetch('https://raw.githubusercontent.com/kcpatt27/world-atlas-2-world-factbook/main/world%20atlas%20json%2050m'),
+                    fetch(jsonURL),
                     // Fetch the TSV file with the correct a2Codes
-                    fetch('https://raw.githubusercontent.com/kcpatt27/world-atlas-2-world-factbook/main/world%20atlas%20tsv_rows.tsv')
+                    fetch(tsvURL)
                 ]);
     
                 // Parse the fetched TopoJSON data into a JSON object
@@ -326,10 +428,106 @@
     
             return response.json(); // Return the parsed JSON response
         }
+
+        // Set up dimensions for the scatterplot
+        const scatterplotWidth = 300; // Adjust width to fit within the container
+        const scatterplotHeight = 180; // Adjust height to fit within the container
+        const scatterplotMargin = { top: 30, right: 30, bottom: 50, left: 60 };
+
+        // Function to render the scatterplot
+        function renderScatterplot(data) {
+            // Clear any existing content in the scatterplot container
+            d3.select('#chart1').selectAll('*').remove();
+
+            // Create an SVG container for the scatterplot within #chart1
+            const scatterplotSVG = d3.select('#chart1')
+                .append('svg')
+                .attr('width', scatterplotWidth + scatterplotMargin.left + scatterplotMargin.right)
+                .attr('height', scatterplotHeight + scatterplotMargin.top + scatterplotMargin.bottom)
+                .append('g')
+                .attr('transform', `translate(${scatterplotMargin.left},${scatterplotMargin.top})`);
+
+            console.log('Data received:', data);
+
+            const parseValue = (value) => {
+                console.log('Original value:', value);
+
+                // Remove any non-numeric characters except the decimal and convert to Number
+                let parsedValue = value.match(/([\d.]+)\s*(billion|million)?/i);
+
+                if (!parsedValue) {
+                    console.warn('Could not parse value:', value);
+                    return null; // Handle unexpected data format
+                }
+
+                let amount = parseFloat(parsedValue[1]); // Extract the numeric part
+                let unit = parsedValue[2] ? parsedValue[2].toLowerCase() : '';
+
+                // Convert million/billion to appropriate numbers
+                if (unit === 'billion') {
+                    amount *= 1e9;
+                } else if (unit === 'million') {
+                    amount *= 1e6;
+                }
+
+                console.log('Parsed amount:', amount);
+                return amount;
+            };
+
+            data.forEach(d => {
+                d.expenditures = parseValue(d.expenditures);
+                d.revenues = parseValue(d.revenues);
+                console.log(`Parsed data for ${d.name}: Expenditures = ${d.expenditures}, Revenues = ${d.revenues}`);
+            });
+
+            // Define scales for the x and y axes
+            const xScale = d3.scaleLinear()
+                .domain([0, d3.max(data, d => d.revenues)])
+                .range([0, scatterplotWidth]);
+
+            const yScale = d3.scaleLinear()
+                .domain([0, d3.max(data, d => d.expenditures)])
+                .range([scatterplotHeight, 0]);
+
+            // Add the x-axis
+            scatterplotSVG.append('g')
+                .attr('transform', `translate(0, ${scatterplotHeight})`)
+                .call(d3.axisBottom(xScale).ticks(5));
+
+            // Add the y-axis
+            scatterplotSVG.append('g')
+                .call(d3.axisLeft(yScale).ticks(5));
+
+            // Add labels for the axes
+            scatterplotSVG.append('text')
+                .attr('x', scatterplotWidth / 2)
+                .attr('y', scatterplotHeight + scatterplotMargin.bottom - 10)
+                .style('text-anchor', 'middle')
+                .text('Revenues (in USD)');
+
+            scatterplotSVG.append('text')
+                .attr('transform', 'rotate(-90)')
+                .attr('x', -scatterplotHeight / 2)
+                .attr('y', -scatterplotMargin.left + 15)
+                .style('text-anchor', 'middle')
+                .text('Expenditures (in USD)');
+
+            // Plot each country as a circle
+            scatterplotSVG.selectAll('circle')
+                .data(data)
+                .enter()
+                .append('circle')
+                .attr('cx', d => xScale(d.revenues))
+                .attr('cy', d => yScale(d.expenditures))
+                .attr('r', 5)
+                .style('fill', 'blue')
+                .append('title')
+                .text(d => `${d.name}: Expenditures ${d.expenditures}, Revenues ${d.revenues}`);
+        }
     
         // Variables for managing charts and the current chart index
         let currentChartIndex = 0; 
-        const chartData = [];
+        let chartData = {};
     
         /**
          * Render charts using the data from the World Factbook for the selected country.
@@ -337,7 +535,7 @@
          * Also updates chart data for GDP, Revenue, Population, and Area.
          * @param {Object} data - The JSON data from the World Factbook for the selected country.
          */
-        function renderCharts(data, continent) {
+        function renderCharts(data, continent, name) {
             console.log('Factbook Data:', data); // Debug log to verify data
             
             // Update the country info and capital in the UI
@@ -345,7 +543,7 @@
             const formattedBackground = background.replace(/<p>/g, '').replace(/<\/p>/g, '').replace(/<br>/g, '\n').replace(/<\/br>/g, '\n');
 
             d3.select('.country-info').text(`
-               ${continent} / ${data.Government['Country name']['conventional short form'].text} / 
+               ${continent} / ${name} / 
                ${data.Government.Capital.name.text}
             `);
             // Update the language information in the UI
@@ -364,17 +562,19 @@
             d3.select('#revenue').text(`Revenue: ${data.Economy.Budget.revenues.text}`);
             d3.select('#gdp').text(`GDP: ${data.Economy['Real GDP (purchasing power parity)']['Real GDP (purchasing power parity) 2023'].text}`);
     
-            // Clear previous chart data and add new chart data
-            chartData.length = 0; 
-            chartData.push(
-                { title: 'GDP', value: data.Economy['Real GDP (purchasing power parity)']['Real GDP (purchasing power parity) 2023'].text },
-                { title: 'Revenue', value: data.Economy.Budget.revenues.text },
-                { title: 'Population', value: data['People and Society'].Population.total.text },
-                { title: 'Area', value: data.Geography.Area.total.text }
-            );
+
+            // Update the scatterplot data
+            let chartData = [{ 
+            expenditures: data.Economy.Budget.expenditures.text, 
+            revenues: data.Economy.Budget.revenues.text,
+            name: data.Government['Country name']['conventional short form'].text
+            }];
+
+            renderScatterplot(chartData); // Render the scatterplot with the updated data
     
             showChart(0); // Show the first chart by default
         }
+
     
         /**
          * Show the chart for the specified index.
@@ -382,11 +582,11 @@
          */
         function showChart(index) {
             currentChartIndex = index; // Update the current chart index
-            const chartContainer = d3.select('.chart');
-            
-            // Display the chart title and value in the UI
-            chartContainer.html(`<div>${chartData[index].title}: ${chartData[index].value}</div>`);
-    
+
+            // Hide all charts and show only the active one
+            d3.selectAll('.chart').classed('active', false);
+            d3.select(`#chart${index + 1}`).classed('active', true);
+
             // Update the pagination dots to reflect the active chart
             d3.selectAll('.pagination-dot').classed('active', (d, i) => i === index);
         }
@@ -437,17 +637,14 @@
                     // When a country is clicked, fetch and display its data
                     const country = countryInfo[d.id];
 
-                    // console.log('OG Country Info:', country); // for debugging
-                    console.log('Country Info for URL:', country); // for debugging
-
                     if (country) {
                         try {
                             const folder = country.folder;
-                            console.log(folder);
                             const a2Code = country.a2Code;
                             const continent = country.continent;
+                            const name = country.name;
                             const factbookData = await getFactbookData(folder, a2Code);
-                            renderCharts(factbookData, continent); // Render the charts with the fetched data
+                            renderCharts(factbookData, continent, name); // Render the charts with the fetched data
                         } catch (error) {
                             console.error('Error fetching factbook data:', error);
                             // Show an error message if data is not available for the country
@@ -464,6 +661,12 @@
                     const country = countryInfo[d.id];
                     return country ? `${country.name} (${country.a2Code})` : 'Country Unknown';
                 });
+
+            // Fetch and process data for all countries
+            const allCountriesData = await fetchAllCountriesData(tsvURL);
+
+            // Render the scatterplot with data from all countries
+            renderScatterplot(allCountriesData);
         }
     
         // Render the map and countries when the page loads
