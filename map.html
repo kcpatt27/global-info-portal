@@ -301,15 +301,10 @@
             .attr('class', 'sphere') // Set a class for styling the sphere
             .attr('d', pathGenerator({ type: 'Sphere' })); // Use path generator to draw the sphere
     
-        // Function to convert expenditure/revenue strings to numeric values
+        // Convert the revenue text to a number
         function convertToNumber(value) {
-            // Remove the year in parentheses (e.g., "(2023 est.)")
             const cleanedValue = value.replace(/\(\d{4} est.\)/, '').trim();
-            
-            // Extract numeric part and remove non-numeric characters like commas and currency symbols
             let number = parseFloat(cleanedValue.replace(/[^0-9.]/g, ''));
-
-            // Apply the correct multiplier for billion, trillion, etc.
             if (cleanedValue.includes('billion')) {
                 number *= 1e9;
             } else if (cleanedValue.includes('trillion')) {
@@ -317,7 +312,6 @@
             } else if (cleanedValue.includes('million')) {
                 number *= 1e6;
             }
-            
             return number;
         }
 
@@ -341,38 +335,50 @@
             };
         }
 
-        // Function to fetch the TSV file, parse it, and return an array of countries
+        // Fetch the TSV file and parse it
         async function fetchTSV(tsvURL) {
             const response = await fetch(tsvURL);
             const tsvText = await response.text();
-
-            // Split by line and then by tab to create an array of country objects
-            const countries = tsvText.split('\n').map(line => {
-                const [folder, a2Code, name] = line.split('\t');
-                return { folder, a2Code, name };
-            });
-
-            return countries;
+            return d3.tsvParse(tsvText);
         }
 
-        // Function to fetch data for all countries and store it in a Map
+        // Fetch the JSON data for a specific country
+        async function fetchCountryData(folder, a2Code) {
+            const url = `https://raw.githubusercontent.com/factbook/factbook.json/master/${folder}/${a2Code}.json`;
+            const response = await fetch(url);
+            return response.json();
+        }
+
+        // Fetch and process data for all countries with caching
         async function fetchAllCountriesData(tsvURL) {
-            const countryDataMap = new Map();  // Data structure to store the results
-            const countries = await fetchTSV(tsvURL);  // Parse the TSV
+            const countries = await fetchTSV(tsvURL);
+            const countryData = [];
 
-            // Loop through each country and fetch its data
             for (const country of countries) {
-                const { folder, a2Code, name } = country;  // Extract the folder, a2Code, and name
-                const url = `https://raw.githubusercontent.com/factbook/factbook.json/master/${folder}/${a2Code}.json`;  // Build URL dynamically
+                const { folder, a2Code, name } = country;
+                const cacheKey = `countryData-${a2Code}`;
+                let data;
 
-                // Fetch and process the country's data
-                const processedData = await fetchAndProcessData(url, a2Code);
-                
-                // Store the data using a2Code or name as the key
-                countryDataMap.set(a2Code, { ...processedData, name });  // Or use `name` if you prefer
+                // Check if data is in localStorage
+                const cachedData = localStorage.getItem(cacheKey);
+                if (cachedData) {
+                    data = JSON.parse(cachedData);
+                } else {
+                    try {
+                        data = await fetchCountryData(folder, a2Code);
+                        localStorage.setItem(cacheKey, JSON.stringify(data)); // Cache the data
+                    } catch (error) {
+                        console.error(`Failed to fetch data for ${name}:`, error);
+                        continue;
+                    }
+                }
+
+                const revenuesText = data.Economy.revenues.text;
+                const revenuesNumber = convertToNumber(revenuesText);
+                countryData.push({ name, revenues: revenuesNumber });
             }
 
-            return Array.from(countryDataMap.values());
+            return countryData;
         }
 
         // Example usage:
@@ -430,9 +436,9 @@
         }
 
         // Set up dimensions for the scatterplot
-        const scatterplotWidth = 300; // Adjust width to fit within the container
-        const scatterplotHeight = 180; // Adjust height to fit within the container
-        const scatterplotMargin = { top: 30, right: 30, bottom: 50, left: 60 };
+        const scatterplotWidth = 230; // Adjust width to fit within the container
+        const scatterplotHeight = 80; // Adjust height to fit within the container
+        const scatterplotMargin = { top: 30, right: 30, bottom: 50, left: 120 };
 
         // Function to render the scatterplot
         function renderScatterplot(data) {
@@ -474,29 +480,37 @@
                 return amount;
             };
 
-            data.forEach(d => {
-                d.expenditures = parseValue(d.expenditures);
-                d.revenues = parseValue(d.revenues);
-                console.log(`Parsed data for ${d.name}: Expenditures = ${d.expenditures}, Revenues = ${d.revenues}`);
-            });
+            // Aggregate data from all URLs
+            const aggregatedData = data.reduce((acc, d) => {
+                const expenditures = parseValue(d.expenditures);
+                const revenues = parseValue(d.revenues);
+                if (expenditures !== null && revenues !== null) {
+                    acc.push({
+                        name: d.name,
+                        expenditures,
+                        revenues
+                    });
+                }
+                return acc;
+            }, []);
 
             // Define scales for the x and y axes
             const xScale = d3.scaleLinear()
-                .domain([0, d3.max(data, d => d.revenues)])
+                .domain([0, d3.max(aggregatedData, d => d.revenues)])
                 .range([0, scatterplotWidth]);
 
             const yScale = d3.scaleLinear()
-                .domain([0, d3.max(data, d => d.expenditures)])
+                .domain([0, d3.max(aggregatedData, d => d.expenditures)])
                 .range([scatterplotHeight, 0]);
 
             // Add the x-axis
             scatterplotSVG.append('g')
                 .attr('transform', `translate(0, ${scatterplotHeight})`)
-                .call(d3.axisBottom(xScale).ticks(5));
+                .call(d3.axisBottom(xScale).ticks(2));
 
             // Add the y-axis
             scatterplotSVG.append('g')
-                .call(d3.axisLeft(yScale).ticks(5));
+                .call(d3.axisLeft(yScale).ticks(2));
 
             // Add labels for the axes
             scatterplotSVG.append('text')
@@ -514,13 +528,13 @@
 
             // Plot each country as a circle
             scatterplotSVG.selectAll('circle')
-                .data(data)
+                .data(aggregatedData)
                 .enter()
                 .append('circle')
                 .attr('cx', d => xScale(d.revenues))
                 .attr('cy', d => yScale(d.expenditures))
                 .attr('r', 5)
-                .style('fill', 'blue')
+                .style('fill', 'pink')
                 .append('title')
                 .text(d => `${d.name}: Expenditures ${d.expenditures}, Revenues ${d.revenues}`);
         }
@@ -669,8 +683,19 @@
             renderScatterplot(allCountriesData);
         }
     
-        // Render the map and countries when the page loads
-        renderCountries();
-    </script>    
+        // Render the scatterplot with data from all countries
+        async function renderScatterplotAll() {
+            const allCountriesData = await fetchAllCountriesData(tsvURL);
+            renderScatterplot(allCountriesData);
+        }
+    
+        // Render the map, countries, and initial scatterplot when the page loads
+        async function init() {
+            await renderCountries();
+            await renderScatterplotAll();
+        }
+    
+        init();
+    </script>
 </body>
 </html>
