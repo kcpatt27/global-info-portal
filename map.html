@@ -351,35 +351,35 @@
 
         // Fetch and process data for all countries with caching
         async function fetchAllCountriesData(tsvURL) {
-            const countries = await fetchTSV(tsvURL);
-            const countryData = [];
+                const countries = await fetchTSV(tsvURL);
+                const countryData = [];
 
-            for (const country of countries) {
-                const { folder, a2Code, name } = country;
-                const cacheKey = `countryData-${a2Code}`;
-                let data;
+                for (const country of countries) {
+                    const { folder, a2Code, name } = country;
+                    const cacheKey = `countryData-${a2Code}`;
+                    let data;
 
-                // Check if data is in localStorage
-                const cachedData = localStorage.getItem(cacheKey);
-                if (cachedData) {
-                    data = JSON.parse(cachedData);
-                } else {
-                    try {
-                        data = await fetchCountryData(folder, a2Code);
-                        localStorage.setItem(cacheKey, JSON.stringify(data)); // Cache the data
-                    } catch (error) {
-                        console.error(`Failed to fetch data for ${name}:`, error);
-                        continue;
+                    // Check if data is in localStorage
+                    const cachedData = localStorage.getItem(cacheKey);
+                    if (cachedData) {
+                        data = JSON.parse(cachedData);
+                    } else {
+                        try {
+                            data = await fetchCountryData(folder, a2Code);
+                            localStorage.setItem(cacheKey, JSON.stringify(data)); // Cache the data
+                        } catch (error) {
+                            console.error(`Failed to fetch data for ${name}:`, error);
+                            continue;
+                        }
                     }
+
+                    const revenuesText = data.Economy.revenues.text;
+                    const revenuesNumber = convertToNumber(revenuesText);
+                    countryData.push({ name, revenues: revenuesNumber });
                 }
 
-                const revenuesText = data.Economy.revenues.text;
-                const revenuesNumber = convertToNumber(revenuesText);
-                countryData.push({ name, revenues: revenuesNumber });
+                return countryData;
             }
-
-            return countryData;
-        }
 
         // Example usage:
         fetchAllCountriesData(tsvURL).then(countryDataMap => {
@@ -693,6 +693,8 @@
         async function init() {
             await renderCountries();
             await renderScatterplotAll();
+            const tsvData = await fetchTSV(tsvURL);
+            await fetchCountryDataPoints(tsvData); // Fetch data for specific countries and data points
         }
     
         init();
