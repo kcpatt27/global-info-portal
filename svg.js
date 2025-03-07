@@ -40,13 +40,55 @@ async function loadData() {
 }
 
 async function getFactbookData(folder, a2Code) {
-    const formattedFolder = folder.toLowerCase().replace(/\s+/g, '-');
+    // Special case mappings for known problematic countries
+    const specialFolders = {
+        "in": "south-asia", // India
+        "rs": "central-asia", // Russia
+        "ch": "east-n-southeast-asia", // China
+        "us": "north-america", // United States
+        "ca": "north-america", // Canada
+        "au": "australia-oceania", // Australia
+        "nz": "australia-oceania", // New Zealand
+        "jp": "east-n-southeast-asia", // Japan
+        "kr": "east-n-southeast-asia", // South Korea
+        "gb": "europe", // United Kingdom
+        "de": "europe", // Germany
+        "fr": "europe", // France
+        "br": "south-america", // Brazil
+        "za": "africa", // South Africa
+    };
+    
     const lowercaseA2Code = a2Code.toLowerCase();
-    const url = `https://raw.githubusercontent.com/factbook/factbook.json/master/${formattedFolder}/${lowercaseA2Code}.json`;
+    
+    let folderPath;
+    
+    // First try the hardcoded special cases
+    if (specialFolders[lowercaseA2Code]) {
+        folderPath = specialFolders[lowercaseA2Code];
+        console.log(`Using special case folder: ${folderPath} for ${a2Code}`);
+    }
+    // Use the provided folder as a fallback
+    else {
+        folderPath = folder.toLowerCase().replace(/\s+/g, '-');
+        console.log(`Using provided folder: ${folderPath} for ${a2Code}`);
+    }
+    
+    const url = `https://raw.githubusercontent.com/factbook/factbook.json/master/${folderPath}/${lowercaseA2Code}.json`;
+    console.log("Fetching data from:", url);
+    
     const response = await fetch(url);
 
     if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        // If the first attempt fails, try with world-factbook subfolder
+        const altUrl = `https://raw.githubusercontent.com/factbook/factbook.json/master/factbook/${folderPath}/${lowercaseA2Code}.json`;
+        console.log("First attempt failed, trying alternative URL:", altUrl);
+        
+        const altResponse = await fetch(altUrl);
+        if (!altResponse.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        return altResponse.json();
     }
 
     return response.json();
@@ -69,16 +111,31 @@ async function getFactbookData(folder, a2Code) {
               data['People and Society'].Languages.Languages.text : 'Languages not available')) : 
             'Languages not available'}
         `);
-        d3.select('.background-info').text(`
-            ${data.Introduction.Background.text}
-        `);
+        
+        // Handle background text - truncate if necessary to avoid layout issues
+        const backgroundText = data.Introduction?.Background?.text || 'No background information available';
+        d3.select('.background-info').text(backgroundText);
 
         chartData.length = 0; // Clear previous chart data
+        
+        // Safely extract data with optional chaining and provide default values
         chartData.push(
-            { title: 'GDP', value: data.Economy.GDP.purchasing_power_parity.text },
-            { title: 'Revenue', value: data.Economy.Budget.revenues.text },
-            { title: 'Population', value: data['People and Society'].Population.text },
-            { title: 'Area', value: data.Geography.Area.total.text }
+            { 
+                title: 'GDP', 
+                value: data.Economy?.GDP?.purchasing_power_parity?.text || 'Data not available' 
+            },
+            { 
+                title: 'Revenue', 
+                value: data.Economy?.Budget?.revenues?.text || 'Data not available' 
+            },
+            { 
+                title: 'Population', 
+                value: data['People and Society']?.Population?.text || 'Data not available' 
+            },
+            { 
+                title: 'Area', 
+                value: data.Geography?.Area?.total?.text || 'Data not available' 
+            }
         );
 
         showChart(0); // Show the first chart by default

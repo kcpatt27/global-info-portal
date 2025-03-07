@@ -12,8 +12,12 @@ This list outlines all tasks needed to address current issues, update the projec
   - [ ] Verify the z-index stacking order so that the map integrates properly with overlays.
 - [x] **Improve Navigation**
   - [x] Implemented zoom & pan functionality.
-  - [ ] Further refine zoom/pan behavior as needed.  
-    *Recommendation: Test across multiple devices and browsers for optimal responsiveness.*
+  - [ ] Further refine zoom/pan behavior as needed.
+    - [ ] Zooming out to default should be a smooth transition and should reset the map position to the default.
+    - [ ] Clicking and holding on the mouse wheel should allow the user to move the map around.
+    - [ ] Double clicking the mouse wheel or the right mouse button should reset the zoom level to the default.
+
+*Recommendation: Test across multiple devices and browsers for optimal responsiveness.*
 
 ---
 
@@ -32,16 +36,16 @@ This list outlines all tasks needed to address current issues, update the projec
 ---
 
 ## Layout and User Interface Enhancements
-- [x] **Redesign Layout for Better Usability**
-  - [x] Implemented a responsive grid/flexbox layout for the entire page (map, info panel, and charts).
-  - [x] Integrated a collapsible info sidebar for detailed country information.
-  - [x] Redesigned the charts section to use a tabbed interface for improved navigation.
-  - [x] Improved visual hierarchy with refined fonts, spacing, colors, and layout.
-- [x] **Sidebar Auto-Show Functionality**
-  - [x] Implemented auto-show of the info sidebar when exiting out of a selection or clicking on a country.
-- [x] **Enhance Map Interactions**
-  - [x] Added smooth transitions for country selection and deselection.
-  - [x] Adjusted z-index values for overlays and info panels for proper layering.
+- [ ] **Redesign Layout for Better Usability**
+  - [ ] Implemented a responsive grid/flexbox layout for the entire page (map, info panel, and charts).
+  - [ ] Integrated a collapsible info sidebar for detailed country information.
+  - [ ] Make both the background info and charts section have a consistent look and feel, the background info should take up 2/3 of the height of the info container and the charts section should take up 1/3 of the height of the info container.
+  - [ ] Make the Country Info and flag section smaller.
+  - [ ] Redesigned the charts section to use a tabbed interface for improved navigation.
+    - [x] Make tabs overlap each other slightly, where the focused one is always on top.
+    - [ ] Hide the bottom of the tabs with an aesthetic looking bar.
+    - [ ] Make the "GDP" tab align with the .charts container when active
+    - [ ] Make the "Other" tab align with the .charts container when active
 
 ---
 
@@ -72,6 +76,8 @@ This list outlines all tasks needed to address current issues, update the projec
   - [ ] Implement auto-complete/typeahead suggestions using the country data set.
   - [ ] On country selection:
     - [ ] Highlight the selected country on the map.
+    - [ ] Zoom in on the selected country with a smooth transition.
+    - [ ] Bring in to the center of the screen with a smooth transition.
     - [ ] Automatically load and display the relevant country information.
   - [ ] Make the search bar work with the navigation sidebar. (The search button should be in the navigation sidebar, and the search bar should always be visible in the main content area but in a color that is unobtrusive and blends in with the rest of the page, maybe even as an artistic element. The button will focus the search bar and make it bigger and a more visible shade of its default color, and the users keyboard input will then be reflected in the search bar.)
 

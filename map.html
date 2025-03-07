@@ -46,6 +46,9 @@
             position: relative;
             transition: transform 0.3s ease, opacity 0.3s ease;
             z-index: 20;
+            display: flex;
+            flex-direction: column;
+            max-height: 100vh;
         }
         .info-container.collapsed {
             transform: translateX(100%);
@@ -74,29 +77,121 @@
             color: #e0e0e0;
             cursor: pointer;
         }
+        /* Background info with fixed height and scrollbar */
+        .background-info {
+            max-height: 150px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            border: 1px solid #333;
+            padding: 10px;
+            background-color: #2a2a2a;
+            border-radius: 4px;
+        }
         /* Chart Tabs styling */
         .chart-tabs {
             display: flex;
-            margin-bottom: 10px;
-            border-bottom: 1px solid #444;
+            margin-bottom: 0;
+            border-bottom: 4px solid #2a2a2a;
+            width: 100%;
+            position: relative;
+            /* overflow: hidden; */
         }
         .chart-tab {
-            padding: 10px 15px;
+            padding: 8px 4px;
             cursor: pointer;
-            transition: background-color 0.2s ease;
+            transition: all 0.113s ease;
+            border: 1px solid #666;
+            border-bottom: none;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+            margin-right: -3px;
+            position: relative;
+            background-color: #333;
+            flex: 1 1 0;
+            min-width: 80px;
+            text-align: center;
+            font-size: 0.9rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            /* For cascading effect */
+            transform-origin: bottom center;
+            box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.2);
+        }
+        .chart-tab:last-child {
+            margin-right: 0;
+            padding-right: 8px;
         }
         .chart-tab.active {
             background-color: #444;
+            border-color: #888;
             font-weight: bold;
+            z-index: 10;
+            border-bottom-color: #2a2a2a;
+            transform: translateY(0);
+            box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.3);
+        }
+        /* Visual cascade effect */
+        .chart-tab:not(.active) {
+            transform: translateY(3px);
+            opacity: 0.8;
+            background-color: #2c2c2c;
+        }
+        @media (max-width: 350px) {
+            .chart-tab {
+                padding: 3px 4px;
+                font-size: 0.7rem;
+            }
+        }
+        /* Chart container */
+        .charts {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: visible;
+            padding-top: 32px;
+            width: 100%;
+            max-width: 100%;
+            margin-bottom: 10px;
         }
         .charts .chart {
             display: none;
-            padding: 10px;
-            transition: opacity 0.3s ease;
+            padding: 15px; /* Slightly more padding */
+            transition: opacity 0.113s ease;
+            overflow-y: auto;
+            flex: 1;
+            background-color: #2a2a2a;
+            border: 1px solid #444;
+            border-top: 1px solid #888; /* Match active tab border color */
+            border-radius: 0 0 8px 8px; /* Match tab radius */
+            opacity: 0;
+            width: 100%; /* Ensure full width */
+            min-height: 150px; /* Ensure minimum height */
+            font-size: 0.9rem; /* Match tab font size */
+        }
+        @media (max-width: 500px) {
+            .charts .chart {
+                padding: 10px;
+                font-size: 0.8rem;
+                min-height: 120px;
+            }
+        }
+        @media (max-width: 350px) {
+            .charts .chart {
+                padding: 8px;
+                font-size: 0.7rem;
+                min-height: 100px;
+            }
         }
         .charts .chart.active {
             display: block;
             opacity: 1;
+            animation: fadeIn 0.113s ease-in-out;
+            border-top: none;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
         /* Country shape styling */
         .country {
@@ -104,13 +199,48 @@
             stroke: #333;
             stroke-width: 0.32px;
             cursor: pointer;
-            transition: fill 0.3s ease, stroke 0.3s ease;
+            transition: fill 0.113s ease, stroke 0.113s ease;
         }
         .country:hover {
             fill: red;
         }
         .country.selected {
             fill: red;
+        }
+        /* Make all content fit within its container */
+        @media (max-width: 768px) {
+            .info-container {
+                padding: 15px;
+            }
+            .info-header {
+                margin-bottom: 15px;
+            }
+            .background-info {
+                margin-bottom: 15px;
+                max-height: 120px;
+            }
+        }
+        @media (max-width: 500px) {
+            .info-container {
+                padding: 10px;
+            }
+            .info-header {
+                margin-bottom: 10px;
+            }
+            .background-info {
+                margin-bottom: 10px;
+                max-height: 100px;
+            }
+        }
+        .chart-tab::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background-color: inherit;
+            pointer-events: none;
         }
     </style>
 </head>
@@ -153,31 +283,117 @@
             document.querySelector(".info-container").classList.remove("collapsed");
         }
 
-        // Clear any selected country, reset the info panel, and show the sidebar.
+        // Update clearSelection() to reset chart contents
         function clearSelection() {
-            svg.selectAll("path.country")
-                .classed("selected", false)
+            svg.selectAll('path.country')
+                .classed('selected', false)
                 .transition()
                 .duration(300)
-                .style("fill", "lightgreen");
-            document.querySelector(".country-info").textContent = "COUNTRY INFO";
-            document.querySelector(".background-info").textContent = "INTRODUCTION / BACKGROUND";
+                .style('fill', 'lightgreen');
+            document.querySelector('.country-info').textContent = 'COUNTRY INFO';
+            document.querySelector('.background-info').textContent = 'INTRODUCTION / BACKGROUND';
+            // Reset chart contents to default labels
+            const charts = document.querySelectorAll('.charts .chart');
+            if (charts.length >= 4) {
+                charts[0].innerHTML = 'GDP Chart';
+                charts[1].innerHTML = 'Revenue Chart';
+                charts[2].innerHTML = 'Population Chart';
+                charts[3].innerHTML = 'Other Chart';
+            }
             openSidebar();
+        }
+
+        // Helper function to remove <p> tags while preserving <br> and <strong>
+        function formatContent(html) {
+            return html.replace(/<\/?p>/gi, '');
+        }
+
+        // Update updateCharts() to use innerHTML and formatContent
+        function updateCharts(data) {
+            try {
+                const charts = document.querySelectorAll('.charts .chart');
+                // GDP chart (index 0)
+                charts[0].innerHTML = formatContent(data.Economy?.GDP?.purchasing_power_parity?.text || 'GDP data not available');
+                // Revenue chart (index 1)
+                charts[1].innerHTML = formatContent(data.Economy?.Budget?.revenues?.text || 'Revenue data not available');
+                // Population chart (index 2)
+                charts[2].innerHTML = formatContent(data['People and Society']?.Population?.text || 'Population data not available');
+                // Other chart (index 3)
+                charts[3].innerHTML = formatContent(data.Environment?.Climate?.text || 'Climate data not available');
+            } catch (error) {
+                console.error('Error updating charts:', error);
+            }
         }
 
         // Initialize chart tabs event handling.
         function initChartTabs() {
             const tabs = document.querySelectorAll(".chart-tab");
             const charts = document.querySelectorAll(".charts .chart");
+            
+            // Make sure we have tabs and charts to work with
+            if (tabs.length === 0 || charts.length === 0) {
+                console.error("Chart tabs or charts elements not found");
+                return;
+            }
+            
+            // Initial z-index setup - left to right order by default
+            function setupDefaultZIndex() {
+                const tabCount = tabs.length;
+                const activeTabIndex = parseInt(document.querySelector(".chart-tab.active")?.getAttribute("data-tab") || "0");
+                
+                tabs.forEach((tab, index) => {
+                    const thisTabIndex = parseInt(tab.getAttribute("data-tab"));
+                    
+                    if (thisTabIndex === activeTabIndex) {
+                        // Active tab gets highest z-index
+                        tab.style.zIndex = 10;
+                        tab.style.transform = "translateY(0) scale(1.02)";
+                        tab.style.opacity = "1";
+                        tab.style.boxShadow = "0 -2px 5px rgba(0, 0, 0, 0.3)";
+                    } else {
+                        const distance = Math.abs(thisTabIndex - activeTabIndex);
+                        tab.style.zIndex = 10 - distance;
+                        tab.style.transform = `translateY(${2 + distance * 1.32}px)`;
+                        tab.style.opacity = Math.max(0.75, 1 - (distance * 0.1));
+                        tab.style.boxShadow = "0 -1px 3px rgba(0, 0, 0, 0.2)";
+                    }
+                });
+            }
+            
+            // Set up initial z-index cascade
+            setupDefaultZIndex();
+            
+            // Add click event listeners to tabs
             tabs.forEach(tab => {
                 tab.addEventListener("click", function() {
+                    // Remove active class from all tabs and charts
                     tabs.forEach(t => t.classList.remove("active"));
                     charts.forEach(chart => chart.classList.remove("active"));
+                    
+                    // Add active class to clicked tab
                     this.classList.add("active");
-                    const tabIndex = this.getAttribute("data-tab");
-                    document.querySelector(`.charts .chart[data-chart="${tabIndex}"]`).classList.add("active");
+                    
+                    // Get the tab index and activate corresponding chart
+                    const tabIndex = parseInt(this.getAttribute("data-tab"));
+                    const targetChart = document.querySelector(`.charts .chart[data-chart="${tabIndex}"]`);
+                    
+                    if (targetChart) {
+                        targetChart.classList.add("active");
+                    } else {
+                        console.error(`Chart with data-chart="${tabIndex}" not found`);
+                    }
+                    
+                    // Update the cascade effect when a tab is clicked
+                    setupDefaultZIndex();
                 });
             });
+            
+            // Ensure first tab is active by default if none are
+            if (!document.querySelector('.chart-tab.active')) {
+                tabs[0]?.classList.add('active');
+                charts[0]?.classList.add('active');
+                setupDefaultZIndex();
+            }
         }
 
         // Sidebar toggle.
@@ -190,16 +406,44 @@
             const jsonURL = "https://raw.githubusercontent.com/kcpatt27/world-atlas-2-world-factbook/main/world%20atlas%20json%2050m";
             const tsvURL = "https://raw.githubusercontent.com/kcpatt27/world-atlas-2-world-factbook/main/world%20atlas%20tsv_rows.tsv";
             try {
-                const topoJSONdata = await d3.json(jsonURL);
-                const tsvData = await d3.tsv(tsvURL);
+                // Start with just the essential data sources
+                const [topoJSONdata, tsvData] = await Promise.all([
+                    d3.json(jsonURL),
+                    d3.tsv(tsvURL)
+                ]);
+                
+                // Create country info lookup
                 const countryInfo = tsvData.reduce((acc, d) => {
-                    acc[d.iso_n3] = {
+                    const keyOriginal = d.iso_n3; // e.g. '036'
+                    const keyNumeric = String(parseInt(d.iso_n3, 10)); // e.g. '36'
+                    const record = {
                         name: d.name,
                         continent: d.continent,
-                        a2Code: d.iso_a2
+                        a2Code: d.iso_a2,
+                        folder: d.folder
                     };
+                    acc[keyOriginal] = record;
+                    acc[keyNumeric] = record;
                     return acc;
                 }, {});
+                
+                // Hardcoded special cases as fallback
+                const specialFolders = {
+                    "in": "south-asia", // India
+                    "rs": "central-asia", // Russia
+                    "ch": "east-n-southeast-asia", // China
+                    "us": "north-america", // United States
+                    "ca": "north-america", // Canada
+                    "au": "australia-oceania", // Australia
+                    "nz": "australia-oceania", // New Zealand
+                    "jp": "east-n-southeast-asia", // Japan
+                    "kr": "east-n-southeast-asia", // South Korea
+                    "gb": "europe", // United Kingdom
+                    "de": "europe", // Germany
+                    "fr": "europe", // France
+                    "br": "south-america", // Brazil
+                    "za": "africa", // South Africa
+                };
                 
                 // Create a group for map elements (to enable zoom/pan).
                 const g = svg.append("g");
@@ -256,9 +500,24 @@
                                 
                                 // Try to load additional data with error handling
                                 try {
-                                    const formattedContinent = info.continent.replace(/\s+/g, '-').toLowerCase();
-                                    const lowercaseA2Code = info.a2Code.toLowerCase();
-                                    const url = `https://raw.githubusercontent.com/factbook/factbook.json/master/${formattedContinent}/${lowercaseA2Code}.json`;
+                                    // Get the correct folder using prioritized approach
+                                    const a2 = info.a2Code.toLowerCase();
+                                    let folder;
+                                    if(info.folder) {
+                                        folder = info.folder.toLowerCase().replace(/\s+/g, '-');
+                                        console.log(`Using folder from TSV: ${folder} for ${a2}`);
+                                    } else if(specialFolders[a2]) {
+                                        folder = specialFolders[a2];
+                                        console.log(`Using special case folder: ${folder} for ${a2}`);
+                                    } else if(info.continent) {
+                                        folder = info.continent.replace(/\s+/g, '-').toLowerCase();
+                                        console.log(`Using continent-based folder: ${folder} for ${a2}`);
+                                    } else {
+                                        throw new Error(`Could not determine folder for ${a2}`);
+                                    }
+                                    
+                                    const url = `https://raw.githubusercontent.com/factbook/factbook.json/master/${folder}/${a2}.json`;
+                                    console.log("Fetching data from:", url);
                                     
                                     // Add a timeout to the fetch to prevent long hangs
                                     const controller = new AbortController();
@@ -268,7 +527,26 @@
                                         .then(response => {
                                             clearTimeout(timeoutId);
                                             if (!response.ok) {
-                                                throw new Error(`HTTP error! status: ${response.status}`);
+                                                // If the first attempt fails, try with world-factbook subfolder
+                                                const altUrl = `https://raw.githubusercontent.com/factbook/factbook.json/master/factbook/${folder}/${a2}.json`;
+                                                console.log("First attempt failed, trying alternative URL:", altUrl);
+                                                
+                                                // Create a new controller for the second request
+                                                const altController = new AbortController();
+                                                const altTimeoutId = setTimeout(() => altController.abort(), 10000);
+                                                
+                                                return fetch(altUrl, { signal: altController.signal })
+                                                    .then(altResponse => {
+                                                        clearTimeout(altTimeoutId);
+                                                        if (!altResponse.ok) {
+                                                            throw new Error(`HTTP error! status: ${altResponse.status}`);
+                                                        }
+                                                        return altResponse.json();
+                                                    })
+                                                    .catch(error => {
+                                                        clearTimeout(altTimeoutId);
+                                                        throw error;
+                                                    });
                                             }
                                             return response.json();
                                         })
@@ -276,6 +554,9 @@
                                             document.querySelector(".background-info").textContent = 
                                                 data.Introduction?.Background?.text || 
                                                 "No background information available";
+                                                
+                                            // Also update chart data if charts are used
+                                            updateCharts(data);
                                         })
                                         .catch(error => {
                                             console.error("Error fetching country data:", error);
@@ -317,10 +598,12 @@
             } catch (error) {
                 console.error("Error loading map data:", error);
             }
+            
+            // Initialize chart tabs
+            initChartTabs();
         }
         
-        // Initialize chart tabs and load map on page load.
-        initChartTabs();
+        // Load map data on page load
         loadMapData();
     </script>
 </body>

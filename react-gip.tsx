@@ -79,6 +79,7 @@ export default function WorldMap() {
     svg.append('path')
       .attr('class', 'sphere')
       .attr('d', pathGenerator({ type: 'Sphere' }))
+      .style('z-index', 1)
 
     const countries = topojson.feature(topoJSONdata, topoJSONdata.objects.countries)
 
@@ -86,11 +87,28 @@ export default function WorldMap() {
       .data(countries.features)
       .enter().append('path')
       .attr('class', 'country')
+      .style('z-index', 2)
       .attr('d', pathGenerator)
       .on('click', (event, d: any) => {
         const country = tsvData.find(c => c.iso_n3 === d.id)
         if (country) {
-          // Simulating API call to get more detailed country data
+          // clear previous selections with transition
+          svg.selectAll('.country')
+            .transition()
+            .duration(300)
+            .style('fill', 'lightgreen')
+            .style('stroke-width', 0.32);
+
+          // apply transition to new selection
+          d3.select(event.target)
+            .raise()
+            .transition()
+            .duration(500)
+            .style('fill', 'rgba(255, 0, 0, 0.8)')
+            .style('stroke', 'white')
+            .style('stroke-width', 1.5);
+
+          // existing api simulation
           setTimeout(() => {
             setCountryData({
               name: country.name,
@@ -106,7 +124,7 @@ export default function WorldMap() {
                 gdp: Math.floor(Math.random() * 1000000000000)
               }))
             })
-          }, 500) // Simulating API delay
+          }, 500);
         }
       })
   }

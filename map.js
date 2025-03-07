@@ -28,6 +28,7 @@ async function loadData() {
         const tsvURL = process.env.TSV_URL || 'https://unpkg.com/world-atlas@1.1.4/world/50m.tsv';
         const jsonURL = process.env.JSON_URL || 'https://unpkg.com/world-atlas@1.1.4/world/50m.json';
         
+        // Only load essential data
         const [tsvResponse, jsonResponse] = await Promise.all([
             fetch(tsvURL),
             fetch(jsonURL)
@@ -36,7 +37,10 @@ async function loadData() {
         const tsvData = await tsvResponse.text();
         const topoJSONdata = await jsonResponse.json();
 
-        return { tsvData: d3.tsvParse(tsvData), topoJSONdata };
+        return { 
+            tsvData: d3.tsvParse(tsvData), 
+            topoJSONdata
+        };
     } catch (error) {
         console.error('Failed to load data', error);
         return { tsvData: null, topoJSONdata: null };
@@ -70,20 +74,65 @@ async function loadData() {
 // Function to get Factbook data
 async function getFactbookData(continent, a2Code) {
     // Validate inputs
-    if (!continent || !a2Code) {
-        console.error('Missing required parameters: continent or a2Code');
-        throw new Error('Missing required parameters: continent or a2Code');
+    if (!a2Code) {
+        console.error('Missing required parameter: a2Code');
+        throw new Error('Missing required parameter: a2Code');
     }
     
     try {
-        const formattedContinent = continent.replace(/\s+/g, '-').toLowerCase();
         const lowercaseA2Code = a2Code.toLowerCase();
-        const url = `https://raw.githubusercontent.com/factbook/factbook.json/master/${formattedContinent}/${lowercaseA2Code}.json`;
+        
+        // Hardcoded special cases as fallback
+        const specialFolders = {
+            "in": "south-asia", // India
+            "rs": "central-asia", // Russia
+            "ch": "east-n-southeast-asia", // China
+            "us": "north-america", // United States
+            "ca": "north-america", // Canada
+            "au": "australia-oceania", // Australia
+            "nz": "australia-oceania", // New Zealand
+            "jp": "east-n-southeast-asia", // Japan
+            "kr": "east-n-southeast-asia", // South Korea
+            "gb": "europe", // United Kingdom
+            "de": "europe", // Germany
+            "fr": "europe", // France
+            "br": "south-america", // Brazil
+            "za": "africa", // South Africa
+        };
+        
+        let folder;
+        
+        // First try the hardcoded special cases
+        if (specialFolders[lowercaseA2Code]) {
+            folder = specialFolders[lowercaseA2Code];
+            console.log(`Using special case folder: ${folder} for ${a2Code}`);
+        }
+        // Finally, use the continent as a fallback
+        else if (continent) {
+            folder = continent.replace(/\s+/g, '-').toLowerCase();
+            console.log(`Using continent-based folder: ${folder} for ${a2Code}`);
+        }
+        else {
+            throw new Error(`Could not determine folder for ${a2Code}`);
+        }
+        
+        const url = `https://raw.githubusercontent.com/factbook/factbook.json/master/${folder}/${lowercaseA2Code}.json`;
+        console.log("Fetching data from:", url);
+        
         const response = await fetch(url);
 
         if (!response.ok) {
-            console.error(`Failed to fetch data for ${a2Code}: ${response.status}`);
-            throw new Error(`HTTP error! status: ${response.status}`);
+            // If the first attempt fails, try with world-factbook subfolder
+            const altUrl = `https://raw.githubusercontent.com/factbook/factbook.json/master/factbook/${folder}/${lowercaseA2Code}.json`;
+            console.log("First attempt failed, trying alternative URL:", altUrl);
+            
+            const altResponse = await fetch(altUrl);
+            if (!altResponse.ok) {
+                console.error(`Failed to fetch data for ${a2Code}: ${response.status}`);
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            return altResponse.json();
         }
 
         return response.json();
@@ -104,8 +153,8 @@ function renderCharts(data) {
         
         // Update text with safe property access
         d3.select('#name').text(`
-           Name: ${countryName}
-           Etymology: ${etymology}
+            Name: ${countryName}
+            Etymology: ${etymology}
         `);
         
         // Safely access language data which has inconsistent structure
@@ -145,6 +194,11 @@ function renderCharts(data) {
         // Apply the fade-in effect
         d3.selectAll('.chart')
             .classed('visible', true);
+            
+        // Add a specific CSS class to chart containers to ensure they have scrollbars if needed
+        d3.selectAll('.chart')
+            .style('max-height', '150px')
+            .style('overflow-y', 'auto');
     } catch (error) {
         console.error('Error rendering charts:', error);
         // Show error in charts
@@ -196,6 +250,27 @@ async function renderCountries() {
             const country = countryInfo[d.id];
             return country ? `${country.name} / ${country.a2Code}` : 'Country Unknown';
         });
+
+    // update zoom behavior with smooth reset
+    const zoom = d3.zoom()
+      .scaleExtent([0.5, 8])
+      .on("zoom", function() {
+        g.attr("transform", d3.event.transform);
+      })
+      .on('end', () => {
+        if(d3.event.transform.k === 1) {
+          g.transition()
+            .duration(1000)
+            .attr("transform", d3.zoomIdentity);
+        }
+      });
+
+    // add double-click handler
+    svg.on('dblclick', () => {
+      svg.transition()
+        .duration(1000)
+        .call(zoom.transform, d3.zoomIdentity);
+    });
 
     //     // Add zoom behavior to the SVG
     //     const zoomBehavior = d3.zoom()
