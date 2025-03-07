@@ -1,4 +1,5 @@
-// require('dotenv').config();
+// Use dotenv configuration
+require('dotenv').config();
 // import { createClient } from '@supabase/supabase-js';
 
 // Select the SVG element
@@ -23,9 +24,13 @@ svg.append('path')
 // Function to load the data
 async function loadData() {
     try {
+        // Use environment variables for URLs if available
+        const tsvURL = process.env.TSV_URL || 'https://unpkg.com/world-atlas@1.1.4/world/50m.tsv';
+        const jsonURL = process.env.JSON_URL || 'https://unpkg.com/world-atlas@1.1.4/world/50m.json';
+        
         const [tsvResponse, jsonResponse] = await Promise.all([
-            fetch('https://unpkg.com/world-atlas@1.1.4/world/50m.tsv'),
-            fetch('https://unpkg.com/world-atlas@1.1.4/world/50m.json')
+            fetch(tsvURL),
+            fetch(jsonURL)
         ]);
 
         const tsvData = await tsvResponse.text();
@@ -64,55 +69,87 @@ async function loadData() {
 
 // Function to get Factbook data
 async function getFactbookData(continent, a2Code) {
-    const formattedContinent = continent.replace(/\s+/g, '-').toLowerCase();
-    const lowercaseA2Code = a2Code.toLowerCase();
-    const url = `https://raw.githubusercontent.com/factbook/factbook.json/master/${formattedContinent}/${lowercaseA2Code}.json`;
-    const response = await fetch(url);
-
-    if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+    // Validate inputs
+    if (!continent || !a2Code) {
+        console.error('Missing required parameters: continent or a2Code');
+        throw new Error('Missing required parameters: continent or a2Code');
     }
+    
+    try {
+        const formattedContinent = continent.replace(/\s+/g, '-').toLowerCase();
+        const lowercaseA2Code = a2Code.toLowerCase();
+        const url = `https://raw.githubusercontent.com/factbook/factbook.json/master/${formattedContinent}/${lowercaseA2Code}.json`;
+        const response = await fetch(url);
 
-    return response.json();
+        if (!response.ok) {
+            console.error(`Failed to fetch data for ${a2Code}: ${response.status}`);
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        return response.json();
+    } catch (error) {
+        console.error(`Error fetching data for ${a2Code}:`, error);
+        throw error; // Rethrow to handle at caller level
+    }
 }
 
 // Function to render charts
 function renderCharts(data) {
     console.log('Factbook Data:', data); // debug
     
-    // Select the info containers, updating their content
-    d3.select('#name').text(`
-       Name: ${data.Government['Country name']['conventional short form'].text}
-       Etymology: ${data.Government['Country name'].etymology.text}
-    `);
-    d3.select('#lang').text(`
-        Languages: ${data['People and Society'].Languages.Languages.text}
-    `);
-    // d3.select('#bg-info').text(`
-    //     ${data.Introduction.Background.text}
-    // `);
+    try {
+        // Safely access nested properties with optional chaining
+        const countryName = data?.Government?.['Country name']?.['conventional short form']?.text || 'Unknown Country';
+        const etymology = data?.Government?.['Country name']?.etymology?.text || 'No etymology data';
+        
+        // Update text with safe property access
+        d3.select('#name').text(`
+           Name: ${countryName}
+           Etymology: ${etymology}
+        `);
+        
+        // Safely access language data which has inconsistent structure
+        const languageText = data?.['People and Society']?.Languages?.Languages?.text || 
+                            data?.['People and Society']?.Languages?.text || 
+                            'No language data available';
+        
+        d3.select('#lang').text(`
+            Languages: ${languageText}
+        `);
 
-    // Select the chart containers and update their content
-    d3.select('#chart1').text(`
-        Scatter Plot 
-    `);
-    d3.select('#chart2').text(`
-        Bar Chart
-        GDP: ${data.Economy.Budget.revenues.text}
-    `);
-    d3.select('#chart3').text(`
-        Choropleth Map
-        Land Area: ${data.Geography.Area.land.text}
-        Water Area: ${data.Geography.Area.water.text}
-    `);
-    d3.select('#chart4').text(`
-        Tree Map
-        Language: ${data.Environment.Climate.text}
-    `);
+        // Update charts with safe property access
+        d3.select('#chart1').text(`
+            Scatter Plot 
+        `);
+        
+        const revenue = data?.Economy?.Budget?.revenues?.text || 'No revenue data';
+        d3.select('#chart2').text(`
+            Bar Chart
+            GDP: ${revenue}
+        `);
+        
+        const landArea = data?.Geography?.Area?.land?.text || 'No land area data';
+        const waterArea = data?.Geography?.Area?.water?.text || 'No water area data';
+        d3.select('#chart3').text(`
+            Choropleth Map
+            Land Area: ${landArea}
+            Water Area: ${waterArea}
+        `);
+        
+        const climate = data?.Environment?.Climate?.text || 'No climate data';
+        d3.select('#chart4').text(`
+            Tree Map
+            Climate: ${climate}
+        `);
 
-    // Apply the fade-in effect
-    d3.selectAll('.chart')
-        .classed('visible', true);
+        // Apply the fade-in effect
+        d3.selectAll('.chart')
+            .classed('visible', true);
+    } catch (error) {
+        console.error('Error rendering charts:', error);
+        // Show error in charts
+        d3.selectAll('.chart').text('Error loading chart data');
+    }
 }
 
 // Main function to render the map

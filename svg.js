@@ -1,11 +1,10 @@
 // require('dotenv').config;
 import { createClient } from '@supabase/supabase-js'
 
-// const SUPABASE_URL = process.env.SUPABASE_URL;
-// const SUPABASE_KEY = process.env.SUPABASE_ANON_KEY;
-const SUPABASE_URL='https://xzjqmpdnmtlqnbnmhzor.supabase.co/';
-
-const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh6anFtcGRubXRscW5ibm1oem9yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjYwNjYwOTEsImV4cCI6MjA0MTY0MjA5MX0.HpWknl_2p8V040jLKjxq7VjKUd32-XynHfBln60P7JM';
+// Use environment variables instead of hardcoded credentials
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_KEY = process.env.SUPABASE_ANON_KEY;
+// Remove hardcoded credentials for security
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const svg = d3.select('svg');
@@ -64,7 +63,11 @@ async function getFactbookData(folder, a2Code) {
            ${data.Government.Capital.name.text}
         `);
         d3.select('.language-info').text(`
-            ${data['People and Society'].Languages.text}
+            ${data['People and Society'].Languages ? 
+            (data['People and Society'].Languages.text || 
+             (data['People and Society'].Languages.Languages ? 
+              data['People and Society'].Languages.Languages.text : 'Languages not available')) : 
+            'Languages not available'}
         `);
         d3.select('.background-info').text(`
             ${data.Introduction.Background.text}
@@ -94,6 +97,11 @@ async function getFactbookData(folder, a2Code) {
     d3.selectAll('.pagination-dot').on('click', function(d, i) {
         showChart(i);
     });
+
+    // Add the missing formatFolder function
+    function formatFolder(continent) {
+        return continent.toLowerCase().replace(/\s+/g, '-');
+    }
 
     async function renderCountries() {
         const { countryData, topoJSONdata } = await loadData();

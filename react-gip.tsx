@@ -26,10 +26,12 @@ export default function WorldMap() {
   const svgRef = useRef<SVGSVGElement>(null)
   const [countryData, setCountryData] = useState<CountryData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     const fetchData = async () => {
       try {
+        setError(null)
         const jsonURL = "https://raw.githubusercontent.com/kcpatt27/world-atlas-2-world-factbook/main/world%20atlas%20json%2050m"
         const tsvURL = "https://raw.githubusercontent.com/kcpatt27/world-atlas-2-world-factbook/main/world%20atlas%20tsv_rows.tsv"
 
@@ -37,6 +39,14 @@ export default function WorldMap() {
           fetch(jsonURL),
           fetch(tsvURL)
         ])
+        
+        // Check for fetch response status
+        if (!jsonResponse.ok) {
+          throw new Error(`Failed to fetch JSON data: ${jsonResponse.status}`)
+        }
+        if (!tsvResponse.ok) {
+          throw new Error(`Failed to fetch TSV data: ${tsvResponse.status}`)
+        }
 
         const topoJSONdata = await jsonResponse.json()
         const tsvData = await tsvResponse.text()
@@ -45,6 +55,7 @@ export default function WorldMap() {
         setIsLoading(false)
       } catch (error) {
         console.error("Error fetching data:", error)
+        setError(error instanceof Error ? error.message : "An unknown error occurred")
         setIsLoading(false)
       }
     }
@@ -102,6 +113,20 @@ export default function WorldMap() {
 
   if (isLoading) {
     return <div className="flex items-center justify-center h-screen">Loading...</div>
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center h-screen">
+        <div className="text-red-500 font-bold mb-2">Error loading map data</div>
+        <div className="text-sm">{error}</div>
+        <Button 
+          className="mt-4"
+          onClick={() => window.location.reload()}>
+          Retry
+        </Button>
+      </div>
+    )
   }
 
   return (
