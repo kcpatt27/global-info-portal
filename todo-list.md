@@ -23,25 +23,32 @@ This list outlines all tasks needed to address current issues, update the projec
 ---
 
 ## Chart Rendering Improvements
-- [ ] **Fix Data Binding Issues**
-  - [ ] Ensure that charts clear old data on country selection.
-  - [ ] Correctly bind new data to the chart elements.
-  - [ ] Implement proper D3.js visualizations for each chart type.
-  - [ ] Add smooth transitions and hover effects.
-  - [ ] Ensure that the charts are responsive and scale to the size of the container.
-  - [ ] Ensure that the charts have a consistent look and feel.
-  - [ ] Ensure that the charts are easy to read and understand.
-  - [ ] Ensure that the charts are easy to use and navigate. Use pagination or some other method if necessary.
-  - [ ] Currently the charts do not show up. Ensure that you have a version of the charts working before proceeding.
+- [x] **Fix Data Binding Issues**
+  - [x] Ensure that charts clear old data on country selection.
+  - [x] Correctly bind new data to the chart elements.
+  - [x] Implement proper D3.js visualizations for each chart type.
+  - [x] Add smooth transitions and hover effects.
+  - [x] Ensure that the charts are responsive and scale to the size of the container.
+  - [x] Ensure that the charts have a consistent look and feel.
+  - [x] Ensure that the charts are easy to read and understand.
+  - [x] Ensure that the charts are easy to use and navigate. Use pagination or some other method if necessary.
+  - [x] Currently the charts do not show up. Ensure that you have a version of the charts working before proceeding.
 - [x] **Modularize Chart Code**
   - [x] Extract chart-rendering logic into its own module or function. (Tabbed navigation moved to chartModule.js)
   - [x] Debug and verify tabbed navigation functionality and dynamic chart updates.
-- [ ] **Evaluate Chart Libraries**
-  - [ ] Investigate alternatives (e.g., Chart.js or Recharts) if D3 remains challenging.
+- [x] **Evaluate Chart Libraries**
+  - [x] Investigate alternatives (e.g., Chart.js or Recharts) if D3 remains challenging.
 - [ ] Refactoring:
   - [ ] Add a button in the sidebar to pull up charts in the information container.
   - [ ] Put text based data in the current chart tabs/charts containers and rename them to a relevant name.
   - [ ] Refactor the charts and charts tabs containers to have their own panel/container which is viewable by clicking the corresponding button on the sidebar.
+    - [ ] Collect all the numeric data from the country info and put it in the charts.
+      - [ ] There should be a section in every countries info with GDP, create a chart that has all of the countries GDP data.
+        - [ ] When the chart is in view in the information container, the colors on the map should change to match the colors in the chart, which should be in hues from red to blue with red being negative and blue being postive. The darkness of the color should be based on how extreme the value is, dark blue is for amounts way above breakeven and dark red is for amounts way below breakeven.
+      - [ ] There should be a section in every countries info with Revenue, create a chart that has all of the countries Revenue data.
+        - [ ] When the chart is in view in the information container, the colors on the map should change to match the colors in the chart, which should be in hues from red to orange to yellow to green, with red being the negative, orange being the lowest, yellow being the middle, and green being the highest in terms of revenue.
+      - [ ] There should be a section in every countries info with Population, create a chart that has all of the countries population data.
+        <!-- - [ ] When the chart is in view in the information container, the colors on the map should change to match the colors in the chart, which should be in hues from green to yellow to orange to red, with green being the lowest and red being the highest in terms of population. -->
 
 *Recommendation: Focus on isolating the chart logic for easier maintenance and consider a more user-friendly library if data binding issues persist.*
 

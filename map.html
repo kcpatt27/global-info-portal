@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Global Information Portal</title>
+    <link rel="stylesheet" href="chartStyles.css">
     <style>
         /* Base reset */
         * {
@@ -242,6 +243,60 @@
             background-color: inherit;
             pointer-events: none;
         }
+        /* Chart Specific Styles */
+        .chart-title {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-align: center;
+            color: #f0f0f0;
+        }
+        
+        .chart-info {
+            font-size: 12px;
+            margin-top: 5px;
+            color: #cccccc;
+        }
+        
+        .chart-value {
+            font-size: 16px;
+            font-weight: bold;
+            text-align: center;
+            margin: 15px 0;
+            color: #f0f0f0;
+        }
+        
+        .chart-error {
+            color: #ff6b6b;
+            text-align: center;
+            margin-top: 20px;
+            font-weight: bold;
+        }
+        
+        .bar {
+            fill: #69b3a2;
+            transition: fill 0.3s;
+        }
+        
+        .bar:hover {
+            fill: #8fd3c2;
+        }
+        
+        svg text {
+            fill: #e0e0e0;
+        }
+        
+        svg .domain, svg .tick line {
+            stroke: #555;
+        }
+        
+        svg .tick text {
+            fill: #aaa;
+        }
+        
+        .legend text {
+            font-size: 10px;
+        }
     </style>
 </head>
 <body>
@@ -469,11 +524,14 @@
                                                 data.Introduction?.Background?.text || 
                                                 "No background information available";
                                                 
-                                            // Also update chart data if charts are used, if updateCharts is defined
-                                            if (typeof updateCharts === "function") {
-                                                updateCharts(data);
+                                            // Update charts with the fetched data
+                                            if (typeof window.updateCharts === "function") {
+                                                window.updateCharts(data);
                                             } else {
-                                                console.warn("updateCharts is not defined, skipping chart update.");
+                                                console.error("updateCharts function not found. Make sure chartModule.js is properly loaded.");
+                                                document.querySelectorAll('.chart').forEach(chart => {
+                                                    chart.textContent = "Chart loading error: updateCharts function not available";
+                                                });
                                             }
                                         })
                                         .catch(error => {
