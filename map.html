@@ -91,7 +91,7 @@
         .chart-tabs {
             display: flex;
             margin-bottom: 0;
-            border-bottom: 4px solid #2a2a2a;
+            border-bottom: 4px solid #e7e4e4;
             width: 100%;
             position: relative;
             /* overflow: hidden; */
@@ -273,6 +273,7 @@
     
     <script src="https://unpkg.com/d3@5.6.0/dist/d3.min.js"></script>
     <script src="https://unpkg.com/topojson@3.0.2/dist/topojson.min.js"></script>
+    <script src="chartModule.js"></script>
     <script>
         const svg = d3.select("svg");
         const width = 960;
@@ -303,99 +304,6 @@
             openSidebar();
         }
 
-        // Helper function to remove <p> tags while preserving <br> and <strong>
-        function formatContent(html) {
-            return html.replace(/<\/?p>/gi, '');
-        }
-
-        // Update updateCharts() to use innerHTML and formatContent
-        function updateCharts(data) {
-            try {
-                const charts = document.querySelectorAll('.charts .chart');
-                // GDP chart (index 0)
-                charts[0].innerHTML = formatContent(data.Economy?.GDP?.purchasing_power_parity?.text || 'GDP data not available');
-                // Revenue chart (index 1)
-                charts[1].innerHTML = formatContent(data.Economy?.Budget?.revenues?.text || 'Revenue data not available');
-                // Population chart (index 2)
-                charts[2].innerHTML = formatContent(data['People and Society']?.Population?.text || 'Population data not available');
-                // Other chart (index 3)
-                charts[3].innerHTML = formatContent(data.Environment?.Climate?.text || 'Climate data not available');
-            } catch (error) {
-                console.error('Error updating charts:', error);
-            }
-        }
-
-        // Initialize chart tabs event handling.
-        function initChartTabs() {
-            const tabs = document.querySelectorAll(".chart-tab");
-            const charts = document.querySelectorAll(".charts .chart");
-            
-            // Make sure we have tabs and charts to work with
-            if (tabs.length === 0 || charts.length === 0) {
-                console.error("Chart tabs or charts elements not found");
-                return;
-            }
-            
-            // Initial z-index setup - left to right order by default
-            function setupDefaultZIndex() {
-                const tabCount = tabs.length;
-                const activeTabIndex = parseInt(document.querySelector(".chart-tab.active")?.getAttribute("data-tab") || "0");
-                
-                tabs.forEach((tab, index) => {
-                    const thisTabIndex = parseInt(tab.getAttribute("data-tab"));
-                    
-                    if (thisTabIndex === activeTabIndex) {
-                        // Active tab gets highest z-index
-                        tab.style.zIndex = 10;
-                        tab.style.transform = "translateY(0) scale(1.02)";
-                        tab.style.opacity = "1";
-                        tab.style.boxShadow = "0 -2px 5px rgba(0, 0, 0, 0.3)";
-                    } else {
-                        const distance = Math.abs(thisTabIndex - activeTabIndex);
-                        tab.style.zIndex = 10 - distance;
-                        tab.style.transform = `translateY(${2 + distance * 1.32}px)`;
-                        tab.style.opacity = Math.max(0.75, 1 - (distance * 0.1));
-                        tab.style.boxShadow = "0 -1px 3px rgba(0, 0, 0, 0.2)";
-                    }
-                });
-            }
-            
-            // Set up initial z-index cascade
-            setupDefaultZIndex();
-            
-            // Add click event listeners to tabs
-            tabs.forEach(tab => {
-                tab.addEventListener("click", function() {
-                    // Remove active class from all tabs and charts
-                    tabs.forEach(t => t.classList.remove("active"));
-                    charts.forEach(chart => chart.classList.remove("active"));
-                    
-                    // Add active class to clicked tab
-                    this.classList.add("active");
-                    
-                    // Get the tab index and activate corresponding chart
-                    const tabIndex = parseInt(this.getAttribute("data-tab"));
-                    const targetChart = document.querySelector(`.charts .chart[data-chart="${tabIndex}"]`);
-                    
-                    if (targetChart) {
-                        targetChart.classList.add("active");
-                    } else {
-                        console.error(`Chart with data-chart="${tabIndex}" not found`);
-                    }
-                    
-                    // Update the cascade effect when a tab is clicked
-                    setupDefaultZIndex();
-                });
-            });
-            
-            // Ensure first tab is active by default if none are
-            if (!document.querySelector('.chart-tab.active')) {
-                tabs[0]?.classList.add('active');
-                charts[0]?.classList.add('active');
-                setupDefaultZIndex();
-            }
-        }
-
         // Sidebar toggle.
         document.getElementById("close-sidebar").addEventListener("click", () => {
             document.querySelector(".info-container").classList.toggle("collapsed");
@@ -411,6 +319,9 @@
                     d3.json(jsonURL),
                     d3.tsv(tsvURL)
                 ]);
+                
+                console.log('Loaded topoJSONdata:', topoJSONdata);
+                console.log('Loaded tsvData:', tsvData);
                 
                 // Create country info lookup
                 const countryInfo = tsvData.reduce((acc, d) => {
@@ -485,9 +396,12 @@
                         } else {
                             clearSelection();
                             d3.select(this)
+                                .raise()
+                                .style("opacity", 0)
                                 .classed("selected", true)
                                 .transition()
                                 .duration(300)
+                                .style("opacity", 1)
                                 .style("fill", "red");
                             // Ensure the sidebar is visible when a country is selected.
                             openSidebar();
@@ -555,8 +469,12 @@
                                                 data.Introduction?.Background?.text || 
                                                 "No background information available";
                                                 
-                                            // Also update chart data if charts are used
-                                            updateCharts(data);
+                                            // Also update chart data if charts are used, if updateCharts is defined
+                                            if (typeof updateCharts === "function") {
+                                                updateCharts(data);
+                                            } else {
+                                                console.warn("updateCharts is not defined, skipping chart update.");
+                                            }
                                         })
                                         .catch(error => {
                                             console.error("Error fetching country data:", error);
@@ -586,21 +504,46 @@
                 svg.on("contextmenu", function() {
                     d3.event.preventDefault();
                     clearSelection();
+                    svg.transition()
+                       .duration(640)
+                       .call(zoom.transform, d3.zoomIdentity);
                 });
                 
                 // Enable zoom and pan.
                 const zoom = d3.zoom()
-                    .scaleExtent([0.5, 8])
+                    .filter(function() {
+                        // Allow left (0) and middle (1) mouse buttons for zoom/pan
+                        return d3.event.button === 0 || d3.event.button === 1;
+                    })
+                    .scaleExtent([1, 8])
                     .on("zoom", function() {
                         g.attr("transform", d3.event.transform);
+                    })
+                    .on("end", function() {
+                        var t = d3.event.transform;
+                        if (t.k < 1 || (t.k === 1 && (t.x !== 0 || t.y !== 0))) {
+                            svg.transition()
+                               .duration(750)
+                               .call(zoom.transform, d3.zoomIdentity);
+                        }
                     });
                 svg.call(zoom);
+                // Reset zoom on double-click
+                svg.on("dblclick", function() {
+                    svg.transition()
+                       .duration(1000)
+                       .call(zoom.transform, d3.zoomIdentity);
+                });
             } catch (error) {
                 console.error("Error loading map data:", error);
             }
-            
-            // Initialize chart tabs
-            initChartTabs();
+
+            // Initialize chart tabs if the function is defined
+            if (typeof initChartTabs === "function") {
+                initChartTabs();
+            } else {
+                console.warn("initChartTabs is not defined, skipping chart tabs initialization.");
+            }
         }
         
         // Load map data on page load
