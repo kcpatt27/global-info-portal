@@ -4,300 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Global Information Portal</title>
-    <link rel="stylesheet" href="chartStyles.css">
-    <style>
-        /* Base reset */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        body, html {
-            height: 100%;
-            font-family: 'Helvetica Neue', Arial, sans-serif;
-            background-color: #121212;
-            color: #e0e0e0;
-        }
-        /* Responsive grid container */
-        .container {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            grid-template-rows: 100vh;
-        }
-        @media (max-width: 768px) {
-            .container {
-                grid-template-columns: 1fr;
-                grid-template-rows: 50vh 50vh;
-            }
-        }
-        /* Map container */
-        .map-container {
-            position: relative;
-            overflow: hidden;
-        }
-        .map-container svg {
-            width: 100%;
-            height: 100%;
-        }
-        /* Info sidebar styling */
-        .info-container {
-            background-color: #1c1c1c;
-            padding: 20px;
-            overflow-y: auto;
-            position: relative;
-            transition: transform 0.3s ease, opacity 0.3s ease;
-            z-index: 20;
-            display: flex;
-            flex-direction: column;
-            max-height: 100vh;
-        }
-        .info-container.collapsed {
-            transform: translateX(100%);
-            opacity: 0;
-        }
-        .info-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-        .flag {
-            width: 50px;
-            height: 50px;
-            background-color: #fff;
-            margin-right: 10px;
-        }
-        .country-info {
-            font-weight: bold;
-            font-size: 1.2em;
-        }
-        .close-sidebar {
-            background: none;
-            border: none;
-            font-size: 1.5em;
-            color: #e0e0e0;
-            cursor: pointer;
-        }
-        /* Background info with fixed height and scrollbar */
-        .background-info {
-            max-height: 150px;
-            overflow-y: auto;
-            margin-bottom: 20px;
-            border: 1px solid #333;
-            padding: 10px;
-            background-color: #2a2a2a;
-            border-radius: 4px;
-        }
-        /* Chart Tabs styling */
-        .chart-tabs {
-            display: flex;
-            margin-bottom: 0;
-            border-bottom: 4px solid #e7e4e4;
-            width: 100%;
-            position: relative;
-            /* overflow: hidden; */
-        }
-        .chart-tab {
-            padding: 8px 4px;
-            cursor: pointer;
-            transition: all 0.113s ease;
-            border: 1px solid #666;
-            border-bottom: none;
-            border-top-left-radius: 8px;
-            border-top-right-radius: 8px;
-            margin-right: -3px;
-            position: relative;
-            background-color: #333;
-            flex: 1 1 0;
-            min-width: 80px;
-            text-align: center;
-            font-size: 0.9rem;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            /* For cascading effect */
-            transform-origin: bottom center;
-            box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.2);
-        }
-        .chart-tab:last-child {
-            margin-right: 0;
-            padding-right: 8px;
-        }
-        .chart-tab.active {
-            background-color: #444;
-            border-color: #888;
-            font-weight: bold;
-            z-index: 10;
-            border-bottom-color: #2a2a2a;
-            transform: translateY(0);
-            box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.3);
-        }
-        /* Visual cascade effect */
-        .chart-tab:not(.active) {
-            transform: translateY(3px);
-            opacity: 0.8;
-            background-color: #2c2c2c;
-        }
-        @media (max-width: 350px) {
-            .chart-tab {
-                padding: 3px 4px;
-                font-size: 0.7rem;
-            }
-        }
-        /* Chart container */
-        .charts {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            overflow: visible;
-            padding-top: 32px;
-            width: 100%;
-            max-width: 100%;
-            margin-bottom: 10px;
-        }
-        .charts .chart {
-            display: none;
-            padding: 15px; /* Slightly more padding */
-            transition: opacity 0.113s ease;
-            overflow-y: auto;
-            flex: 1;
-            background-color: #2a2a2a;
-            border: 1px solid #444;
-            border-top: 1px solid #888; /* Match active tab border color */
-            border-radius: 0 0 8px 8px; /* Match tab radius */
-            opacity: 0;
-            width: 100%; /* Ensure full width */
-            min-height: 150px; /* Ensure minimum height */
-            font-size: 0.9rem; /* Match tab font size */
-        }
-        @media (max-width: 500px) {
-            .charts .chart {
-                padding: 10px;
-                font-size: 0.8rem;
-                min-height: 120px;
-            }
-        }
-        @media (max-width: 350px) {
-            .charts .chart {
-                padding: 8px;
-                font-size: 0.7rem;
-                min-height: 100px;
-            }
-        }
-        .charts .chart.active {
-            display: block;
-            opacity: 1;
-            animation: fadeIn 0.113s ease-in-out;
-            border-top: none;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        /* Country shape styling */
-        .country {
-            fill: lightgreen;
-            stroke: #333;
-            stroke-width: 0.32px;
-            cursor: pointer;
-            transition: fill 0.113s ease, stroke 0.113s ease;
-        }
-        .country:hover {
-            fill: red;
-        }
-        .country.selected {
-            fill: red;
-        }
-        /* Make all content fit within its container */
-        @media (max-width: 768px) {
-            .info-container {
-                padding: 15px;
-            }
-            .info-header {
-                margin-bottom: 15px;
-            }
-            .background-info {
-                margin-bottom: 15px;
-                max-height: 120px;
-            }
-        }
-        @media (max-width: 500px) {
-            .info-container {
-                padding: 10px;
-            }
-            .info-header {
-                margin-bottom: 10px;
-            }
-            .background-info {
-                margin-bottom: 10px;
-                max-height: 100px;
-            }
-        }
-        .chart-tab::after {
-            content: "";
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 4px;
-            background-color: inherit;
-            pointer-events: none;
-        }
-        /* Chart Specific Styles */
-        .chart-title {
-            font-size: 14px;
-            font-weight: bold;
-            margin-bottom: 10px;
-            text-align: center;
-            color: #f0f0f0;
-        }
-        
-        .chart-info {
-            font-size: 12px;
-            margin-top: 5px;
-            color: #cccccc;
-        }
-        
-        .chart-value {
-            font-size: 16px;
-            font-weight: bold;
-            text-align: center;
-            margin: 15px 0;
-            color: #f0f0f0;
-        }
-        
-        .chart-error {
-            color: #ff6b6b;
-            text-align: center;
-            margin-top: 20px;
-            font-weight: bold;
-        }
-        
-        .bar {
-            fill: #69b3a2;
-            transition: fill 0.3s;
-        }
-        
-        .bar:hover {
-            fill: #8fd3c2;
-        }
-        
-        svg text {
-            fill: #e0e0e0;
-        }
-        
-        svg .domain, svg .tick line {
-            stroke: #555;
-        }
-        
-        svg .tick text {
-            fill: #aaa;
-        }
-        
-        .legend text {
-            font-size: 10px;
-        }
-    </style>
+    <link rel="stylesheet" href="dataDisplay.css">
+    <link rel="stylesheet" href="mapStyles.css">
+    <!-- Add Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 </head>
 <body>
     <div class="container">
@@ -310,33 +20,84 @@
                 <div class="country-info">COUNTRY INFO</div>
                 <button class="close-sidebar" id="close-sidebar" aria-label="Close Sidebar">×</button>
             </div>
-            <div class="background-info">INTRODUCTION / BACKGROUND</div>
-            <div class="charts">
-                <div class="chart-tabs">
-                    <div class="chart-tab active" data-tab="0">GDP</div>
-                    <div class="chart-tab" data-tab="1">Revenue</div>
-                    <div class="chart-tab" data-tab="2">Population</div>
-                    <div class="chart-tab" data-tab="3">Other</div>
+            
+            <div class="sidebar-buttons">
+                <button class="sidebar-button active" data-panel="info">
+                    <i class="fas fa-info-circle"></i> Info
+                </button>
+                <button class="sidebar-button" data-panel="data">
+                    <i class="fas fa-chart-bar"></i> Data
+                </button>
+            </div>
+            
+            <div class="content-panel active" id="info-panel">
+                <div class="background-info">INTRODUCTION / BACKGROUND</div>
+            </div>
+            
+            <div class="content-panel" id="data-panel">
+                <div class="data-tabs">
+                    <div class="data-tab active" data-tab="0">Stats</div>
+                    <div class="data-tab" data-tab="1">Rankings</div>
+                    <div class="data-tab" data-tab="2">Comparisons</div>
+                    <div class="data-tab" data-tab="3">Trends</div>
                 </div>
-                <div class="chart active" data-chart="0">GDP Chart</div>
-                <div class="chart" data-chart="1">Revenue Chart</div>
-                <div class="chart" data-chart="2">Population Chart</div>
-                <div class="chart" data-chart="3">Other Chart</div>
+                <div class="data-panels">
+                    <div class="data-panel active" data-panel="0">Stats Data</div>
+                    <div class="data-panel" data-panel="1">Rankings Data</div>
+                    <div class="data-panel" data-panel="2">Comparisons Data</div>
+                    <div class="data-panel" data-panel="3">Trends Data</div>
+                </div>
             </div>
         </div>
     </div>
     
+    <!-- Navigation sidebar that appears when info sidebar is collapsed -->
+    <div class="nav-sidebar" id="nav-sidebar">
+        <button class="nav-button" id="open-sidebar" title="Open Info Panel">
+            <i class="fas fa-info-circle"></i>
+        </button>
+        <button class="nav-button" id="toggle-data" title="Show Data">
+            <i class="fas fa-chart-bar"></i>
+        </button>
+        <button class="nav-button" id="toggle-search" title="Search">
+            <i class="fas fa-search"></i>
+        </button>
+        <button class="nav-button" id="toggle-settings" title="Settings">
+            <i class="fas fa-cog"></i>
+        </button>
+        <button class="nav-button" id="toggle-help" title="Help">
+            <i class="fas fa-question-circle"></i>
+        </button>
+    </div>
+    
     <script src="https://unpkg.com/d3@5.6.0/dist/d3.min.js"></script>
     <script src="https://unpkg.com/topojson@3.0.2/dist/topojson.min.js"></script>
-    <script src="chartModule.js"></script>
+    <script src="countryStats.js"></script>
     <script>
         const svg = d3.select("svg");
         const width = 960;
         const height = 500;
 
+        // Toggle between content panels (info and charts)
+        document.querySelectorAll('.sidebar-button').forEach(button => {
+            button.addEventListener('click', function() {
+                // Remove active class from all buttons and panels
+                document.querySelectorAll('.sidebar-button').forEach(btn => btn.classList.remove('active'));
+                document.querySelectorAll('.content-panel').forEach(panel => panel.classList.remove('active'));
+                
+                // Add active class to clicked button
+                this.classList.add('active');
+                
+                // Show corresponding panel
+                const panelId = this.getAttribute('data-panel') + '-panel';
+                document.getElementById(panelId).classList.add('active');
+            });
+        });
+
         // Open the sidebar if it's collapsed.
         function openSidebar() {
             document.querySelector(".info-container").classList.remove("collapsed");
+            document.querySelector("#nav-sidebar").classList.remove("visible");
         }
 
         // Update clearSelection() to reset chart contents
@@ -347,21 +108,37 @@
                 .duration(300)
                 .style('fill', 'lightgreen');
             document.querySelector('.country-info').textContent = 'COUNTRY INFO';
-            document.querySelector('.background-info').textContent = 'INTRODUCTION / BACKGROUND';
+            document.querySelector('.background-info').innerHTML = '<div class="centered-text">INTRODUCTION / BACKGROUND</div>';
             // Reset chart contents to default labels
             const charts = document.querySelectorAll('.charts .chart');
             if (charts.length >= 4) {
-                charts[0].innerHTML = 'GDP Chart';
-                charts[1].innerHTML = 'Revenue Chart';
-                charts[2].innerHTML = 'Population Chart';
-                charts[3].innerHTML = 'Other Chart';
+                charts[0].innerHTML = 'Stats Chart';
+                charts[1].innerHTML = 'Rankings Chart';
+                charts[2].innerHTML = 'Comparisons Chart';
+                charts[3].innerHTML = 'Trends Chart';
             }
             openSidebar();
         }
 
         // Sidebar toggle.
         document.getElementById("close-sidebar").addEventListener("click", () => {
-            document.querySelector(".info-container").classList.toggle("collapsed");
+            document.querySelector(".info-container").classList.add("collapsed");
+            document.querySelector("#nav-sidebar").classList.add("visible");
+        });
+        
+        // Open sidebar from navigation sidebar
+        document.getElementById("open-sidebar").addEventListener("click", () => {
+            openSidebar();
+        });
+        
+        // Toggle charts panel from navigation sidebar
+        document.getElementById("toggle-data").addEventListener("click", () => {
+            openSidebar();
+            // Activate charts panel
+            document.querySelectorAll('.sidebar-button').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.content-panel').forEach(panel => panel.classList.remove('active'));
+            document.querySelector('.sidebar-button[data-panel="data"]').classList.add('active');
+            document.getElementById('data-panel').classList.add('active');
         });
 
         // Load and render map data.
@@ -520,17 +297,18 @@
                                             return response.json();
                                         })
                                         .then(data => {
-                                            document.querySelector(".background-info").textContent = 
-                                                data.Introduction?.Background?.text || 
-                                                "No background information available";
-                                                
-                                            // Update charts with the fetched data
+                                            // Remove <p> tags when displaying background info
+                                            let backgroundText = data.Introduction?.Background?.text || "No background information available";
+                                            backgroundText = backgroundText.replace(/<\/?p>/g, '');
+                                            document.querySelector(".background-info").innerHTML = backgroundText;
+                                            
+                                            // Update data panels with the fetched data
                                             if (typeof window.updateCharts === "function") {
                                                 window.updateCharts(data);
                                             } else {
-                                                console.error("updateCharts function not found. Make sure chartModule.js is properly loaded.");
-                                                document.querySelectorAll('.chart').forEach(chart => {
-                                                    chart.textContent = "Chart loading error: updateCharts function not available";
+                                                console.error("updateCharts function not found. Make sure countryStats.js is properly loaded.");
+                                                document.querySelectorAll('.data-panel').forEach(panel => {
+                                                    panel.textContent = "Data loading error: updateCharts function not available";
                                                 });
                                             }
                                         })
@@ -596,11 +374,11 @@
                 console.error("Error loading map data:", error);
             }
 
-            // Initialize chart tabs if the function is defined
-            if (typeof initChartTabs === "function") {
-                initChartTabs();
+            // Initialize data tabs if the function is defined
+            if (typeof initDataTabs === "function") {
+                initDataTabs();
             } else {
-                console.warn("initChartTabs is not defined, skipping chart tabs initialization.");
+                console.warn("initDataTabs is not defined, skipping data tabs initialization.");
             }
         }
         

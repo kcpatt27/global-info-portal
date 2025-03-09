@@ -39,8 +39,23 @@ This list outlines all tasks needed to address current issues, update the projec
 - [x] **Evaluate Chart Libraries**
   - [x] Investigate alternatives (e.g., Chart.js or Recharts) if D3 remains challenging.
 - [ ] Refactoring:
-  - [ ] Add a button in the sidebar to pull up charts in the information container.
-  - [ ] Put text based data in the current chart tabs/charts containers and rename them to a relevant name.
+  - [x] Add a button in the sidebar to pull up charts in the information container.
+  - [x] Put text based data in the current chart tabs/charts containers and rename them to a relevant name.
+    - [x] Create a Stats tab that has all the numeric data from the country info for that selected country.
+    - [ ] Create a Rankings tab that has a selector for all the different rankings that can be made from the country info for that selected country. (e.g. comparing every country/continent by population, GDP, etc.)
+      - [x] Maintains selection of ranking metric across different country selections.
+      - [ ] Show rankings data for ALL countries globally (approximately 256) not just a limited subset.
+      - [ ] Implement a more thorough data fetching mechanism to obtain data for all countries.
+      - [ ] Optimize the loading and caching strategy to handle the larger data volume efficiently.
+      - [ ] Add ability to filter rankings by continent/region.
+      - [ ] Add sorting options (highest to lowest and lowest to highest).
+      - [ ] Provide a full tabular view option to see complete rankings for all countries.
+      - [ ] Improve the visual representation of where the selected country stands globally.
+      - [ ] Add export functionality to allow users to download the full rankings data.
+      
+      *Recommendation for Rankings Tab: Use a combined approach with pre-loaded data for common metrics (GDP, population, etc.) and on-demand loading for specific/detailed metrics. Consider implementing pagination or virtualized scrolling for displaying large datasets efficiently. Add a data freshness indicator showing when the rankings data was last updated.*
+    - [ ] Create a Comparisons tab that shows how different from the rest of the world the selected country is in terms of the data, represented as a percentage.
+    - [ ] Create a Trends tab that shows the trend of the selected country's data over time, represented as a line chart. (there is some data that has multiple years worth but not all of the data points have that, we will need to make sure that the trends are only shown for the data that has multiple years worth of data points, as well as a general trend based on the overall, e.g. if GDP and Revenue and Population are all increasing, the general trend would be positive by some degree, etc.)
   - [ ] Refactor the charts and charts tabs containers to have their own panel/container which is viewable by clicking the corresponding button on the sidebar.
     - [ ] Collect all the numeric data from the country info and put it in the charts.
       - [ ] There should be a section in every countries info with GDP, create a chart that has all of the countries GDP data.
@@ -48,7 +63,7 @@ This list outlines all tasks needed to address current issues, update the projec
       - [ ] There should be a section in every countries info with Revenue, create a chart that has all of the countries Revenue data.
         - [ ] When the chart is in view in the information container, the colors on the map should change to match the colors in the chart, which should be in hues from red to orange to yellow to green, with red being the negative, orange being the lowest, yellow being the middle, and green being the highest in terms of revenue.
       - [ ] There should be a section in every countries info with Population, create a chart that has all of the countries population data.
-        <!-- - [ ] When the chart is in view in the information container, the colors on the map should change to match the colors in the chart, which should be in hues from green to yellow to orange to red, with green being the lowest and red being the highest in terms of population. -->
+        - [ ] When the chart is in view in the information container, the colors on the map should change to match the colors in the chart, which should be in hues from green to yellow to orange to red, with green being the lowest and red being the highest in terms of population.
 
 *Recommendation: Focus on isolating the chart logic for easier maintenance and consider a more user-friendly library if data binding issues persist.*
 
@@ -56,32 +71,44 @@ This list outlines all tasks needed to address current issues, update the projec
 
 ## Layout and User Interface Enhancements
 - [ ] **Redesign Layout for Better Usability**
-  - [ ] Implemented a responsive grid/flexbox layout for the entire page (map, info panel, and charts).
-  - [ ] Integrated a collapsible info sidebar for detailed country information.
-  - [ ] Make both the background info and charts section have a consistent look and feel, the background info should take up 2/3 of the height of the info container and the charts section should take up 1/3 of the height of the info container.
-  - [ ] Make the Country Info and flag section smaller.
-  - [ ] Redesigned the charts section to use a tabbed interface for improved navigation.
+  - [x] Center the background info default text.
+  - [x] Move the stats tabs higher up on the page so that they are at the same place the background info is when it is on the panel.
+    *Recommendation: Consider using position: sticky for the tabs navigation to ensure it remains visible even when scrolling through lengthy content. Add a smooth scroll effect when switching tabs to enhance user experience.*
+  - [ ] Implement a responsive grid/flexbox layout for the entire page (map, info panel, and charts).
+  - [x] Integrated a collapsible info sidebar for detailed country information.
+  - [x] Make the background info take up whats left of the info-panel.
+  - [x] Make the Country Info and flag section smaller.
+  - [x] Remove the `<p>...</p>` tags from the background info.
+  - [x] Redesigned the charts section to use a tabbed interface for improved navigation.
     - [x] Make tabs overlap each other slightly, where the focused one is always on top.
-    - [ ] Cover the bottom of the tabs with an aesthetic divider.
-    - [x] Make the "GDP" tab align with the .charts container when active
-    - [x] Make the "Other" tab align with the .charts container when active
+    - [ ] Ensure the cascading effect of the tabs is consistent and works well and that the tabs are not opaque.
+    - [ ] Fix the bottom border of the tabs to make it more aesthetic and streamlined, it shouldn't be on the tab itself but go across all of the bottoms of the tabs over top of them. do this UNLESS you find a way to make it so that all the tab borders start and end up on the same horizontal line. Basically the tabs should be flush with the top of the .charts container or use a divider to hide the difference in lengths.
+  - [x] Fix UI issues with chart panels
+    - [x] Fix issue where both info and charts panels were showing at the same time
+    - [x] Fix chart tabs positioning to be flush with the top of the container
+    - [x] Fix scrolling issues and remove redundant scrollbars
+    - [x] Ensure chart backgrounds and borders expand properly with content
 
 ---
 
 ## Sidebar Creation and Styling
-- [ ] Create a Navigation Sidebar
-  - [ ] Create a bar that is shown when the information sidebar is collapsed.
-  - [ ] Add a button for the user to access the search functionality.
-  - [ ] Add a button for the user to access the settings menu/page.
-  - [ ] Add a button for the user to access the help menu/page.
-  - [ ] Add a button for the user to access the about menu/page.
-  - [ ] Add a button for the user to access the feedback menu/page.
+- [x] Create a Navigation Sidebar
+  - [x] Create a bar that is shown when the information sidebar is collapsed.
+  - [x] Add a button for the user to access the search functionality.
+  - [x] Add a button for the user to access the settings menu/page.
+  - [x] Add a button for the user to access the help menu/page.
+  - [x] Add a button for the user to access the about menu/page.
+  - [x] Add a button for the user to access the feedback menu/page.
   - [ ] Finish with styling the sidebar.
-    - [ ] Make it responsive.
+    - [x] Make it responsive.
     - [ ] Make it look modern and futuristic.
     - [ ] Make it look flat.
     - [ ] Make it look like a sidebar from a modern and futuristic website.
     - [ ] Use animations.
+      - [ ] The map should move to take up the empty space when the sidebar is collapsed.
+      - [ ] The sidebar closing animation should be smooth and elegant.
+      - [ ] The sidebar opening animation should be smooth and elegant.
+      - [ ] The sidebar should have a close button that is styled like the rest of the sidebar.
 - [ ] Edit the styling of the buttons in the information sidebar menu/page.
 
 ---
@@ -107,6 +134,8 @@ This list outlines all tasks needed to address current issues, update the projec
 
 ## Code and Project Structure Refactoring
 - [ ] **Modularize the Codebase**
+  - [x] Extract styles from map.html into a separate CSS file for better organization
+  - [x] Rename chart-related elements to data-related elements for better semantics
   - [ ] Separate responsibilities: map rendering, chart generation, and search handling should reside in discrete modules.
   - [ ] Remove any obsolete code (e.g., unused 3D globe functionality, commented zoom behavior).
 - [ ] **Improve Error Handling**
@@ -116,7 +145,7 @@ This list outlines all tasks needed to address current issues, update the projec
   - [ ] Consolidate duplicate code across different map and chart implementations.
 - [ ] **Data Integration and UI Updates**
   - [ ] Connect TSV data reliably to the map and charts.
-  - [ ] Integrate country flags into the info sidebar for improved visual representation.
+  - [x] Integrate country flags into the info sidebar for improved visual representation.
 
 ---
 
