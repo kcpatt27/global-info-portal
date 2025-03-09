@@ -22,7 +22,7 @@ This list outlines all tasks needed to address current issues, update the projec
 
 ---
 
-## Chart Rendering Improvements
+## Data Rendering Improvements
 - [x] **Fix Data Binding Issues**
   - [x] Ensure that charts clear old data on country selection.
   - [x] Correctly bind new data to the chart elements.
@@ -42,22 +42,38 @@ This list outlines all tasks needed to address current issues, update the projec
   - [x] Add a button in the sidebar to pull up charts in the information container.
   - [x] Put text based data in the current chart tabs/charts containers and rename them to a relevant name.
     - [x] Create a Stats tab that has all the numeric data from the country info for that selected country.
-    - [ ] Create a Rankings tab that has a selector for all the different rankings that can be made from the country info for that selected country. (e.g. comparing every country/continent by population, GDP, etc.)
+    - [x] Create a Rankings tab that has a selector for all the different rankings that can be made from the country info for that selected country. (e.g. comparing every country/continent by population, GDP, etc.)
       - [x] Maintains selection of ranking metric across different country selections.
-      - [ ] Show rankings data for ALL countries globally (approximately 256) not just a limited subset.
-      - [ ] Implement a more thorough data fetching mechanism to obtain data for all countries.
-      - [ ] Optimize the loading and caching strategy to handle the larger data volume efficiently.
-      - [ ] Add ability to filter rankings by continent/region.
-      - [ ] Add sorting options (highest to lowest and lowest to highest).
-      - [ ] Provide a full tabular view option to see complete rankings for all countries.
-      - [ ] Improve the visual representation of where the selected country stands globally.
-      - [ ] Add export functionality to allow users to download the full rankings data.
+      - [x] Implement a more thorough data fetching mechanism to obtain data for all countries.
+      - [x] Optimize the loading and caching strategy to handle the larger data volume efficiently.
+      - [x] Show rankings data for ALL countries globally (from cached country data).
+      - [x] Provide a full tabular view option to see complete rankings for all countries.
+      - [x] Improve the visual representation of where the selected country stands globally.
+      - [x] Add ability to filter rankings by continent/region.
+      - [x] Add sorting options (highest to lowest and lowest to highest).
+      - [x] Fix UI layout issues - streamline Sort and Region filters to be on the same line
+      - [x] Remove export button as it's not needed
+      - [x] Fix background container expansion issue to properly fit content
+      <!-- - [ ] Add export functionality to allow users to download the full rankings data. -->
       
-      *Recommendation for Rankings Tab: Use a combined approach with pre-loaded data for common metrics (GDP, population, etc.) and on-demand loading for specific/detailed metrics. Consider implementing pagination or virtualized scrolling for displaying large datasets efficiently. Add a data freshness indicator showing when the rankings data was last updated.*
-    - [ ] Create a Comparisons tab that shows how different from the rest of the world the selected country is in terms of the data, represented as a percentage.
-    - [ ] Create a Trends tab that shows the trend of the selected country's data over time, represented as a line chart. (there is some data that has multiple years worth but not all of the data points have that, we will need to make sure that the trends are only shown for the data that has multiple years worth of data points, as well as a general trend based on the overall, e.g. if GDP and Revenue and Population are all increasing, the general trend would be positive by some degree, etc.)
+      *Recommendation for Rankings Tab: Continue expanding country data set beyond the currently cached countries for more comprehensive global rankings.*
+    - [x] Create a Comparisons tab that shows how different from the rest of the world the selected country is in terms of the data, represented as a percentage.
+      - [x] Calculate average, min, and max values for key metrics across all loaded countries
+      - [x] Show visual scale with position marker for the current country
+      - [x] Display percentage difference from global average
+      - [x] Add color-coded indicators (green for positive, red for negative)
+      - [x] Provide context information about data coverage
+      - [x] Fix the background container expansion issue to properly fit content
+    - [ ] Create a Trends tab that shows the trend of the selected country's data over time, represented as a line chart.
+      - [x] Detect time-series data in country information (years as keys)
+      - [x] Show historical data points with line visualization
+      - [x] Calculate and display overall trend direction and percentage change
+      - [x] Add color-coded indicators for increasing/decreasing trends
+      - [x] Provide tabular view of all time-series data points
+      - [ ] Fix critical bug where the Trends tab isn't showing any data
+      - [ ] Fix Trends chart bug where the points dont connect and the chart looks like a mess
   - [ ] Refactor the charts and charts tabs containers to have their own panel/container which is viewable by clicking the corresponding button on the sidebar.
-    - [ ] Collect all the numeric data from the country info and put it in the charts.
+    - [ ] Collect all the numeric data from the country info and put it in a separate panel for the charts.
       - [ ] There should be a section in every countries info with GDP, create a chart that has all of the countries GDP data.
         - [ ] When the chart is in view in the information container, the colors on the map should change to match the colors in the chart, which should be in hues from red to blue with red being negative and blue being postive. The darkness of the color should be based on how extreme the value is, dark blue is for amounts way above breakeven and dark red is for amounts way below breakeven.
       - [ ] There should be a section in every countries info with Revenue, create a chart that has all of the countries Revenue data.
@@ -136,7 +152,12 @@ This list outlines all tasks needed to address current issues, update the projec
 - [ ] **Modularize the Codebase**
   - [x] Extract styles from map.html into a separate CSS file for better organization
   - [x] Rename chart-related elements to data-related elements for better semantics
-  - [ ] Separate responsibilities: map rendering, chart generation, and search handling should reside in discrete modules.
+  - [x] Separate responsibilities: map rendering, chart generation, and search handling should reside in discrete modules.
+    - [x] Extract global state (appState, countriesList, countryDataCache, globalDataIndex) to state.js
+    - [x] Extract chart creation and rendering logic (e.g., createStatsChart, createRankingsChart, createComparisonsChart, createTrendsChart) to charts.js
+    - [x] Extract common helper functions (e.g., extractNumber, formatValue, formatLabel, extractStats) to utils.js
+    - [x] Extract event listeners and DOM initialization (e.g., initDataTabs) to events.js
+    - [x] Remove the original countryStats.js file as it's no longer needed
   - [ ] Remove any obsolete code (e.g., unused 3D globe functionality, commented zoom behavior).
 - [ ] **Improve Error Handling**
   - [ ] Enhance error logging and display user notifications when data fails to load or render.
@@ -145,7 +166,7 @@ This list outlines all tasks needed to address current issues, update the projec
   - [ ] Consolidate duplicate code across different map and chart implementations.
 - [ ] **Data Integration and UI Updates**
   - [ ] Connect TSV data reliably to the map and charts.
-  - [x] Integrate country flags into the info sidebar for improved visual representation.
+  - [ ] Integrate country flags into the info sidebar for improved visual representation.
 
 ---
 

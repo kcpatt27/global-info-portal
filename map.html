@@ -26,7 +26,7 @@
                     <i class="fas fa-info-circle"></i> Info
                 </button>
                 <button class="sidebar-button" data-panel="data">
-                    <i class="fas fa-chart-bar"></i> Data
+                    <i class="fas fa-database"></i> Data
                 </button>
             </div>
             
@@ -38,13 +38,13 @@
                 <div class="data-tabs">
                     <div class="data-tab active" data-tab="0">Stats</div>
                     <div class="data-tab" data-tab="1">Rankings</div>
-                    <div class="data-tab" data-tab="2">Comparisons</div>
+                    <div class="data-tab" data-tab="2">Global Context</div> <!-- needs to be one word -->
                     <div class="data-tab" data-tab="3">Trends</div>
                 </div>
                 <div class="data-panels">
                     <div class="data-panel active" data-panel="0">Stats Data</div>
                     <div class="data-panel" data-panel="1">Rankings Data</div>
-                    <div class="data-panel" data-panel="2">Comparisons Data</div>
+                    <div class="data-panel" data-panel="2">Global Context Data</div> <!-- needs to be one word -->
                     <div class="data-panel" data-panel="3">Trends Data</div>
                 </div>
             </div>
@@ -57,7 +57,7 @@
             <i class="fas fa-info-circle"></i>
         </button>
         <button class="nav-button" id="toggle-data" title="Show Data">
-            <i class="fas fa-chart-bar"></i>
+            <i class="fas fa-database"></i>
         </button>
         <button class="nav-button" id="toggle-search" title="Search">
             <i class="fas fa-search"></i>
@@ -72,7 +72,22 @@
     
     <script src="https://unpkg.com/d3@5.6.0/dist/d3.min.js"></script>
     <script src="https://unpkg.com/topojson@3.0.2/dist/topojson.min.js"></script>
-    <script src="countryStats.js"></script>
+    <script type="module">
+        import { initDataTabs } from './events.js';
+        import { updateDataPanels, clearDataPanels, showDataError } from './dataPanels.js';
+        import { countryDataCache, globalDataIndex, countriesList } from './state.js';
+        
+        // Make functions available to the global scope
+        window.initDataTabs = initDataTabs;
+        window.updateDataPanels = updateDataPanels;
+        window.clearDataPanels = clearDataPanels;
+        window.showDataError = showDataError;
+        
+        // Make data structures available to the global scope
+        window.countryDataCache = countryDataCache;
+        window.globalDataIndex = globalDataIndex;
+        window.countriesList = countriesList;
+    </script>
     <script>
         const svg = d3.select("svg");
         const width = 960;
@@ -100,7 +115,7 @@
             document.querySelector("#nav-sidebar").classList.remove("visible");
         }
 
-        // Update clearSelection() to reset chart contents
+        // Update clearSelection() to reset data contents
         function clearSelection() {
             svg.selectAll('path.country')
                 .classed('selected', false)
@@ -114,7 +129,7 @@
             if (charts.length >= 4) {
                 charts[0].innerHTML = 'Stats Chart';
                 charts[1].innerHTML = 'Rankings Chart';
-                charts[2].innerHTML = 'Comparisons Chart';
+                charts[2].innerHTML = 'Global Context Chart';
                 charts[3].innerHTML = 'Trends Chart';
             }
             openSidebar();
@@ -302,13 +317,20 @@
                                             backgroundText = backgroundText.replace(/<\/?p>/g, '');
                                             document.querySelector(".background-info").innerHTML = backgroundText;
                                             
+                                            // Cache the country data for rankings and comparisons
+                                            const countryCode = info.a2Code.toLowerCase();
+                                            if (window.countryDataCache) {
+                                                window.countryDataCache[countryCode] = data;
+                                                console.log(`Cached data for ${info.name} (${countryCode})`);
+                                            }
+                                            
                                             // Update data panels with the fetched data
-                                            if (typeof window.updateCharts === "function") {
-                                                window.updateCharts(data);
+                                            if (typeof window.updateDataPanels === "function") {
+                                                window.updateDataPanels(data);
                                             } else {
-                                                console.error("updateCharts function not found. Make sure countryStats.js is properly loaded.");
+                                                console.error("updateDataPanels function not found. Make sure chart modules are properly loaded.");
                                                 document.querySelectorAll('.data-panel').forEach(panel => {
-                                                    panel.textContent = "Data loading error: updateCharts function not available";
+                                                    panel.textContent = "Data loading error: updateDataPanels function not available";
                                                 });
                                             }
                                         })
@@ -375,8 +397,8 @@
             }
 
             // Initialize data tabs if the function is defined
-            if (typeof initDataTabs === "function") {
-                initDataTabs();
+            if (typeof window.initDataTabs === "function") {
+                window.initDataTabs();
             } else {
                 console.warn("initDataTabs is not defined, skipping data tabs initialization.");
             }
