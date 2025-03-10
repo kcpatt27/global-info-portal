@@ -54,16 +54,11 @@ This list outlines all tasks needed to address current issues, update the projec
       - [x] Fix UI layout issues - streamline Sort and Region filters to be on the same line
       - [x] Remove export button as it's not needed
       - [x] Fix background container expansion issue to properly fit content
+      - [ ] Make it so that the white number with the blue background also has the correct signifier(s), like a billion behind it and money sign in front of it.
+      - [ ] Remove the first layer folder from the rankings tab when showing a result, i.e. if the user selects "Economy: Agriculture" the result doesnt need to say "Economy: Agriculture" again. the result should say "Agriculture %RESULT%". like if we used the Agriculture metric from Russia, it would be "Agriculture **3.3% (2023 est.)**" instead of "Economy: Agriculture **3.30%** 3.3% (2023 est.)"
       <!-- - [ ] Add export functionality to allow users to download the full rankings data. -->
       
       *Recommendation for Rankings Tab: Continue expanding country data set beyond the currently cached countries for more comprehensive global rankings.*
-    - [x] Create a Comparisons tab that shows how different from the rest of the world the selected country is in terms of the data, represented as a percentage.
-      - [x] Calculate average, min, and max values for key metrics across all loaded countries
-      - [x] Show visual scale with position marker for the current country
-      - [x] Display percentage difference from global average
-      - [x] Add color-coded indicators (green for positive, red for negative)
-      - [x] Provide context information about data coverage
-      - [x] Fix the background container expansion issue to properly fit content
     - [ ] Create a Trends tab that shows the trend of the selected country's data over time, represented as a line chart.
       - [x] Detect time-series data in country information (years as keys)
       - [x] Show historical data points with line visualization
@@ -90,14 +85,15 @@ This list outlines all tasks needed to address current issues, update the projec
   - [x] Center the background info default text.
   - [x] Move the stats tabs higher up on the page so that they are at the same place the background info is when it is on the panel.
     *Recommendation: Consider using position: sticky for the tabs navigation to ensure it remains visible even when scrolling through lengthy content. Add a smooth scroll effect when switching tabs to enhance user experience.*
-  - [ ] Implement a responsive grid/flexbox layout for the entire page (map, info panel, and charts).
+  - [x] Implement a responsive grid/flexbox layout for the entire page (map, info panel, and charts).
   - [x] Integrated a collapsible info sidebar for detailed country information.
   - [x] Make the background info take up whats left of the info-panel.
   - [x] Make the Country Info and flag section smaller.
   - [x] Remove the `<p>...</p>` tags from the background info.
   - [x] Redesigned the charts section to use a tabbed interface for improved navigation.
     - [x] Make tabs overlap each other slightly, where the focused one is always on top.
-    - [ ] Ensure the cascading effect of the tabs is consistent and works well and that the tabs are not opaque.
+    - [ ] Ensure the cascading effect of the tabs is consistent and works well.
+    - [ ] Ensure that the tabs are not opaque.
     - [ ] Fix the bottom border of the tabs to make it more aesthetic and streamlined, it shouldn't be on the tab itself but go across all of the bottoms of the tabs over top of them. do this UNLESS you find a way to make it so that all the tab borders start and end up on the same horizontal line. Basically the tabs should be flush with the top of the .charts container or use a divider to hide the difference in lengths.
   - [x] Fix UI issues with chart panels
     - [x] Fix issue where both info and charts panels were showing at the same time

@@ -109,10 +109,23 @@
             });
         });
 
+        // Function to expand the map container when sidebar is collapsed
+        function expandMap() {
+            document.querySelector(".container").classList.add("sidebar-collapsed");
+            document.querySelector(".map-container").classList.add("expanded");
+        }
+        
+        // Function to contract the map container when sidebar is opened
+        function contractMap() {
+            document.querySelector(".container").classList.remove("sidebar-collapsed");
+            document.querySelector(".map-container").classList.remove("expanded");
+        }
+
         // Open the sidebar if it's collapsed.
         function openSidebar() {
             document.querySelector(".info-container").classList.remove("collapsed");
             document.querySelector("#nav-sidebar").classList.remove("visible");
+            contractMap(); // Contract the map when sidebar opens
         }
 
         // Update clearSelection() to reset data contents
@@ -139,6 +152,7 @@
         document.getElementById("close-sidebar").addEventListener("click", () => {
             document.querySelector(".info-container").classList.add("collapsed");
             document.querySelector("#nav-sidebar").classList.add("visible");
+            expandMap(); // Expand the map when sidebar closes
         });
         
         // Open sidebar from navigation sidebar

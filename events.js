@@ -1,5 +1,24 @@
 /* events.js - Event handling and DOM initialization for country data visualizations */
 
+// Function to update the z-index of tabs for proper cascading effect
+function updateTabZIndex() {
+  const tabs = document.querySelectorAll('.data-tab');
+  const activeTabIndex = Array.from(tabs).findIndex(tab => tab.classList.contains('active'));
+  
+  // Set z-index based on position relative to active tab
+  tabs.forEach((tab, index) => {
+    if (tab.classList.contains('active')) {
+      tab.style.zIndex = '10'; // Active tab always on top
+    } else if (index < activeTabIndex) {
+      // Tabs before active get higher z-index (4, 3, 2) based on distance
+      tab.style.zIndex = 4 - (activeTabIndex - index);
+    } else {
+      // Tabs after active get lower z-index (1, 0, -1) based on distance
+      tab.style.zIndex = 1 - (index - activeTabIndex);
+    }
+  });
+}
+
 export function initDataTabs() {
   console.log("Initializing data tabs");
   const tabs = document.querySelectorAll('.data-tab');
@@ -16,6 +35,9 @@ export function initDataTabs() {
     return;
   }
 
+  // Initial z-index setup
+  updateTabZIndex();
+
   tabs.forEach(tab => {
     tab.addEventListener('click', function() {
       console.log("Tab clicked:", this.textContent);
@@ -25,6 +47,9 @@ export function initDataTabs() {
 
       // Activate the clicked tab
       this.classList.add('active');
+
+      // Update z-index cascading
+      updateTabZIndex();
 
       // Find and activate corresponding panel
       const tabIndex = this.getAttribute('data-tab');
