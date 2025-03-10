@@ -1,0 +1,118 @@
+/* 
+ * layout.css
+ * Base layout styles for the Global Information Portal
+ */
+
+/* Base reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body, html {
+    height: 100%;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    background-color: #121212;
+    color: #e0e0e0;
+}
+
+/* Responsive grid container */
+.container {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+    grid-template-rows: 100vh;
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+    transition: all 0.3s ease-in-out;
+}
+
+.container.sidebar-collapsed {
+    grid-template-columns: 1fr;
+}
+
+/* Map container */
+.map-container {
+    position: relative;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    background-color: #1a1a1a;
+    transition: all 0.32s ease;
+}
+
+.map-container.expanded {
+    grid-column: 1 / -1;
+}
+
+.map-container svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+/* Info sidebar */
+.info-container {
+    background-color: rgba(30, 30, 40, 0.95);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transition: transform 0.32s ease, opacity 0.32s ease;
+    box-shadow: -5px 0 15px rgba(0, 0, 0, 0.2);
+    position: relative;
+    z-index: 100;
+}
+
+.info-container.collapsed {
+    transform: translateX(100%);
+    opacity: 0;
+}
+
+/* Navigation sidebar */
+.nav-sidebar {
+    position: fixed;
+    top: 50%;
+    right: 15px;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background-color: rgba(30, 30, 40, 0.9);
+    padding: 10px;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    opacity: 0;
+    transition: opacity 0.23s ease;
+    z-index: 50;
+    pointer-events: none;
+}
+
+.nav-sidebar.visible {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.nav-button {
+    width: 40px;
+    height: 40px;
+    border: none;
+    border-radius: 50%;
+    background-color: rgba(40, 40, 50, 0.8);
+    color: #aaa;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.23s ease;
+}
+
+.nav-button:hover {
+    background-color: rgba(50, 50, 60, 0.9);
+    color: #fff;
+}
+
+.nav-button i {
+    font-size: 1.2rem;
+} 

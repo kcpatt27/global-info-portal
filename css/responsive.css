@@ -1,0 +1,228 @@
+/* 
+ * responsive.css
+ * Media queries for responsive styling
+ */
+
+/* Large tablets and small desktops (1024px and below) */
+@media (max-width: 1024px) {
+    .container {
+        grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+    }
+}
+
+/* Tablet (768px and below) */
+@media (max-width: 768px) {
+    /* Layout */
+    .container {
+        grid-template-columns: 1fr;
+        grid-template-rows: minmax(0, 60vh) minmax(0, 40vh);
+    }
+    
+    .info-container {
+        position: fixed;
+        top: 0;
+        right: 0;
+        width: 100%;
+        max-width: 400px;
+        height: 100%;
+        padding: 15px;
+    }
+
+    /* Info components */
+    .info-header {
+        margin-bottom: 15px;
+    }
+
+    .background-info {
+        margin-bottom: 15px;
+        max-height: 120px;
+    }
+
+    /* Charts */
+    .chart {
+        min-height: 150px;
+        padding: 10px;
+        margin-bottom: 15px;
+    }
+
+    .chart-title {
+        font-size: 1rem;
+    }
+
+    .chart-label {
+        font-size: 0.8rem;
+    }
+
+    .chart-value {
+        font-size: 1.1rem;
+    }
+
+    /* Data components */
+    .data-title {
+        font-size: 1.1rem;
+        margin-bottom: 10px;
+    }
+    
+    .data-value {
+        font-size: 1.5rem;
+        margin: 8px 0;
+    }
+
+    /* Stats */
+    .stat-item {
+        flex: 1 1 100%;
+    }
+    
+    .stat-label, .stat-value {
+        font-size: 0.9rem;
+        white-space: normal;
+        overflow: visible;
+    }
+    
+    .stat-value {
+        font-size: 1.2rem;
+        word-break: break-word;
+    }
+
+    /* Rankings */
+    .rankings-control-row {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .control-group {
+        width: 100%;
+    }
+    
+    .ranking-sort,
+    .ranking-filter,
+    .ranking-selector {
+        width: 100%;
+        min-width: unset;
+    }
+    
+    .trend-header,
+    .ranking-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    
+    .trend-summary {
+        align-self: flex-start;
+    }
+
+    /* Global context */
+    .context-value {
+        font-size: 1rem;
+    }
+    
+    .context-stat {
+        padding: 8px 5px;
+    }
+    
+    .key-stats-container,
+    .global-rankings-container {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Small tablets (600px and below) */
+@media (max-width: 600px) {
+    .info-container {
+        max-width: 100%;
+        padding: 12px;
+    }
+}
+
+/* Mobile (480px and below) */
+@media (max-width: 480px) {
+    /* Charts */
+    .chart {
+        min-height: 100px;
+        padding: 8px;
+        margin-bottom: 10px;
+    }
+
+    .chart-title {
+        font-size: 0.9rem;
+    }
+
+    .chart-label {
+        font-size: 0.75rem;
+    }
+
+    .chart-value {
+        font-size: 1rem;
+    }
+
+    /* Rankings */
+    .rankings-positions-grid {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 10px;
+    }
+    
+    .ranking-position-card {
+        padding: 10px;
+    }
+    
+    .bar-label {
+        font-size: 0.8rem;
+        margin-bottom: 3px;
+    }
+    
+    .bar-value {
+        font-size: 0.8rem;
+        right: 5px;
+    }
+
+    /* Data components */
+    .data-tab {
+        padding: 8px 12px;
+        font-size: 0.85rem;
+    }
+    
+    .trend-chart-container {
+        min-height: 200px;
+    }
+    
+    .quick-stats-grid {
+        grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+        gap: 10px;
+    }
+
+    .trend-data-table th,
+    .trend-data-table td {
+        padding: 6px;
+        font-size: 0.8rem;
+    }
+}
+
+/* Small mobile (350px and below) */
+@media (max-width: 350px) {
+    /* Data components */
+    .data-tab {
+        padding: 6px 8px;
+        font-size: 0.7rem;
+    }
+
+    .data-panel {
+        padding: 8px;
+        font-size: 0.7rem;
+        min-height: 100px;
+    }
+
+    /* Info components */
+    .info-container {
+        padding: 8px;
+    }
+
+    .info-header {
+        margin-bottom: 8px;
+    }
+
+    .background-info {
+        margin-bottom: 8px;
+        max-height: 80px;
+    }
+} 

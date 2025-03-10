@@ -1,0 +1,29 @@
+/*
+ * main.css
+ * Main stylesheet that imports all modular components
+ */
+
+/* Import base styles first */
+@import 'layout.css';
+@import 'utils.css';
+
+/* Import core map components */
+@import 'map.css';
+@import 'mapComponents.css';
+
+/* Import sidebar and navigation components */
+@import 'sidebar.css';
+
+/* Import data visualization components */
+@import 'dataTabs.css';
+@import 'dataPanel.css';
+@import 'charts.css';
+
+/* Import feature-specific styles */
+@import 'stats.css';
+@import 'rankings.css';
+@import 'globalContext.css';
+@import 'trends.css';
+
+/* Import responsive styles last */
+@import 'responsive.css'; 

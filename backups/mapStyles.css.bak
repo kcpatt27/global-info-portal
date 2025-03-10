@@ -1,3 +1,18 @@
+/* 
+ * NOTE: The styles originally in this file have been split into separate, specialized files to avoid duplication.
+ * The following files now contain the corresponding styles:
+ * - css/layout.css: Base reset, container, and layout styles
+ * - css/map.css: Map visualization and container styles
+ * - css/mapComponents.css: Info sidebar, header, flag, and related components
+ * - css/dataTabs.css: Data tab styles
+ * - css/dataPanel.css: Data panel styles and animations
+ * - css/charts.css: Chart and visualization styles
+ * - css/sidebar.css: Navigation and sidebar styles
+ * 
+ * This file is intentionally left empty to prevent duplicate definitions.
+ * Please use the appropriate specialized CSS files listed above.
+ */
+
 /* Base reset */
 * {
     margin: 0;
@@ -78,7 +93,6 @@ body, html {
     border-bottom: 1px solid #333;
 }
 .flag {
-    /* 
     width: 40px;
     height: 40px;
     background-color: #fff;
@@ -87,10 +101,7 @@ body, html {
     overflow: hidden;
     justify-content: center;
     align-items: center;
-    display: flex; 
-    */
-    /* margin-left: 12px; */
-    color: #888;
+    display: flex;
 }
 .country-info {
     font-weight: bold;
@@ -120,17 +131,8 @@ body, html {
     background-color: #2a2a2a;
     border-radius: 4px;
     line-height: 1.5;
-    /* text-align: center; */
 }
-.centered-text {
-    text-align: center;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-    min-height: 80px;
-    color: #888;
-}
+
 /* Data Tabs styling - fixed overlap and edges */
 .data-tabs {
     display: flex;
@@ -194,11 +196,7 @@ body, html {
     z-index: 10; /* Higher z-index for active tab */
     box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.3);
     transform: translateY(-2px);
-    height: 44px; /* Increased height for more pronounced paper effect */
-    border-top: 2px solid #666; /* Add top highlight to enhance 3D effect */
-    transform: translateY(-4px) scaleY(1.05); /* More vertical lift and stretch */
-    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.4); /* Deeper shadow for stronger elevation */
-    margin-bottom: -3px; /* Compensate for height increase to maintain alignment */
+    height: 42px; /* Make active tab slightly taller to create paper effect */
 }
 
 /* Create layering effect with z-index - removing these fixed values */
@@ -469,10 +467,7 @@ svg .tick text {
 }
 
 .sidebar-button.active {
-    /* background-color: #4a4a4a; */
-    background-color: rgba(105, 179, 162, 0.9);
-    color: #121212;
-    font-weight: 600;
+    background-color: #4a4a4a;
 }
 
 /* Content panels */

@@ -45,7 +45,6 @@ export function createStatsPanel(data) {
     return;
   }
   panelElement.innerHTML = `
-    <div class="data-title">Country Key Statistics</div>
     <div class="stats-search-container">
       <input type="text" class="stats-search" placeholder="Search statistics..." />
       <button class="stats-search-clear" title="Clear search">×</button>

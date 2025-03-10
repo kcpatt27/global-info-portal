@@ -92,14 +92,26 @@ This list outlines all tasks needed to address current issues, update the projec
   - [x] Remove the `<p>...</p>` tags from the background info.
   - [x] Redesigned the charts section to use a tabbed interface for improved navigation.
     - [x] Make tabs overlap each other slightly, where the focused one is always on top.
-    - [ ] Ensure the cascading effect of the tabs is consistent and works well.
-    - [ ] Ensure that the tabs are not opaque.
-    - [ ] Fix the bottom border of the tabs to make it more aesthetic and streamlined, it shouldn't be on the tab itself but go across all of the bottoms of the tabs over top of them. do this UNLESS you find a way to make it so that all the tab borders start and end up on the same horizontal line. Basically the tabs should be flush with the top of the .charts container or use a divider to hide the difference in lengths.
+    - [x] Ensure the cascading effect of the tabs is consistent and works well.
+    - [x] Ensure that the tabs are not opaque.
+    - [x] Fix the bottom border of the tabs to make it more aesthetic and streamlined
+    - [ ] Ensure the active tab is slightly taller than the inactive ones and that the top of the tab doesnt clip through the container.
+    - [ ] Ensure the active tab left and right borders are adjusted so they match the length of the inactive tabs.
+    - [ ] Ensure the bottom border of the active tab is removed.
+    - [ ] Ensure the left and right borders of all tabs connects with the bottom border of the tab. (the active tab should look like it connects to the bottom border on the left and/or right of the tab)
   - [x] Fix UI issues with chart panels
     - [x] Fix issue where both info and charts panels were showing at the same time
     - [x] Fix chart tabs positioning to be flush with the top of the container
     - [x] Fix scrolling issues and remove redundant scrollbars
     - [x] Ensure chart backgrounds and borders expand properly with content
+  - [ ] Make all transitions smooth and elegant. Use animations but keep them tight and sleek. They should add to the user experience as a quality feature, but not be obtrusive. Use 0.113s for speed and 0.23s, 0.311s, 0.32s or any prime number between 0.1 and 0.5 for slow transitions.
+  - [ ] Fix bug with the Global Context tab where it says "Global data unavailable", even though many countries have been selected.
+  - [ ] Fix issue where when selecting a country, the rankings tab does not pull its name from the selected countries, it uses the fallback of Unknown Country but we have to fix that.
+  - [ ] Make it so that when selecting a country, its directly connected neighbors data is pulled along with the selected country's data to further enhance the rankings tab.
+  - [ ] Fix a bug where the rankings tab doesnt show the tabs for Overview and Details when a country is selected.
+  - [ ] Fix a bug where the rankings tab creates a new spider chart every time the page is changed from Details to Overview.
+  - [ ] Fix a bug where the trends tab doesnt show the same panel when a country is selected. It should show the default panel.
+  - [ ] Ensure the search bar in the Stats tab is at the top of the container.
 
 ---
 
@@ -217,7 +229,7 @@ This list outlines all tasks needed to address current issues, update the projec
       - [ ] I want to be able to search for a city by name.
       - [ ] etc. ("So maybe suggestions for data points you can search for could be like a sleek but unobtrusive dropdown menu that appears when the user starts typing, and then the suggestions become more specific as the user continues to type.")
 
-- [ ] Expanded User Stories:
+## Expanded User Stories:
 
   ### Teacher Perspective
   - [ ] As an elementary school teacher, I want simplified visualizations with vibrant colors and basic facts, so I can make geography engaging for young students with shorter attention spans.
@@ -253,3 +265,39 @@ This list outlines all tasks needed to address current issues, update the projec
   - [ ] As a curious individual, I want an engaging "explore" feature that suggests interesting countries or facts, so I can discover information I wouldn't think to search for.
   - [ ] As a parent helping with homework, I want simple explanations alongside data, so I can help my child understand global geography and cultures.
   - [ ] As a social media user, I want shareable country cards and infographics, so I can easily share interesting facts with my network.
+
+## Migration Plan for map.js
+- [ ] **Phase 1: Audit and Identify Dependencies**
+  - [ ] Search for all files that include or reference map.js
+  - [ ] Document all global functions and variables exposed by map.js
+  - [ ] Identify which parts of map.js functionality are already duplicated in map.html
+  - [ ] Create a list of unique functionality in map.js that needs to be preserved
+
+- [ ] **Phase 2: Migrate Essential Functionality**
+  - [ ] Move the robust Factbook data fetching logic to map.html
+    - [ ] Transfer the getFactbookData() function with its error handling and fallback mechanisms
+    - [ ] Ensure the special folder mapping for countries is preserved
+  - [ ] Integrate the chart rendering functionality
+    - [ ] Transfer the renderCharts() function with its safe property access patterns
+    - [ ] Preserve the scrollable container styling for charts
+  - [ ] Update the environment variable handling
+    - [ ] Add fallback URLs for data sources in map.html
+    - [ ] Ensure proper error handling for data loading
+
+- [ ] **Phase 3: Update References**
+  - [ ] Modify index.html to remove the script tag for map.js
+  - [ ] Update any other files that directly reference map.js
+  - [ ] Ensure all global functions previously provided by map.js are now available
+
+- [ ] **Phase 4: Testing**
+  - [ ] Test all functionality that previously relied on map.js
+  - [ ] Verify that country selection and data fetching work correctly
+  - [ ] Confirm that charts render properly with the migrated code
+  - [ ] Test error scenarios to ensure robust error handling
+
+- [ ] **Phase 5: Cleanup**
+  - [ ] Remove map.js file after confirming all functionality works
+  - [ ] Document the migration in project documentation
+  - [ ] Update any relevant comments in the codebase
+
+*Recommendation: Complete this migration incrementally, testing after each phase to ensure functionality is preserved. Focus on maintaining the robust error handling and fallback mechanisms that were present in map.js.*
