@@ -33,6 +33,9 @@
 /* Stats tab styling */
 @import 'stats.css';
 
+/* Quick stats grid styling */
+@import 'quick-stats.css';
+
 /* Rankings tab styling */
 @import 'rankings.css';
 
@@ -44,6 +47,9 @@
 
 /* Navigation elements */
 @import 'navigation.css';
+
+/* Custom scrollbar styling */
+@import 'scrollbars.css';
 
 /* Responsive adjustments */
 @import 'responsive.css'; 

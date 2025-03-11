@@ -420,4 +420,153 @@
   .ranking-summary {
     margin: 15px 0 10px;
   }
+}
+
+/* Rankings pagination */
+.rankings-pagination {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+  padding: 10px;
+  background-color: rgba(30, 30, 40, 0.3);
+  border-radius: 20px;
+}
+
+.pagination-btn {
+  padding: 8px 15px;
+  margin: 0 5px;
+  background-color: rgba(40, 40, 50, 0.7);
+  color: #aaa;
+  border: none;
+  border-radius: 15px;
+  cursor: pointer;
+  transition: all 0.23s ease;
+  font-weight: 500;
+  outline: none;
+}
+
+.pagination-btn:first-child {
+  margin-left: 0;
+}
+
+.pagination-btn:hover:not(.active) {
+  background-color: rgba(50, 50, 60, 0.9);
+}
+
+.pagination-btn.active {
+  background-color: #69b3a2;
+  color: #fff;
+  pointer-events: none;
+}
+
+/* Rankings pages */
+.rankings-page {
+  display: none;
+  transition: opacity 0.3s ease;
+}
+
+.rankings-page.active {
+  display: block;
+  animation: fadeIn 0.313s ease;
+}
+
+/* Rankings positions grid - repurposed from Global Context */
+.rankings-positions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 15px;
+}
+
+.ranking-position-card {
+  background-color: rgba(30, 30, 40, 0.5);
+  border-radius: 8px;
+  padding: 15px;
+  transition: transform 0.2s ease, background-color 0.2s ease;
+  display: flex;
+  align-items: center;
+  text-align: left;
+}
+
+.ranking-position-card:hover {
+  background-color: rgba(40, 40, 50, 0.6);
+  border-color: rgba(255, 255, 255, 0.1);
+  transform: translateY(-5px);
+}
+
+.ranking-position-icon {
+  font-size: 1.5rem;
+  color: #69b3a2;
+  margin-right: 12px;
+  flex-shrink: 0;
+}
+
+.ranking-position-content {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.ranking-position-title {
+  font-size: 1rem;
+  color: #aaa;
+  margin-bottom: 5px;
+}
+
+.ranking-position-value {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #69b3a2;
+  margin: 5px 0;
+}
+
+.ranking-position-context {
+  font-size: 0.8rem;
+  color: #888;
+}
+
+/* Responsive adjustments for pagination and position cards */
+@media (max-width: 768px) {
+  .rankings-pagination {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  .pagination-btn {
+    margin: 5px;
+    padding: 6px 12px;
+    font-size: 0.9rem;
+  }
+  
+  .rankings-positions-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 10px;
+  }
+  
+  .ranking-position-card {
+    padding: 12px;
+  }
+  
+  .ranking-position-icon {
+    font-size: 1.3rem;
+    margin-right: 8px;
+  }
+  
+  .ranking-position-title {
+    font-size: 0.9rem;
+  }
+  
+  .ranking-position-value {
+    font-size: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .rankings-positions-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .pagination-btn {
+    padding: 5px 10px;
+    font-size: 0.8rem;
+  }
 } 

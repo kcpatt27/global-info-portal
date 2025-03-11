@@ -2,7 +2,7 @@
 .data-panels {
     flex: 1;
     display: flex;
-    overflow-y: auto;
+    overflow-y: hidden;
     padding-top: 0;
     margin-top: -1px; /* Slightly overlap with tabs for seamless connection */
     width: 100%;
@@ -16,7 +16,7 @@
     display: none;
     padding: 15px;
     transition: all 0.2s ease;
-    overflow: visible;
+    overflow: hidden;
     background-color: #2a2a2a;
     border: 1px solid #444;
     border-top: 1px solid transparent; /* Make top border invisible for seamless connection with active tab */
@@ -26,7 +26,7 @@
     min-height: 150px;
     font-size: 0.9rem;
     margin-bottom: 0;
-    flex: 0 0 auto;
+    flex: 0 1 auto;
     box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
     z-index: 1;
 }
@@ -71,4 +71,8 @@
     text-align: center;
     margin-top: 20px;
     font-weight: bold;
+}
+
+.data-panels .data-panel {
+    overflow-y: auto;
 } 

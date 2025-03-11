@@ -18,16 +18,17 @@
 }
 
 .context-item {
-  background-color: #2d2d2d;
-  border: 1px solid #444;
+  background-color: rgba(30, 30, 40, 0.4);
   border-radius: 8px;
   padding: 15px;
-  transition: transform 0.2s;
+  transition: all 0.23s ease;
+  margin-bottom: 15px;
 }
 
 .context-item:hover {
+  background-color: rgba(35, 35, 45, 0.6);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 .context-header {
@@ -39,49 +40,56 @@
 
 .context-metric {
   font-size: 1.1rem;
-  font-weight: bold;
+  font-weight: 600;
   color: #eee;
 }
 
 .context-value {
-  font-size: 1.1rem;
-  font-weight: bold;
-  color: #3498db;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #69b3a2;
 }
 
 .context-summary {
   display: flex;
   align-items: center;
-  margin-bottom: 15px;
-  padding: 8px;
-  border-radius: 4px;
+  background-color: rgba(40, 40, 50, 0.5);
+  padding: 12px 15px;
+  border-radius: 6px;
+  margin-bottom: 20px;
+  gap: 10px;
 }
 
-.context-summary.performance-good {
-  background-color: rgba(46, 204, 113, 0.2);
+.performance-good {
+  border-left: 3px solid #69b3a2;
 }
 
-.context-summary.performance-bad {
-  background-color: rgba(231, 76, 60, 0.2);
+.performance-bad {
+  border-left: 3px solid #ff6b6b;
+}
+
+.performance-neutral {
+  border-left: 3px solid #aaa;
 }
 
 .context-percent {
-  font-size: 1.2rem;
-  font-weight: bold;
-  margin-right: 8px;
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: #fff;
 }
 
 .performance-good .context-percent {
-  color: #2ecc71;
+  color: #69b3a2;
 }
 
 .performance-bad .context-percent {
-  color: #e74c3c;
+  color: #ff6b6b;
 }
 
 .context-text {
-  font-size: 0.9rem;
-  color: #bbb;
+  flex: 1;
+  font-size: 0.95rem;
+  color: #ccc;
 }
 
 /* Similar countries section */
@@ -196,4 +204,54 @@
   .context-text {
     font-size: 0.8rem;
   }
+}
+
+/* Bar comparison visualization - useful for rankings */
+.bar-comparison {
+  margin: 20px 0;
+}
+
+.bar-item {
+  margin-bottom: 15px;
+}
+
+.bar-label {
+  font-size: 0.9rem;
+  color: #aaa;
+  margin-bottom: 5px;
+}
+
+.bar-container {
+  height: 30px;
+  background-color: rgba(40, 40, 50, 0.5);
+  border-radius: 6px;
+  position: relative;
+  overflow: hidden;
+}
+
+.bar-fill {
+  height: 100%;
+  background-color: #69b3a2;
+  background: linear-gradient(90deg, rgba(105, 179, 162, 0.7) 0%, rgba(105, 179, 162, 0.9) 100%);
+  transition: width 0.5s ease-out;
+}
+
+.bar-fill.highlighted {
+  background-color: #81c784;
+}
+
+.bar-value {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-shadow: 0 0 3px rgba(0, 0, 0, 0.5);
+}
+
+.bar-item.highlighted .bar-label {
+  color: #ddd;
+  font-weight: 500;
 } 

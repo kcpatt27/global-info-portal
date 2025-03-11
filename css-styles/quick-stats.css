@@ -1,0 +1,142 @@
+/* 
+ * quick-stats.css
+ * Styles for quick stats grid with icons and labels
+ */
+
+/* Quick stats card */
+.quick-stats-card {
+  background-color: rgba(30, 30, 40, 0.5);
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 10px;
+}
+
+.quick-stats-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #eee;
+  margin-bottom: 15px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.quick-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(2, auto);
+  gap: 12px;
+}
+
+.quick-stats-grid .stat-item {
+  background-color: rgba(30, 30, 40, 0.4);
+  border-radius: 6px;
+  padding: 12px 15px;
+  transition: all 0.23s ease;
+  border: 1px solid transparent;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+
+.quick-stats-grid .stat-item:hover {
+  background-color: rgba(40, 40, 50, 0.6);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.quick-stats-grid .stat-icon {
+  font-size: 1.5rem;
+  color: #69b3a2;
+  margin-right: 12px;
+  margin-bottom: 8px;
+  flex-shrink: 0;
+}
+
+.quick-stats-grid .stat-content {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  width: 100%;
+}
+
+.quick-stats-grid .stat-label {
+  font-size: 0.9rem;
+  color: #aaa;
+  margin-bottom: 2px;
+  width: auto;
+  flex-shrink: 1;
+  padding-top: 4px;
+}
+
+.quick-stats-grid .stat-value {
+  width: 100%;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #eee;
+}
+
+/* Stat item interactivity */
+.stat-item-interactive {
+  cursor: pointer;
+  position: relative;
+}
+
+.stat-item-interactive:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+}
+
+.stat-cycle-indicator {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.5);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.stat-item-interactive:hover .stat-cycle-indicator {
+  opacity: 1;
+}
+
+/* Transition animations for stat cycling */
+@keyframes fadeOut {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(-10px); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.stat-transition-out {
+  animation: fadeOut 0.3s ease forwards;
+}
+
+.stat-transition-in {
+  animation: fadeIn 0.3s ease forwards;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .quick-stats-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .quick-stats-grid .stat-item {
+    padding: 10px;
+  }
+  
+  .quick-stats-grid .stat-icon {
+    font-size: 1.2rem;
+  }
+  
+  .quick-stats-grid .stat-label {
+    font-size: 0.8rem;
+  }
+  
+  .quick-stats-grid .stat-value {
+    font-size: 1rem;
+  }
+} 
