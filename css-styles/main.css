@@ -1,0 +1,49 @@
+/**
+ * Global Info Portal - Main CSS
+ * A modular CSS structure for better organization and maintenance
+ */
+
+/* Base styles and resets */
+@import 'base.css';
+
+/* Layout and container styles */
+@import 'layout.css';
+
+/* Map specific styles */
+@import 'map.css';
+
+/* Sidebar and info container styles */
+@import 'sidebar.css';
+
+/* Common data tabs styling */
+@import 'data-tabs-common.css';
+
+/* Tab navigation styles */
+@import 'tabs.css';
+
+/* Data panels styles */
+@import 'panels.css';
+
+/* Common chart elements and data visualization */
+@import 'charts-common.css';
+
+/* Chart and visualization styles */
+@import 'charts.css';
+
+/* Stats tab styling */
+@import 'stats.css';
+
+/* Rankings tab styling */
+@import 'rankings.css';
+
+/* Global Context tab styling */
+@import 'global-context.css';
+
+/* Trends tab styling */
+@import 'trends.css';
+
+/* Navigation elements */
+@import 'navigation.css';
+
+/* Responsive adjustments */
+@import 'responsive.css'; 

@@ -1,0 +1,37 @@
+/* Map container */
+.map-container {
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: all 0.3s ease-in-out;
+}
+
+/* Expanded map container when sidebar is collapsed */
+.map-container.expanded {
+    width: 100%;
+}
+
+.map-container svg {
+    width: 100%;
+    height: 100%;
+    transition: all 0.3s ease-in-out;
+}
+
+/* Country shape styling */
+.country {
+    fill: lightgreen;
+    stroke: #333;
+    stroke-width: 0.32px;
+    cursor: pointer;
+    transition: fill 0.113s ease, stroke 0.113s ease;
+}
+
+.country:hover {
+    fill: red;
+}
+
+.country.selected {
+    fill: red;
+} 

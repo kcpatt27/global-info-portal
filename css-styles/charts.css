@@ -1,0 +1,25 @@
+/* Chart and visualization styles */
+.bar {
+    fill: #69b3a2;
+    transition: fill 0.3s;
+}
+
+.bar:hover {
+    fill: #8fd3c2;
+}
+
+svg text {
+    fill: #e0e0e0;
+}
+
+svg .domain, svg .tick line {
+    stroke: #555;
+}
+
+svg .tick text {
+    fill: #aaa;
+}
+
+.legend text {
+    font-size: 10px;
+} 
