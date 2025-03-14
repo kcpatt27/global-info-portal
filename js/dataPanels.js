@@ -1,6 +1,6 @@
 /* dataPanels.js - Module for creating and updating data panels in country visualizations */
 
-import { addStatSection, extractStats, highlightText, extractNumber, formatLabel, formatValue, isPrimaryStatistic, escapeRegExp } from './utils.js';
+import { addStatSection, extractStats, highlightText, extractNumber, formatLabel, formatValue, isPrimaryStatistic, escapeRegExp } from '../utils.js';
 import { appState, countryDataCache, globalDataIndex, countriesList, countryFolders } from './state.js';
 
 // Update all data panels with new data
@@ -45,7 +45,6 @@ export function createStatsPanel(data) {
     return;
   }
   panelElement.innerHTML = `
-    <div class="data-title">Country Key Statistics</div>
     <div class="stats-search-container">
       <input type="text" class="stats-search" placeholder="Search statistics..." />
       <button class="stats-search-clear" title="Clear search">×</button>
@@ -132,7 +131,6 @@ export function createRankingsPanel(data) {
                       '';
 
   panelElement.innerHTML = `
-    <div class="data-title">Global Rankings</div>
     <div class="rankings-controls">
       <div class="rankings-control-row">
         <div class="control-group" style="flex: 1;">

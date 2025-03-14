@@ -125,9 +125,9 @@
     <script src="https://unpkg.com/topojson@3.0.2/dist/topojson.min.js"></script>
     <script type="module">
         import { initDataTabs } from './events.js';
-        import { updateDataPanels, clearDataPanels, showDataError } from './dataPanels.js';
-        import { countryDataCache, globalDataIndex, countriesList } from './state.js';
-        import { initStatCycling, updateQuickStats } from './statCycling.js';
+        import { updateDataPanels, clearDataPanels, showDataError } from './js/dataPanels.js';
+        import { countryDataCache, globalDataIndex, countriesList } from './js/state.js';
+        import { initStatCycling, updateQuickStats } from './js/statCycling.js';
         
         // Make functions available to the global scope
         window.initDataTabs = initDataTabs;
@@ -232,8 +232,8 @@
 
         // Load and render map data.
         async function loadMapData() {
-            const jsonURL = "https://raw.githubusercontent.com/kcpatt27/world-atlas-2-world-factbook/main/world%20atlas%20json%2050m";
-            const tsvURL = "https://raw.githubusercontent.com/kcpatt27/world-atlas-2-world-factbook/main/world%20atlas%20tsv_rows.tsv";
+            const jsonURL = "https://raw.githubusercontent.com/kcpatt27/world-atlas-2-world-factbook/main/world%20atlas%20json%2050m"; // should i use a .env variable here?
+            const tsvURL = "https://raw.githubusercontent.com/kcpatt27/world-atlas-2-world-factbook/main/world%20atlas%20tsv_rows.tsv"; // should i use a .env variable here?
             try {
                 // Start with just the essential data sources
                 const [topoJSONdata, tsvData] = await Promise.all([

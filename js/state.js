@@ -339,3 +339,29 @@ function getStateByPath(path) {
     { ...appState, ...dataStore }
   );
 } 
+
+// Add this function to update the state structure
+export function updateStateStructure() {
+  // Save old state values we need to migrate
+  const oldTrendsState = { ...appState.visualization.trends };
+  const oldGlobalContextState = { ...appState.visualization.globalContext };
+  
+  // Restructure visualization state
+  appState.visualization = {
+    stats: {
+      ...appState.visualization.stats,
+      view: 'current', // 'current' or 'historical'
+      historicalMetric: oldTrendsState.selectedMetric,
+      timeRange: oldTrendsState.timeRange
+    },
+    rankings: {
+      ...appState.visualization.rankings,
+      view: 'global', // 'global' or 'region'
+      comparisonMetrics: oldGlobalContextState.selectedMetrics,
+      comparisonCountries: oldGlobalContextState.comparisonCountries
+    }
+  };
+  
+  // Update persistence function
+  updatePersistState();
+}
