@@ -1,22 +1,20 @@
 # Global Information Portal - Comprehensive Todo List
 
-This list outlines all tasks needed to address current issues, implement new features, enhance documentation, and prepare for deployment.
+The following document outlines all tasks needed to address issues, implement new features, enhance documentation, and prepare for deployment.
 
 ---
 
-## Map Visualization Enhancements
+## Implementation Priority
 
-- [x] **Refine Map Styling and Interactions**
-  - [x] Updated country fill, hover, and click selection effects for better visual feedback
-  - [x] Add smooth transitions when selecting a country (e.g., using D3 transitions)
-  - [x] Verify the z-index stacking order so that the map integrates properly with overlays
-- [x] **Improve Navigation**
-  - [x] Implemented zoom & pan functionality
-  - [x] Further refine zoom/pan behavior as needed
-    - [x] Zooming out to default should be a smooth transition and should reset the map position to the default
-    - [x] Users should not be able to zoom out past the default zoom level
-    - [x] Clicking and holding on the mouse wheel should allow the user to move the map around
-    - [x] Clicking the right mouse button should reset the zoom level to the default
+1. Fix immediate integration issues (Phase 1 State Management)
+2. Enhance error handling (Phase 5 State Management)
+3. Standardize state access patterns (Phase 4 State Management)
+4. Expand state persistence (Phase 2 State Management)
+5. Implement proper cache management (Phase 3 State Management)
+6. Add debugging tools (Phase 6 State Management)
+7. Complete testing and documentation (Phase 7 State Management)
+
+---
 
 ## Data Visualization and Charts
 
@@ -291,8 +289,8 @@ This list outlines all tasks needed to address current issues, implement new fea
   - [ ] Phase 1: Create dedicated modules for each visualization type
     - [ ] Extract statsPanel.js from charts.js/dataPanels.js
     - [ ] Extract rankingsPanel.js from charts.js/dataPanels.js
-    ~~- [ ] Extract trendsPanel.js from charts.js/dataPanels.js~~
-    ~~- [ ] Extract globalContextPanel.js from charts.js/dataPanels.js~~
+    ~~- [ ] Extract trendsPanel.js from charts.js/dataPanels.js~~ // we are removing this tab
+    ~~- [ ] Extract globalContextPanel.js from charts.js/dataPanels.js~~ // we are removing this tab
   - [ ] Phase 2: Create core visualization utilities
     - [ ] Create dataProcessor.js for data extraction and formatting
     - [ ] Create visualizer.js for chart rendering engine
@@ -392,6 +390,20 @@ This list outlines all tasks needed to address current issues, implement new fea
 
 ## User Stories
 
+### Map Visualization and Navigation User Stories
+
+- [x] **As a user, I want an interactive map with clear visual feedback.**
+  - [x] When I hover over or click on a country, I should see distinct visual effects.
+  - [x] When I select a country, the transition should be smooth and visually pleasing.
+  - [x] The map should properly integrate with other UI elements without z-index issues.
+
+- [x] **As a user, I want intuitive map navigation controls.**
+  - [x] I should be able to zoom in and out of the map.
+  - [x] When I zoom out to the default level, the transition should be smooth.
+  - [x] I should not be able to zoom out beyond the default view.
+  - [x] I should be able to pan the map by clicking and holding the mouse wheel.
+  - [x] I should be able to reset the zoom level to default by clicking the right mouse button.
+
 ### Teacher Perspective
 - [ ] As an elementary school teacher, I want simplified visualizations with vibrant colors and basic facts, so I can make geography engaging for young students.
 - [ ] As a high school geography teacher, I want to create custom comparison sets between countries, so I can design interactive classroom activities.
@@ -417,16 +429,4 @@ This list outlines all tasks needed to address current issues, implement new fea
 - [ ] As a news reader, I want contextual information about countries in current headlines, so I can better understand global events.
 - [ ] As a curious individual, I want an engaging "explore" feature that suggests interesting countries or facts.
 
-## Implementation Priority
-
-1. Fix immediate integration issues (Phase 1 State Management)
-2. Enhance error handling (Phase 5 State Management)
-3. Standardize state access patterns (Phase 4 State Management)
-4. Expand state persistence (Phase 2 State Management)
-5. Implement proper cache management (Phase 3 State Management)
-6. Add debugging tools (Phase 6 State Management)
-7. Complete testing and documentation (Phase 7 State Management)
-
 ---
-
-Gee 🙏💛✨ 
