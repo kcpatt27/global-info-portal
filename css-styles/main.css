@@ -3,53 +3,38 @@
  * A modular CSS structure for better organization and maintenance
  */
 
-/* Base styles and resets */
-@import 'base.css';
+/* Core foundations */
+@import 'core/variables.css';
+@import 'core/reset.css';
+@import 'core/typography.css';
+@import 'core/animations.css';
+@import 'core/utils.css';
+@import 'core/base.css';
 
-/* Layout and container styles */
-@import 'layout.css';
+/* Layout system */
+@import 'layout/grid.css';
+@import 'layout/content.css';
+@import 'layout/sidebar.css';
+@import 'layout/layout.css';
+/*/ Utilities /*/
+@import 'layout/scrollbars.css';
+@import 'layout/responsive.css';
 
-/* Map specific styles */
-@import 'map.css';
-
-/* Sidebar and info container styles */
-@import 'sidebar.css';
-
-/* Common data tabs styling */
-@import 'data-tabs-common.css';
-
-/* Tab navigation styles */
-@import 'tabs.css';
-
-/* Data panels styles */
-@import 'panels.css';
-
-/* Common chart elements and data visualization */
-@import 'charts-common.css';
-
-/* Chart and visualization styles */
-@import 'charts.css';
-
-/* Stats tab styling */
-@import 'stats.css';
-
-/* Quick stats grid styling */
-@import 'quick-stats.css';
-
-/* Rankings tab styling */
-@import 'rankings.css';
-
-/* Global Context tab styling */
-@import 'global-context.css';
-
-/* Trends tab styling */
-@import 'trends.css';
-
-/* Navigation elements */
-@import 'navigation.css';
-
-/* Custom scrollbar styling */
-@import 'scrollbars.css';
-
-/* Responsive adjustments */
-@import 'responsive.css'; 
+/* Component library */
+@import 'components/navigation.css';
+@import 'components/panels.css';
+@import 'components/tables.css';
+/*/ Map features /*/
+@import 'components/map.css';
+/*/ Tab system /*/
+@import 'components/tabs.css';
+@import 'components/data-tabs-common.css';
+/*/ Stats modules /*/
+@import 'components/stats.css';
+@import 'components/quick-stats.css';
+@import 'components/rankings.css';
+@import 'components/global-context.css';
+@import 'components/trends.css';
+/*/ Data visualization /*/
+@import 'components/charts.css';
+@import 'components/charts-common.css';

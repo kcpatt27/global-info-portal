@@ -121,10 +121,22 @@ export function addStatSection(container, title, stats) {
     if (stat.isPrimary) {
       statItem.classList.add('primary-stat');
     }
+    
+    // Create a structure that keeps both the visual layout and maintains compatibility
+    let iconHtml = stat.icon ? `<div class="stat-icon"><i class="${stat.icon}"></i></div>` : '';
+    
     statItem.innerHTML = `
-      <div class="stat-label">${stat.label}</div>
+      <div class="stat-header">
+        ${iconHtml}
+        <div class="stat-label">${stat.label}</div>
+      </div>
+      <div class="stat-content" style="display:none">
+        <div class="stat-label">${stat.label}</div>
+        <div class="stat-value">${stat.value}</div>
+      </div>
       <div class="stat-value">${stat.value}</div>
     `;
+    
     statItemsContainer.appendChild(statItem);
   });
   container.appendChild(sectionElement);

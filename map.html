@@ -30,6 +30,58 @@
             </div>
             
             <div class="content-panel active" id="info-panel">
+                <div class="quick-stats-container">
+                    <div class="quick-stats-grid">
+                        <div class="stat-item stat-item-interactive">
+                            <div class="stat-header">
+                                <div class="stat-icon"><i class="fas fa-users"></i></div>
+                                <div class="stat-label">Population</div>
+                            </div>
+                            <div class="stat-content" style="display:none">
+                                <div class="stat-label">Population</div>
+                                <div class="stat-value">--</div>
+                            </div>
+                            <div class="stat-value">--</div>
+                            <div class="stat-cycle-indicator"><i class="fas fa-sync-alt"></i></div>
+                        </div>
+                        <div class="stat-item stat-item-interactive">
+                            <div class="stat-header">
+                                <div class="stat-icon"><i class="fas fa-dollar-sign"></i></div>
+                                <div class="stat-label">GDP</div>
+                            </div>
+                            <div class="stat-content" style="display:none">
+                                <div class="stat-label">GDP</div>
+                                <div class="stat-value">--</div>
+                            </div>
+                            <div class="stat-value">--</div>
+                            <div class="stat-cycle-indicator"><i class="fas fa-sync-alt"></i></div>
+                        </div>
+                        <div class="stat-item stat-item-interactive">
+                            <div class="stat-header">
+                                <div class="stat-icon"><i class="fas fa-map"></i></div>
+                                <div class="stat-label">Area</div>
+                            </div>
+                            <div class="stat-content" style="display:none">
+                                <div class="stat-label">Area</div>
+                                <div class="stat-value">--</div>
+                            </div>
+                            <div class="stat-value">--</div>
+                            <div class="stat-cycle-indicator"><i class="fas fa-sync-alt"></i></div>
+                        </div>
+                        <div class="stat-item stat-item-interactive">
+                            <div class="stat-header">
+                                <div class="stat-icon"><i class="fas fa-globe"></i></div>
+                                <div class="stat-label">Region</div>
+                            </div>
+                            <div class="stat-content" style="display:none">
+                                <div class="stat-label">Region</div>
+                                <div class="stat-value">--</div>
+                            </div>
+                            <div class="stat-value">--</div>
+                            <div class="stat-cycle-indicator"><i class="fas fa-sync-alt"></i></div>
+                        </div>
+                    </div>
+                </div>
                 <div class="background-info">INTRODUCTION / BACKGROUND</div>
             </div>
             
@@ -75,12 +127,15 @@
         import { initDataTabs } from './events.js';
         import { updateDataPanels, clearDataPanels, showDataError } from './dataPanels.js';
         import { countryDataCache, globalDataIndex, countriesList } from './state.js';
+        import { initStatCycling, updateQuickStats } from './statCycling.js';
         
         // Make functions available to the global scope
         window.initDataTabs = initDataTabs;
         window.updateDataPanels = updateDataPanels;
         window.clearDataPanels = clearDataPanels;
         window.showDataError = showDataError;
+        window.initStatCycling = initStatCycling;
+        window.updateQuickStats = updateQuickStats;
         
         // Make data structures available to the global scope
         window.countryDataCache = countryDataCache;
@@ -136,6 +191,12 @@
                 .style('fill', 'lightgreen');
             document.querySelector('.country-info').textContent = 'COUNTRY INFO';
             document.querySelector('.background-info').innerHTML = '<div class="centered-text">INTRODUCTION / BACKGROUND</div>';
+            
+            // Reset the quick stats to default placeholder
+            document.querySelectorAll('.quick-stats-grid .stat-item .stat-value').forEach(valueElement => {
+                valueElement.textContent = '--';
+            });
+            
             // Reset chart contents to default labels
             const charts = document.querySelectorAll('.charts .chart');
             if (charts.length >= 4) {
@@ -337,6 +398,13 @@
                                                 console.log(`Cached data for ${info.name} (${countryCode})`);
                                             }
                                             
+                                            // Update quick stats with the country data
+                                            if (typeof window.updateQuickStats === "function") {
+                                                window.updateQuickStats(data);
+                                            } else {
+                                                console.error("updateQuickStats function not found. Make sure statCycling.js is properly loaded.");
+                                            }
+                                            
                                             // Update data panels with the fetched data
                                             if (typeof window.updateDataPanels === "function") {
                                                 window.updateDataPanels(data);
@@ -414,6 +482,13 @@
                 window.initDataTabs();
             } else {
                 console.warn("initDataTabs is not defined, skipping data tabs initialization.");
+            }
+            
+            // Initialize stat cycling if the function is defined
+            if (typeof window.initStatCycling === "function") {
+                window.initStatCycling();
+            } else {
+                console.warn("initStatCycling is not defined, skipping stat cycling initialization.");
             }
         }
         

@@ -131,7 +131,6 @@ export function createRankingsPanel(data) {
                       '';
 
   panelElement.innerHTML = `
-    <div class="data-title">Global Rankings</div>
     <div class="rankings-controls">
       <div class="rankings-control-row">
         <div class="control-group" style="flex: 1;">

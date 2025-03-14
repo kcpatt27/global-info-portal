@@ -2,6 +2,56 @@
 
 // Global state to persist selections across country changes
 export const appState = {
+  // UI State
+  ui: {
+    activePanelId: 'info',  // Which panel is active (info/data)
+    activeDataTab: 0,       // Which data tab is selected
+    sidebarExpanded: true,  // Sidebar visibility
+    tooltipContent: null,   // Current tooltip content if any
+    modalContent: null,     // Current modal content if any
+    loading: {
+      isLoading: false,
+      message: '',
+      progress: {
+        loaded: 0,
+        total: 0
+      }
+    },
+    error: null             // Global error state
+  },
+  
+  // Map State
+  map: {
+    selectedCountry: null,  // Currently selected country code
+    highlightedCountry: null, // Hovered country code
+    zoom: {
+      level: 1,
+      centerLat: 0,
+      centerLng: 0
+    }
+  },
+  
+  // Data Visualization State
+  visualization: {
+    stats: {
+      searchTerm: ''        // Current search in stats panel
+    },
+    rankings: {
+      selectedMetric: null,
+      sortOrder: 'desc',
+      filterRegion: 'all',
+      page: 1,
+      itemsPerPage: 10
+    },
+    trends: {
+      selectedMetric: null,
+      timeRange: 'all'      // 'all', '10y', '5y', '1y'
+    },
+    globalContext: {
+      selectedMetrics: [],  // Array of selected metrics for comparison
+      comparisonCountries: []  // Countries to compare against
+    }
+  },
   selectedRankingMetric: null,
   selectedTrendMetric: null,
   rankingSortOrder: "desc", // Default sort order (highest to lowest)
@@ -102,4 +152,190 @@ export const globalDataIndex = {
     });
     return countries;
   }
-}; 
+};
+
+// Country data cache with TTL for efficient memory management
+export const dataStore = {
+  // Country data cache
+  countryCache: {
+    // Structure: { code: { data, lastFetched, expiresAt } }
+  },
+  
+  // Global metrics index for comparisons
+  metricsIndex: {
+    // Structure: { metricId: { countries: { code: value } } }
+  },
+  
+  // Metadata about available metrics
+  metricsMeta: {
+    // Structure: { id, label, category, unit, source, isComparable, isTrendable }
+  },
+  
+  // Reference data (static)
+  reference: {
+    countriesList: [],
+    regionMapping: {},
+    continentMapping: {}
+  }
+};
+
+// Action functions that modify the state
+export const stateActions = {
+  // UI Actions
+  ui: {
+    setActivePanel: (panelId) => {
+      appState.ui.activePanelId = panelId;
+      notifyListeners('ui.activePanel');
+    },
+    setActiveDataTab: (tabIndex) => {
+      appState.ui.activeDataTab = tabIndex;
+      notifyListeners('ui.activeDataTab');
+    },
+    toggleSidebar: () => {
+      appState.ui.sidebarExpanded = !appState.ui.sidebarExpanded;
+      notifyListeners('ui.sidebarExpanded');
+    },
+    setLoading: (isLoading, message = '') => {
+      appState.ui.loading.isLoading = isLoading;
+      appState.ui.loading.message = message;
+      notifyListeners('ui.loading');
+    },
+    updateLoadingProgress: (loaded, total) => {
+      appState.ui.loading.progress.loaded = loaded;
+      appState.ui.loading.progress.total = total;
+      notifyListeners('ui.loading.progress');
+    },
+    setError: (error) => {
+      appState.ui.error = error;
+      notifyListeners('ui.error');
+    }
+  },
+  
+  // Map Actions
+  map: {
+    selectCountry: (countryCode) => {
+      appState.map.selectedCountry = countryCode;
+      notifyListeners('map.selectedCountry');
+    },
+    highlightCountry: (countryCode) => {
+      appState.map.highlightedCountry = countryCode;
+      notifyListeners('map.highlightedCountry');
+    },
+    setZoom: (level, centerLat, centerLng) => {
+      appState.map.zoom = { level, centerLat, centerLng };
+      notifyListeners('map.zoom');
+    }
+  },
+  
+  // Visualization Actions
+  visualization: {
+    // Stats panel
+    setStatsSearch: (term) => {
+      appState.visualization.stats.searchTerm = term;
+      notifyListeners('visualization.stats.searchTerm');
+    },
+    
+    // Rankings panel
+    setRankingMetric: (metricId) => {
+      appState.visualization.rankings.selectedMetric = metricId;
+      notifyListeners('visualization.rankings.selectedMetric');
+    },
+    setRankingSortOrder: (order) => {
+      appState.visualization.rankings.sortOrder = order;
+      notifyListeners('visualization.rankings.sortOrder');
+    },
+    setRankingRegionFilter: (region) => {
+      appState.visualization.rankings.filterRegion = region;
+      notifyListeners('visualization.rankings.filterRegion');
+    },
+    
+    // Trends panel
+    setTrendMetric: (metricId) => {
+      appState.visualization.trends.selectedMetric = metricId;
+      notifyListeners('visualization.trends.selectedMetric');
+    },
+    setTrendTimeRange: (range) => {
+      appState.visualization.trends.timeRange = range;
+      notifyListeners('visualization.trends.timeRange');
+    }
+  },
+  
+  // Data Store Actions
+  dataStore: {
+    // Cache a country's data
+    cacheCountryData: (countryCode, data) => {
+      const expiresAt = Date.now() + (24 * 60 * 60 * 1000); // 24h cache
+      dataStore.countryCache[countryCode] = {
+        data,
+        lastFetched: Date.now(),
+        expiresAt
+      };
+      
+      // Also extract metrics for the global index
+      indexCountryMetrics(countryCode, data);
+    },
+    
+    // Add a metric to the metrics index
+    indexMetric: (metricId, countryCode, value, metadata = {}) => {
+      if (!dataStore.metricsIndex[metricId]) {
+        dataStore.metricsIndex[metricId] = { 
+          countries: {},
+          ...metadata
+        };
+      }
+      
+      dataStore.metricsIndex[metricId].countries[countryCode] = value;
+      
+      // Also update metadata if provided
+      if (metadata && Object.keys(metadata).length > 0) {
+        dataStore.metricsMeta[metricId] = {
+          ...dataStore.metricsMeta[metricId],
+          ...metadata
+        };
+      }
+    }
+  }
+};
+
+// Set up observers for state changes
+const stateObservers = {};
+
+// Subscribe to state changes
+export function subscribeToState(path, callback) {
+  if (!stateObservers[path]) {
+    stateObservers[path] = [];
+  }
+  stateObservers[path].push(callback);
+  
+  // Return unsubscribe function
+  return () => {
+    stateObservers[path] = stateObservers[path].filter(cb => cb !== callback);
+  };
+}
+
+// Notify observers of state changes
+function notifyListeners(path) {
+  if (stateObservers[path]) {
+    stateObservers[path].forEach(callback => {
+      try {
+        callback(getStateByPath(path));
+      } catch (error) {
+        console.error(`Error in state observer for ${path}:`, error);
+      }
+    });
+  }
+  
+  // Also notify parent paths
+  const parentPath = path.split('.').slice(0, -1).join('.');
+  if (parentPath) {
+    notifyListeners(parentPath);
+  }
+}
+
+// Helper to get nested state by path
+function getStateByPath(path) {
+  return path.split('.').reduce((obj, part) => 
+    obj && obj[part] !== undefined ? obj[part] : null, 
+    { ...appState, ...dataStore }
+  );
+} 

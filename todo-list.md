@@ -112,6 +112,23 @@ This list outlines all tasks needed to address current issues, update the projec
   - [ ] Fix a bug where the rankings tab creates a new spider chart every time the page is changed from Details to Overview.
   - [ ] Fix a bug where the trends tab doesnt show the same panel when a country is selected. It should show the default panel.
   - [ ] Ensure the search bar in the Stats tab is at the top of the container.
+- [ ] **Layout and Information Display Improvements**
+  - [ ] Make country-info header auto-wrap for better handling of longer country names
+  - [ ] Implement interactive stats functionality
+    - [ ] Allow cycling through relevant metrics by clicking on stat boxes in the quick-stats-grid
+  - [ ] Add radar/spider chart on info panel below .background-info
+    - [ ] Include key metrics: GDP, Net Income, Population, Land data
+  - [ ] Display key rankings below the radar/spider chart
+    - [ ] Implement grid pattern with 2-3 metrics per line
+    - [ ] Use concise, clean and modern styling
+
+- [ ] **Stats Search Functionality Enhancement**
+  - [ ] Fix search bar positioning to stay at the top of the Stats tab for better usability
+
+- [ ] **Rankings Display Enhancement**
+  - [ ] Fix value display in rankings
+    - [ ] Make the white number with blue background include correct signifiers (billion, money sign)
+    - [ ] Remove the first layer folder name from rankings tab when showing a result
 
 ---
 
@@ -205,6 +222,48 @@ This list outlines all tasks needed to address current issues, update the projec
 
 ---
 
+## Navigation and Tab Structure Improvements
+
+- [ ] **Tab Reordering and Replacement**
+  - [ ] Make Rankings tab first instead of Stats for more intuitive user flow
+  - [ ] Replace Global Context and Trends tabs with more meaningful options (news feed and external sources)
+
+- [ ] **Data Loading Optimization**
+  - [ ] Modify Rankings tab to load data independently of country selection
+  - [ ] Implement right-click event that clears country selection and data tabs but keeps country data cached
+
+- [ ] **Rankings Tab Enhancement**
+  - [ ] Create paginated Rankings tab with two pages
+    - [ ] Add regional rankings page
+    - [ ] Add global rankings page
+    - [ ] Display selected country's name, position in rank, and neighboring countries in rankings
+    - [ ] Show results for every possible numeric metric
+    - [ ] Organize in grid pattern with 2 metrics per line using clean, modern styling
+
+## Style Integration
+
+- [ ] **CSS File Integration**
+  - [ ] Integrate modern styling files from copied version
+    - [ ] Incorporate layout.css for core layout structure
+    - [ ] Add mapComponents.css for map-specific styling
+    - [ ] Include dataTabs.css for tab navigation components
+    - [ ] Add dataPanel.css for data panel containers
+    - [ ] Integrate rankings.css for rankings-specific components
+    - [ ] Add trends.css for trends visualization components
+    - [ ] Include globalContext.css for comparison components
+    - [ ] Add stats.css for statistics display components
+    - [ ] Include charts.css for chart and data visualizations
+    - [ ] Add utils.css for utility classes and animations
+    - [ ] Incorporate responsive.css for media queries
+    - [ ] Include sidebar.css for navigation and sidebar components
+
+- [ ] **Apply Consistent Design**
+  - [ ] Implement simple and elegant design principles throughout
+  - [ ] Maintain consistent styling between all components
+  - [ ] Ensure design is clean, modern, and concise
+
+---
+
 ## Additional Considerations
 - [ ] Evaluate the possibility of revisiting the 3D globe approach in the future if technology or skill gaps are addressed.
 - [ ] Ensure enhancements maintain backward compatibility with the existing codebase.
@@ -267,6 +326,12 @@ This list outlines all tasks needed to address current issues, update the projec
   - [ ] As a social media user, I want shareable country cards and infographics, so I can easily share interesting facts with my network.
 
 ## Migration Plan for map.js
+
+map.js 
+- Should be separated into, including but not limited to:
+  - mapRenderer.js
+  - countryDataFetcher.js
+
 - [ ] **Phase 1: Audit and Identify Dependencies**
   - [ ] Search for all files that include or reference map.js
   - [ ] Document all global functions and variables exposed by map.js
@@ -301,3 +366,437 @@ This list outlines all tasks needed to address current issues, update the projec
   - [ ] Update any relevant comments in the codebase
 
 *Recommendation: Complete this migration incrementally, testing after each phase to ensure functionality is preserved. Focus on maintaining the robust error handling and fallback mechanisms that were present in map.js.*
+
+
+Other files to be migrated:
+- charts.js 
+  - Should be separated into, including but not limited to:
+    - statsPanel.js
+    - rankingsPanel.js
+    - comparisonsPanel.js
+    - trendsPanel.js
+    - chartFormatters.js (for formatting helpers)
+- dataPanels.js 
+    - Should be refactored:
+    - Move redundant functionality to the files created from charts.js
+    - Retain only the panel coordination logic
+- svg.js 
+  - Should be merged with map.js components after separation
+- map.html 
+  - Extract embedded scripts into:
+    - mapInteractions.js
+    - sidebarController.js
+- Various CSS files
+
+prompts used: 
+- `can we start the plan for the css architecture right now? @css-styles @charts.js @dataPanels.js @map.js @svg.js @quick-stats.css @utils.js @events.js @map.html `
+- `can we start the plan for the charts and data visualization components right now? @css-styles @charts.js @dataPanels.js @map.js @svg.js @quick-stats.css @utils.js @events.js @map.html `
+
+
+## Migration Plan for Charts and Data Visualization Components
+
+- [ ] **Phase 1: Audit and Identify Chart Component Dependencies**
+  - [ ] Document all chart rendering functions across files
+  - [ ] Identify overlapping functionality between charts.js and dataPanels.js
+  - [ ] Map relationships between data structures and visualization components
+  - [ ] Create inventory of all chart types and their specific requirements
+
+1.) [ ] Resolve Duplication:
+  - [ ] Merge functionality between charts.js and dataPanels.js into a single module
+  - [ ] Create clear separation of concerns between data processing and visualization
+
+2.) [ ] Module Structure:
+```markdown
+  /visualization
+    ├── core/
+    │   ├── dataProcessor.js    // Data extraction and formatting
+    │   ├── visualizer.js       // Chart rendering engine
+    │   └── interactions.js     // User interactions and events
+    ├── components/
+    │   ├── statsPanel.js
+    │   ├── rankingsPanel.js
+    │   ├── trendsPanel.js
+    │   └── globalContext.js
+    └── utils/
+        ├── formatters.js      // Value/label formatting
+        ├── metrics.js         // Metric extraction
+        └── animations.js      // Chart animations
+```
+
+- [ ] **Phase 2: Modularize Chart Rendering**
+  - [ ] Extract common chart rendering logic into dedicated modules
+  - [ ] Create separate files for each chart type (rankings, comparisons, trends)
+  - [ ] Implement proper import/export pattern for chart components
+  - [ ] Move renderCharts() from map.js to appropriate chart modules
+
+1.) [ ] Implement Missing Functionality:
+  - [ ] Complete trend metrics extraction logic
+  - [ ] Implement comparison metrics extraction
+  - [ ] Create data normalization helpers
+
+2.) [ ] Example for findTrendMetrics:
+   ```js
+   export function findTrendMetrics(data) {
+     const trendMetrics = [];
+     
+     // Look for time-series data in Economy section
+     if (data.Economy) {
+       // GDP growth rate over years
+       if (data.Economy['GDP - real growth rate'] && 
+           Array.isArray(data.Economy['GDP - real growth rate'].text)) {
+         trendMetrics.push({
+           id: 'gdp-growth',
+           label: 'GDP Growth Rate',
+           dataPoints: extractTimeSeriesData(data.Economy['GDP - real growth rate'])
+         });
+       }
+       
+       // Add more economic indicators
+     }
+     
+     // Demographic trends
+     if (data.People) {
+       // Population growth
+       // Birth/death rates
+       // Migration rates
+     }
+     
+     return trendMetrics;
+   }
+   ```
+
+- [ ] **Phase 3: Refactor Data Processing Logic**
+  - [ ] Consolidate duplicated data extraction methods
+  - [ ] Move specialized functions like processMetricForAllCountries() to dedicated utilities
+  - [ ] Implement more robust error handling for data processing
+  - [ ] Create standardized data transformation pipeline
+
+1.) [ ] Stats Panel:
+  - [ ] Clean display of key country statistics
+  - [ ] Search and filter functionality
+  - [ ] Metric classification (primary/secondary)
+
+2.) [ ] Rankings Panel:
+  - [ ] Global ranking visualization
+  - [ ] Percentile indicators
+  - [ ] Regional comparisons
+
+3.) [ ] Trends Panel:
+  - [ ] Time-series visualization
+  - [ ] Line and area charts
+  - [ ] Growth indicators
+
+4.) [ ] Global Context Panel:
+  - [ ] Bar chart comparisons
+  - [ ] Regional averages
+  - [ ] Highlight position
+
+
+- [ ] **Phase 4: Complete Unfinished Chart Components**
+  - [ ] Implement the TODO sections in findComparableMetrics()
+  - [ ] Develop the trend metrics extraction logic
+  - [ ] Complete createGlobalContextForMetric() visualization
+  - [ ] Enhance displayTrendData() with proper D3 visualizations
+
+1.) [ ] Core Visualization Types:
+```js
+   // Line chart for trends
+   function renderLineChart(container, data, options) {
+     // D3.js implementation for line charts
+   }
+   
+   // Bar chart for rankings
+   function renderBarChart(container, data, options) {
+     // D3.js implementation for bar charts
+   }
+   
+   // Radar chart for multi-dimension comparison
+   function renderRadarChart(container, data, options) {
+     // D3.js implementation for radar charts
+   }
+```
+
+2.) [ ] Responsive Design:
+  - [ ] Mobile-friendly chart rendering
+  - [ ] Adaptive scales and legends
+  - [ ] Touch interactions
+
+
+- [ ] **Phase 5: Optimize Chart Performance**
+  - [ ] Add data caching mechanisms to avoid redundant processing
+  - [ ] Implement lazy loading for charts that aren't immediately visible
+  - [ ] Add debouncing for chart re-renders during user interactions
+  - [ ] Optimize DOM manipulation for smoother transitions (using 0.113s for speed and primes between 0.1-0.5s for slow transitions)
+
+1.) [ ] Interactive Features:
+  - [ ] Tooltip information
+  - [ ] Drill-down capabilities
+  - [ ] Animation transitions
+
+2.) [ ] Performance Optimization:
+  - [ ] Lazy loading of chart data
+  - [ ] Canvas rendering for large datasets
+  - [ ] Data caching
+
+3.) [ ] Accessibility:
+  - [ ] Keyboard navigation
+  - [ ] Screen reader support
+  - [ ] Alternative text descriptions
+
+
+## Migration Plan for CSS Architecture
+
+- [ ] **Phase 1: CSS Audit**
+  - [x] Create inventory of all CSS files and their dependencies
+  - [x] Identify duplicated styles across files
+  - [ ] Document responsive breakpoints and ensure consistency
+  - [ ] Map CSS variables and ensure they're properly organized
+
+### Current Structure Analysis
+Several CSS files with overlapping concerns:
+- css-styles/base.css - Basic resets
+- css-styles/navigation.css - Navigation styles
+- css-styles/responsive.css - Media queries
+- css-styles/scrollbars.css - Custom scrollbar styling
+- css-styles/quick-stats.css - Stats grid styling
+- css-styles/backups/dataDisplay.css - Data panel styles (1300+ lines)
+- css-styles/backups/mapStyles.css - Map-related styles (500+ lines)
+
+### Issues Identified
+- Size issues: Some files like dataDisplay.css are extremely large (1300+ lines)
+- Duplicated styles: Similar elements styled across multiple files
+- Inconsistent transition timings: Different transition values used (0.2s, 0.3s)
+- Backup folder usage: CSS files stored in "backups" folder but still in use
+- Missing CSS variables: Limited use of custom properties
+- Inconsistent breakpoints: Different values used for media queries
+
+
+- [ ] **Phase 2: CSS Optimization**
+  - [ ] Consolidate duplicate styles into common files
+  - [x] Implement CSS custom properties for colors, spacing, and typography
+  - [ ] Optimize selectors for better performance
+  - [ ] Minimize specificity conflicts
+
+
+### 1. Core Structure
+```markdown
+  css-styles/
+  ├── core/
+  │   ├── variables.css    (colors, spacing, typography, breakpoints)
+  │   ├── reset.css        (normalize & base reset)
+  │   ├── typography.css   (font styles, sizes, line heights)
+  │   ├── animations.css   (transitions, keyframes, animation utilities)
+  │   └── utils.css        (utility classes)
+  ├── components/
+  │   ├── navigation.css   (sidebar, nav buttons)
+  │   ├── map.css          (map visualization styles)
+  │   ├── tabs.css         (tab interfaces)
+  │   ├── panels.css       (content panels)
+  │   ├── stats.css        (statistics grid & items)
+  │   ├── charts.css       (charts & visualizations)
+  │   └── tables.css       (rankings tables)
+  ├── layout/
+  │   ├── grid.css         (main layout grid)
+  │   ├── sidebar.css      (sidebar layout)
+  │   └── content.css      (content area layout)
+  └── main.css             (imports all files)
+```
+
+
+- [ ] **Phase 3: Responsive Enhancements**
+  - [ ] Review and refine mobile breakpoints
+  - [ ] Ensure consistent behavior across device sizes
+  - [ ] Optimize touch interactions for mobile users
+  - [ ] Test and fix any z-index or overlay issues
+
+- [ ] **Phase 4: Animation and Transition Refinement**
+  - [ ] Apply consistent transition timings across components
+  - [ ] Implement the prime number transition timing strategy (0.113s, 0.23s, 0.311s, etc.)
+  - [ ] Optimize animations for performance
+  - [ ] Ensure animations respect reduced motion preferences
+
+1.) [ ] **Standardize breakpoints**
+   - [ ] Use CSS variables for breakpoints:
+   ```css
+   @media (max-width: var(--breakpoint-md)) {
+     /* Styles */
+   }
+   ```
+
+2.) [ ] Implement mobile-first approach
+   - [ ] Start with base styles for mobile
+   - [ ] Add media queries for larger screens
+
+3.) [ ] Fix current issues
+   - [ ] Improve data panels for small screens
+   - [ ] Enhance tab display on mobile devices
+   - [ ] Ensure map controls work well on touch devices
+
+4.) [ ] Apply consistent timing with variables
+   - [ ] Use prime numbers for transition timings
+   - [ ] Create CSS variables for timing values
+
+5.) [ ] Implement reduced motion preferences:
+    ```css
+    @media (prefers-reduced-motion: reduce) {
+     * {
+       animation-duration: 0.01ms !important;
+       animation-iteration-count: 1 !important;
+       transition-duration: 0.01ms !important;
+       scroll-behavior: auto !important;
+      }
+    }
+    ```
+   - [ ] Add a toggle in the settings menu
+   - [ ] Use the prefers-reduced-motion media query
+
+6.) [ ] Optimize for performance
+   - [ ] Minimize unnecessary re-renders
+   - [ ] Implement lazy loading for components
+
+## Integration and State Management Plan
+
+- [ ] **Phase 1: State Management Audit**
+  - [ ] Document all global state variables and their usage
+  - [ ] Map data flow between components
+  - [ ] Identify potential race conditions or state conflicts
+  - [ ] Create diagram of component dependencies
+
+- [ ] **Phase 2: State Management Refactoring**
+  - [ ] Create dedicated state management modules
+  - [ ] Implement proper event handling for state changes
+  - [ ] Establish clear patterns for component communication
+  - [ ] Reduce reliance on global variables
+
+- [ ] **Phase 3: Integration Testing**
+  - [ ] Test all user interaction flows
+  - [ ] Verify data consistency across components
+  - [ ] Validate proper event propagation
+  - [ ] Ensure graceful error handling
+
+- [ ] **Phase 4: Performance Optimization**
+  - [ ] Add performance metrics tracking
+  - [ ] Optimize rendering cycles
+  - [ ] Implement code splitting for better initial load times
+  - [ ] Add progressive enhancement for core functionality
+
+- [ ] **Phase 5: Documentation**
+  - [ ] Create detailed component documentation
+  - [ ] Document state management patterns
+  - [ ] Add inline code comments for complex logic
+  - [ ] Update README with architecture overview
+
+
+Integration and State Management Plan 💛
+Hey u2er! Looking at your integration.js file and related state management code, I'll create a detailed plan for better state integration. Here's what we should add to your todo-list.md file ✨
+State Management Integration Plan
+[ ] Phase 1: Fix Immediate State Integration Issues
+[ ] Add missing fetchCountryData() function to integration.js or import from appropriate module
+[ ] Create showDataError() function in integration.js (referenced but not defined)
+[ ] Fix imports in statePersistence.js (currently using appState without importing)
+[ ] Ensure proper imports/exports across all state-related files
+[ ] Add type definitions for state objects to improve code reliability
+[ ] Phase 2: Enhance State Persistence
+[ ] Expand state persistence to include more relevant user preferences:
+```js
+    export function persistState() {
+      const stateToSave = {
+        ui: {
+          sidebarExpanded: appState.ui.sidebarExpanded,
+          activeDataTab: appState.ui.activeDataTab,
+          activePanelId: appState.ui.activePanelId
+        },
+        map: {
+          zoom: appState.map.zoom
+        },
+        visualization: {
+          stats: {
+            searchTerm: appState.visualization.stats.searchTerm
+          },
+          rankings: {
+            selectedMetric: appState.visualization.rankings.selectedMetric,
+            sortOrder: appState.visualization.rankings.sortOrder,
+            filterRegion: appState.visualization.rankings.filterRegion,
+            page: appState.visualization.rankings.page
+          },
+          trends: {
+            selectedMetric: appState.visualization.trends.selectedMetric,
+            timeRange: appState.visualization.trends.timeRange
+          },
+          globalContext: {
+            selectedMetrics: appState.visualization.globalContext.selectedMetrics,
+            comparisonCountries: appState.visualization.globalContext.comparisonCountries
+          }
+        }
+      };
+      
+      localStorage.setItem('appState', JSON.stringify(stateToSave));
+    }
+```
+- [ ] Update loadPersistedState() to handle the expanded saved state
+[ ] Add timestamp to saved state for potential version compatibility checks
+[ ] Implement graceful migration for users with older saved state formats
+[ ] Add option for users to reset their saved state
+[ ] Phase 3: State Cache Management
+[ ] Implement proper caching strategy for country data:
+[ ] Add configurable TTL (Time To Live) for cached country data
+[ ] Add manual cache invalidation triggers
+[ ] Implement cache size limitations to prevent excessive memory usage
+[ ] Add cache statistics tracking (hits/misses/evictions)
+[ ] Optimize metrics indexing process for better performance
+[ ] Add LRU (Least Recently Used) eviction policy for country data cache
+[ ] Create utility functions for batch loading and caching of country data
+[ ] Phase 4: Standardize State Access Patterns
+[ ] Create standardized selectors for accessing state:
+```js
+    // Example selectors
+    export const selectors = {
+      getSelectedCountry: () => appState.map.selectedCountry,
+      getCountryData: (countryCode) => 
+        dataStore.countryCache[countryCode]?.data || null,
+      getRankingConfig: () => ({
+        metric: appState.visualization.rankings.selectedMetric,
+        sortOrder: appState.visualization.rankings.sortOrder,
+        region: appState.visualization.rankings.filterRegion
+      })
+    };
+```
+[ ] Use these selectors throughout the codebase for consistent state access
+[ ] Implement computed properties for derived state
+[ ] Add state validation to prevent invalid state updates
+[ ] Phase 5: Enhanced Error Handling
+[ ] Create consistent error handling strategy for state operations:
+```js
+    function safeStateUpdate(updateFn) {
+      try {
+        updateFn();
+      } catch (error) {
+        console.error('State update failed:', error);
+        stateActions.ui.setError(`Operation failed: ${error.message}`);
+        // Potentially revert to last known good state
+      }
+    }
+```
+- [ ] Add state change audit logging (development mode)
+[ ] Implement better error recovery mechanisms
+[ ] Create UI components for displaying state-related errors
+[ ] Phase 6: State Debugging Tools
+[ ] Create a dev mode state inspector
+[ ] Add time-travel debugging capability for development
+[ ] Implement state diff visualization for debugging
+[ ] Add performance monitoring for state changes
+[ ] Phase 7: Testing and Documentation
+[ ] Write unit tests for all state management functions
+[ ] Create documentation showing state flow diagrams
+[ ] Document all state object properties and their purpose
+[ ] Create state management patterns guide for contributors
+Implementation Priority
+Fix immediate integration issues (Phase 1)
+Enhance error handling (Phase 5)
+Standardize state access patterns (Phase 4)
+Expand state persistence (Phase 2)
+Implement proper cache management (Phase 3)
+Add debugging tools (Phase 6)
+Complete testing and documentation (Phase 7)
+Gee 🙏
+```

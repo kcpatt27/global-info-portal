@@ -51,9 +51,8 @@
 .data-tab.active {
   background-color: rgba(68, 68, 68, 0.95);
   border-color: #888;
-  border-bottom: none !important; /* Force remove border completely */
-  z-index: 15; /* Much higher z-index for active tab */
-  transform: translateY(0) scale(1.03);
+  border-bottom: none !important;
+  z-index: 15;
   box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.3);
 }
 
