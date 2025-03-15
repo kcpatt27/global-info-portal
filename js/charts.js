@@ -1,6 +1,6 @@
 /* dataPanels.js - Module for creating and updating data panels in country visualizations */
 
-import { addStatSection, extractStats, highlightText, extractNumber, formatLabel, formatValue, isPrimaryStatistic, escapeRegExp } from '../utils.js';
+import { addStatSection, extractStats, highlightText, extractNumber, formatLabel, formatValue, isPrimaryStatistic, escapeRegExp } from './utils.js';
 import { appState, countryDataCache, globalDataIndex, countriesList, countryFolders } from './state.js';
 
 // Update all data panels with new data

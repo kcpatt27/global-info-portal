@@ -1,317 +1,318 @@
-// Use dotenv configuration
-require('dotenv').config();
-// import { createClient } from '@supabase/supabase-js';
+// map.js - Module for interactive map rendering and country selection
+// This file contains all map-related functionality extracted from global-information-portal.html
 
-// Select the SVG element
-const svg = d3.select('svg');
-// const width = +svg.attr('width');
-// const height = +svg.attr('height');
-const width = window.innerWidth;
-const height = window.innerHeight;
+/**
+ * Map Module
+ * Handles map rendering, country selection, and zoom/pan functionality
+ */
 
-// Define the projection and path generator
-const projection = d3.geoNaturalEarth1()
-        // .scale(120).translate([width / 2, height / 3.2]);
-        // .scale(width / 6)
-        // .translate([width / 2, height / 2.5]);
-const pathGenerator = d3.geoPath().projection(projection);
+// Map state
+let mapState = {
+    selectedCountry: null,
+    mapElement: null,
+    mapGroup: null,
+    countryInfo: null,
+    zoom: null
+};
 
-// Append a sphere to represent the globe
-svg.append('path')
-    .attr('class', 'sphere')
-    .attr('d', pathGenerator({ type: 'Sphere' }));
+// Configuration options with defaults
+const mapConfig = {
+    width: 960,
+    height: 500,
+    initialFill: "lightgreen",
+    selectedFill: "red",
+    zoomMin: 1,
+    zoomMax: 8,
+    transitionDuration: 300
+};
 
-// Function to load the data
-async function loadData() {
+/**
+ * Initialize the map
+ * @param {Object} options - Configuration options
+ * @param {String} options.svgSelector - CSS selector for SVG element
+ * @param {Function} options.onCountrySelect - Callback when country is selected
+ * @param {Function} options.onCountryDeselect - Callback when country is deselected
+ */
+export function initMap(options = {}) {
+    // Merge options with defaults
+    const config = { ...mapConfig, ...options };
+    
+    // Select the SVG element
+    const svg = d3.select(options.svgSelector || "svg");
+    mapState.mapElement = svg;
+    
+    // Create a group for map elements (to enable zoom/pan)
+    mapState.mapGroup = svg.append("g");
+    
+    // Set up event handlers
+    setupMapEvents(options);
+    
+    // Load and render map data
+    loadMapData(config);
+    
+    return {
+        selectCountry: selectCountryById,
+        clearSelection,
+        resetZoom
+    };
+}
+
+/**
+ * Set up event handlers for the map
+ */
+function setupMapEvents(options) {
+    // Clear selection when clicking on the map background
+    mapState.mapElement.on("click", function() {
+        if (!d3.event.target.classList.contains("country")) {
+            clearSelection();
+            if (options.onCountryDeselect) options.onCountryDeselect();
+        }
+    });
+    
+    // Reset zoom and clear selection on right-click
+    mapState.mapElement.on("contextmenu", function() {
+        d3.event.preventDefault();
+        clearSelection();
+        if (options.onCountryDeselect) options.onCountryDeselect();
+        resetZoom();
+    });
+}
+
+/**
+ * Load map data and initialize the visualization
+ */
+async function loadMapData(config) {
+    const jsonURL = "https://raw.githubusercontent.com/kcpatt27/world-atlas-2-world-factbook/main/world%20atlas%20json%2050m";
+    const tsvURL = "https://raw.githubusercontent.com/kcpatt27/world-atlas-2-world-factbook/main/world%20atlas%20tsv_rows.tsv";
+    
     try {
-        // Use environment variables for URLs if available
-        const tsvURL = process.env.TSV_URL || 'https://unpkg.com/world-atlas@1.1.4/world/50m.tsv';
-        const jsonURL = process.env.JSON_URL || 'https://unpkg.com/world-atlas@1.1.4/world/50m.json';
-        
-        // Only load essential data
-        const [tsvResponse, jsonResponse] = await Promise.all([
-            fetch(tsvURL),
-            fetch(jsonURL)
+        // Load data sources
+        const [topoJSONdata, tsvData] = await Promise.all([
+            d3.json(jsonURL),
+            d3.tsv(tsvURL)
         ]);
-
-        const tsvData = await tsvResponse.text();
-        const topoJSONdata = await jsonResponse.json();
-
-        return { 
-            tsvData: d3.tsvParse(tsvData), 
-            topoJSONdata
-        };
+        
+        // Process country info
+        mapState.countryInfo = createCountryInfoLookup(tsvData);
+        
+        // Set up map projection
+        const projection = d3.geoNaturalEarth1()
+            .scale(config.width / 6)
+            .translate([config.width / 2, config.height / 2]);
+        const pathGenerator = d3.geoPath().projection(projection);
+        
+        // Convert TopoJSON to GeoJSON
+        const countries = topojson.feature(topoJSONdata, topoJSONdata.objects.countries).features;
+        
+        // Render countries
+        renderCountries(countries, pathGenerator, config);
+        
+        // Initialize zoom behavior
+        initZoom(config);
+        
     } catch (error) {
-        console.error('Failed to load data', error);
-        return { tsvData: null, topoJSONdata: null };
+        console.error("Error loading map data:", error);
     }
 }
 
-// // Supabase URL and anon key
-// const SUPABASE_URL = process.env.SUPABASE_URL;
-// const SUPABASE_KEY = process.env.SUPABASE_ANON_KEY;
-
-// // Initialize Supabase client
-// const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-// // Example: Fetch data from a table
-// async function fetchData() {
-//   let { data, error } = await supabase
-//     .from('your_table_name')
-//     .select('*');
-
-//   if (error) {
-//     console.error('Error fetching data:', error);
-//   } else {
-//     console.log('Data:', data);
-//     // Process and display data in your HTML
-//   }
-// }
-
-// fetchData();
-
-
-// Function to get Factbook data
-async function getFactbookData(continent, a2Code) {
-    // Validate inputs
-    if (!a2Code) {
-        console.error('Missing required parameter: a2Code');
-        throw new Error('Missing required parameter: a2Code');
-    }
-    
-    try {
-        const lowercaseA2Code = a2Code.toLowerCase();
-        
-        // Hardcoded special cases as fallback
-        const specialFolders = {
-            "in": "south-asia", // India
-            "rs": "central-asia", // Russia
-            "ch": "east-n-southeast-asia", // China
-            "us": "north-america", // United States
-            "ca": "north-america", // Canada
-            "au": "australia-oceania", // Australia
-            "nz": "australia-oceania", // New Zealand
-            "jp": "east-n-southeast-asia", // Japan
-            "kr": "east-n-southeast-asia", // South Korea
-            "gb": "europe", // United Kingdom
-            "de": "europe", // Germany
-            "fr": "europe", // France
-            "br": "south-america", // Brazil
-            "za": "africa", // South Africa
-        };
-        
-        let folder;
-        
-        // First try the hardcoded special cases
-        if (specialFolders[lowercaseA2Code]) {
-            folder = specialFolders[lowercaseA2Code];
-            console.log(`Using special case folder: ${folder} for ${a2Code}`);
-        }
-        // Finally, use the continent as a fallback
-        else if (continent) {
-            folder = continent.replace(/\s+/g, '-').toLowerCase();
-            console.log(`Using continent-based folder: ${folder} for ${a2Code}`);
-        }
-        else {
-            throw new Error(`Could not determine folder for ${a2Code}`);
-        }
-        
-        const url = `https://raw.githubusercontent.com/factbook/factbook.json/master/${folder}/${lowercaseA2Code}.json`;
-        console.log("Fetching data from:", url);
-        
-        const response = await fetch(url);
-
-        if (!response.ok) {
-            // If the first attempt fails, try with world-factbook subfolder
-            const altUrl = `https://raw.githubusercontent.com/factbook/factbook.json/master/factbook/${folder}/${lowercaseA2Code}.json`;
-            console.log("First attempt failed, trying alternative URL:", altUrl);
-            
-            const altResponse = await fetch(altUrl);
-            if (!altResponse.ok) {
-                console.error(`Failed to fetch data for ${a2Code}: ${response.status}`);
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            
-            return altResponse.json();
-        }
-
-        return response.json();
-    } catch (error) {
-        console.error(`Error fetching data for ${a2Code}:`, error);
-        throw error; // Rethrow to handle at caller level
-    }
-}
-
-// Function to render charts
-function renderCharts(data) {
-    console.log('Factbook Data:', data); // debug
-    
-    try {
-        // Safely access nested properties with optional chaining
-        const countryName = data?.Government?.['Country name']?.['conventional short form']?.text || 'Unknown Country';
-        const etymology = data?.Government?.['Country name']?.etymology?.text || 'No etymology data';
-        
-        // Update text with safe property access
-        d3.select('#name').text(`
-            Name: ${countryName}
-            Etymology: ${etymology}
-        `);
-        
-        // Safely access language data which has inconsistent structure
-        const languageText = data?.['People and Society']?.Languages?.Languages?.text || 
-                            data?.['People and Society']?.Languages?.text || 
-                            'No language data available';
-        
-        d3.select('#lang').text(`
-            Languages: ${languageText}
-        `);
-
-        // Update charts with safe property access
-        d3.select('#chart1').text(`
-            Scatter Plot 
-        `);
-        
-        const revenue = data?.Economy?.Budget?.revenues?.text || 'No revenue data';
-        d3.select('#chart2').text(`
-            Bar Chart
-            GDP: ${revenue}
-        `);
-        
-        const landArea = data?.Geography?.Area?.land?.text || 'No land area data';
-        const waterArea = data?.Geography?.Area?.water?.text || 'No water area data';
-        d3.select('#chart3').text(`
-            Choropleth Map
-            Land Area: ${landArea}
-            Water Area: ${waterArea}
-        `);
-        
-        const climate = data?.Environment?.Climate?.text || 'No climate data';
-        d3.select('#chart4').text(`
-            Tree Map
-            Climate: ${climate}
-        `);
-
-        // Apply the fade-in effect
-        d3.selectAll('.chart')
-            .classed('visible', true);
-            
-        // Add a specific CSS class to chart containers to ensure they have scrollbars if needed
-        d3.selectAll('.chart')
-            .style('max-height', '150px')
-            .style('overflow-y', 'auto');
-    } catch (error) {
-        console.error('Error rendering charts:', error);
-        // Show error in charts
-        d3.selectAll('.chart').text('Error loading chart data');
-    }
-}
-
-// Main function to render the map
-async function renderCountries() {
-    const { tsvData, topoJSONdata } = await loadData();
-
-    if (!tsvData || !topoJSONdata) {
-        console.error('Data is not loaded properly.');
-        return;
-    }
-
-    // Create a lookup object for country information
-    const countryInfo = tsvData.reduce((acc, d) => {
-        acc[d.iso_n3] = {
+/**
+ * Create a lookup object for country information
+ */
+function createCountryInfoLookup(tsvData) {
+    return tsvData.reduce((acc, d) => {
+        const keyOriginal = d.iso_n3; // e.g. '036'
+        const keyNumeric = String(parseInt(d.iso_n3, 10)); // e.g. '36'
+        const record = {
             name: d.name,
             continent: d.continent,
-            a2Code: d.iso_a2
+            a2Code: d.iso_a2,
+            folder: d.folder
         };
+        acc[keyOriginal] = record;
+        acc[keyNumeric] = record;
         return acc;
     }, {});
-
-    const countries = topojson.feature(topoJSONdata, topoJSONdata.objects.countries);
-
-    svg.selectAll('path.country')
-        .data(countries.features)
-        .enter().append('path')
-        .attr('class', 'country')
-        .attr('id', d => {
-            const country = countryInfo[d.id];
-            return country ? country.a2Code : 'A2Code Unknown';
-        })
-        .attr('d', pathGenerator)
-        .on('click', async function (d) {
-            const country = countryInfo[d.id];
-            if (country) {
-                const factbookData = await getFactbookData(country.continent, country.a2Code);
-                renderCharts(factbookData);
-            } else {
-                console.log('Country data not found.');
-            }
-        })
-        .append('title')
-        .text(d => { //tooltip
-            const country = countryInfo[d.id];
-            return country ? `${country.name} / ${country.a2Code}` : 'Country Unknown';
-        });
-
-    // update zoom behavior with smooth reset
-    const zoom = d3.zoom()
-      .scaleExtent([0.5, 8])
-      .on("zoom", function() {
-        g.attr("transform", d3.event.transform);
-      })
-      .on('end', () => {
-        if(d3.event.transform.k === 1) {
-          g.transition()
-            .duration(1000)
-            .attr("transform", d3.zoomIdentity);
-        }
-      });
-
-    // add double-click handler
-    svg.on('dblclick', () => {
-      svg.transition()
-        .duration(1000)
-        .call(zoom.transform, d3.zoomIdentity);
-    });
-
-    //     // Add zoom behavior to the SVG
-    //     const zoomBehavior = d3.zoom()
-    //         .scaleExtent([0.5, 4]) // Set zoom scale limits
-    //         .on('zoom', zoomed);
-
-    // svg.call(zoomBehavior);
-
-    // function reset() {
-    //     states.transition().style("fill", null);
-    //     svg.transition().duration(750).call(
-    //       zoom.transform,
-    //       d3.zoomIdentity,
-    //       d3.zoomTransform(svg.node()).invert([width / 2, height / 2])
-    //     );
-    //   }
-    
-    //   function clicked(event, d) {
-    //     const [[x0, y0], [x1, y1]] = path.bounds(d);
-    //     event.stopPropagation();
-    //     states.transition().style("fill", null);
-    //     d3.select(this).transition().style("fill", "red");
-    //     svg.transition().duration(750).call(
-    //       zoom.transform,
-    //       d3.zoomIdentity
-    //         .translate(width / 2, height / 2)
-    //         .scale(Math.min(8, 0.9 / Math.max((x1 - x0) / width, (y1 - y0) / height)))
-    //         .translate(-(x0 + x1) / 2, -(y0 + y1) / 2),
-    //       d3.pointer(event, svg.node())
-    //     );
-    //   }
-    
-    //   function zoomed(event) {
-    //     const {transform} = event;
-    //     g.attr("transform", transform);
-    //     g.attr("stroke-width", 1 / transform.k);
-    //   }
-    
-    //   return svg.node();
-
 }
 
-// Render the countries on the map
-renderCountries();
+/**
+ * Render country shapes on the map
+ */
+function renderCountries(countries, pathGenerator, config) {
+    mapState.mapGroup.selectAll("path.country")
+        .data(countries)
+        .enter().append("path")
+        .attr("class", "country")
+        .attr("id", d => {
+            const country = mapState.countryInfo[d.id];
+            return country ? `country-${country.a2Code.toLowerCase()}` : 'unknown';
+        })
+        .attr("d", pathGenerator)
+        .style("fill", config.initialFill)
+        .on("mouseover", function(d) {
+            if (!d3.select(this).classed("selected")) {
+                d3.select(this).transition()
+                    .duration(config.transitionDuration)
+                    .style("fill", config.selectedFill);
+            }
+        })
+        .on("mouseout", function(d) {
+            if (!d3.select(this).classed("selected")) {
+                d3.select(this).transition()
+                    .duration(config.transitionDuration)
+                    .style("fill", config.initialFill);
+            }
+        })
+        .on("click", function(d) {
+            d3.event.stopPropagation();
+            const country = mapState.countryInfo[d.id];
+            
+            if (!country) return;
+            
+            const isSelected = d3.select(this).classed("selected");
+            
+            if (isSelected) {
+                clearSelection();
+                if (config.onCountryDeselect) config.onCountryDeselect();
+            } else {
+                selectCountry(this, country, d.id, config);
+            }
+        })
+        .append("title")
+        .text(function(d) {
+            const country = mapState.countryInfo[d.id];
+            return country ? country.name + " (" + country.a2Code + ")" : "Country Unknown";
+        });
+}
+
+/**
+ * Initialize zoom behavior
+ */
+function initZoom(config) {
+    mapState.zoom = d3.zoom()
+        .filter(function() {
+            // Allow left (0) and middle (1) mouse buttons for zoom/pan
+            return d3.event.button === 0 || d3.event.button === 1;
+        })
+        .scaleExtent([config.zoomMin, config.zoomMax])
+        .on("zoom", function() {
+            mapState.mapGroup.attr("transform", d3.event.transform);
+        })
+        .on("end", function() {
+            var t = d3.event.transform;
+            if (t.k < config.zoomMin || (t.k === config.zoomMin && (t.x !== 0 || t.y !== 0))) {
+                resetZoom();
+            }
+        });
+    
+    mapState.mapElement.call(mapState.zoom);
+}
+
+/**
+ * Select a country by its ID
+ */
+export function selectCountryById(countryId) {
+    const countryElement = mapState.mapElement.select(`#country-${countryId.toLowerCase()}`);
+    if (!countryElement.empty()) {
+        const d = countryElement.datum();
+        const country = mapState.countryInfo[d.id];
+        selectCountry(countryElement.node(), country, d.id, mapConfig);
+        return true;
+    }
+    return false;
+}
+
+/**
+ * Select a country and trigger the callback
+ */
+function selectCountry(countryElement, country, countryId, config) {
+    clearSelection();
+    
+    d3.select(countryElement)
+        .raise()
+        .style("opacity", 0)
+        .classed("selected", true)
+        .transition()
+        .duration(config.transitionDuration)
+        .style("opacity", 1)
+        .style("fill", config.selectedFill);
+    
+    mapState.selectedCountry = countryId;
+    
+    if (config.onCountrySelect) {
+        config.onCountrySelect(country, countryId);
+    }
+}
+
+/**
+ * Clear the current selection
+ */
+export function clearSelection() {
+    mapState.mapElement.selectAll('path.country')
+        .classed('selected', false)
+        .transition()
+        .duration(mapConfig.transitionDuration)
+        .style('fill', mapConfig.initialFill);
+    
+    mapState.selectedCountry = null;
+}
+
+/**
+ * Reset zoom to default view
+ */
+export function resetZoom() {
+    mapState.mapElement.transition()
+        .duration(750)
+        .call(mapState.zoom.transform, d3.zoomIdentity);
+}
+
+// Additional utility functions for map-related tasks
+
+/**
+ * Get special folder mapping for a country
+ */
+export function getSpecialFolder(a2Code) {
+    // Hardcoded special cases as fallback
+    const specialFolders = {
+        "in": "south-asia", // India
+        "rs": "central-asia", // Russia
+        "ch": "east-n-southeast-asia", // China
+        "us": "north-america", // United States
+        "ca": "north-america", // Canada
+        "au": "australia-oceania", // Australia
+        "nz": "australia-oceania", // New Zealand
+        "jp": "east-n-southeast-asia", // Japan
+        "kr": "east-n-southeast-asia", // South Korea
+        "gb": "europe", // United Kingdom
+        "de": "europe", // Germany
+        "fr": "europe", // France
+        "br": "south-america", // Brazil
+        "za": "africa", // South Africa
+    };
+    
+    return specialFolders[a2Code.toLowerCase()];
+}
+
+/**
+ * Determine folder name for a country
+ */
+export function determineFolder(country) {
+    if (!country || !country.a2Code) {
+        return null;
+    }
+    
+    const a2 = country.a2Code.toLowerCase();
+    
+    if (country.folder) {
+        return country.folder.toLowerCase().replace(/\s+/g, '-');
+    } 
+    
+    if (getSpecialFolder(a2)) {
+        return getSpecialFolder(a2);
+    } 
+    
+    if (country.continent) {
+        return country.continent.replace(/\s+/g, '-').toLowerCase();
+    }
+    
+    return null;
+}

@@ -52,10 +52,6 @@ export const appState = {
       comparisonCountries: []  // Countries to compare against
     }
   },
-  selectedRankingMetric: null,
-  selectedTrendMetric: null,
-  rankingSortOrder: "desc", // Default sort order (highest to lowest)
-  rankingFilterRegion: "all", // Default region filter (all regions)
   countriesDataLoading: false,
   loadingProgress: {
     loaded: 0,

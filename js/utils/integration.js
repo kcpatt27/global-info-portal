@@ -1,7 +1,7 @@
 import { appState, dataStore, stateActions, subscribeToState } from '../state.js';
 import { loadPersistedState, persistState } from './statePersistence.js';
 import { initDataTabs } from '../events.js';
-import { updateDataPanels } from '../dataPanels.js';
+import { updateDataPanels } from '../panels/index.js';
 
 // On application initialization
 document.addEventListener('DOMContentLoaded', () => {

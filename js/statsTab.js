@@ -1,14 +1,7 @@
 function enhanceStatsTab() {
   // Get container
   const statsContainer = document.querySelector('.stats-container');
-  
-  // Create tabs for Current and Historical views
-  const viewTabs = document.createElement('div');
-  viewTabs.className = 'stats-view-tabs';
-  viewTabs.innerHTML = `
-    <div class="stats-tab active" data-view="current">Current</div>
-    <div class="stats-tab" data-view="historical">Historical</div>
-  `;
+
   
   // Add the tabs to the container
   statsContainer.prepend(viewTabs);

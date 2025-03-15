@@ -28,13 +28,9 @@
 @import 'components/map.css';
 /*/ Tab system /*/
 @import 'components/tabs.css';
-@import 'components/data-tabs-common.css';
-/*/ Stats modules /*/
+/*/ Stats and Rankings modules /*/
 @import 'components/stats.css';
 @import 'components/quick-stats.css';
 @import 'components/rankings.css';
-@import 'components/global-context.css';
-@import 'components/trends.css';
 /*/ Data visualization /*/
 @import 'components/charts.css';
-@import 'components/charts-common.css';

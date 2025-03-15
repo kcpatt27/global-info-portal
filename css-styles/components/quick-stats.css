@@ -91,6 +91,7 @@
 .stat-item-interactive {
   cursor: pointer;
   position: relative;
+  overflow: hidden;
 }
 
 .stat-item-interactive:hover {

@@ -109,22 +109,20 @@ export default function WorldMap() {
             .style('stroke-width', 1.5);
 
           // existing api simulation
-          setTimeout(() => {
-            setCountryData({
-              name: country.name,
-              continent: country.continent,
-              capital: "Capital City", // This would come from the API
-              population: Math.floor(Math.random() * 100000000),
-              gdp: Math.floor(Math.random() * 1000000000000),
-              revenue: Math.floor(Math.random() * 1000000000000),
-              povertyRate: Math.random() * 30,
-              background: "This is a brief background of the country...",
-              historicalData: Array.from({ length: 10 }, (_, i) => ({
-                year: 2013 + i,
-                gdp: Math.floor(Math.random() * 1000000000000)
-              }))
-            })
-          }, 500);
+          setCountryData({
+            name: country.name,
+            continent: country.continent,
+            capital: "Capital City", // This would come from the API
+            population: Math.floor(Math.random() * 100000000),
+            gdp: Math.floor(Math.random() * 1000000000000),
+            revenue: Math.floor(Math.random() * 1000000000000),
+            povertyRate: Math.random() * 30,
+            background: "This is a brief background of the country...",
+            historicalData: Array.from({ length: 10 }, (_, i) => ({
+              year: 2013 + i,
+              gdp: Math.floor(Math.random() * 1000000000000)
+            }))
+          })
         }
       })
   }

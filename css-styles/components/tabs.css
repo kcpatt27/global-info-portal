@@ -48,7 +48,6 @@
 
 .data-tab:last-child {
     margin-right: 0;
-    border-right: 1px solid #444;
 }
 
 .data-tab.active {
@@ -66,26 +65,25 @@
     margin-bottom: -3px; /* Compensate for height increase to maintain alignment */
 }
 
-/* Create layering effect with z-index */
+/* Z-index stacking for cascade effect - now only need for 2 tabs */
 .data-tab:nth-child(1) { z-index: 4; }
 .data-tab:nth-child(2) { z-index: 3; }
-.data-tab:nth-child(3) { z-index: 2; }
-.data-tab:nth-child(4) { z-index: 1; }
+/* Removed: .data-tab:nth-child(3) and .data-tab:nth-child(4) */
 
 /* When active, the tab should be on top of all others */
 .data-tab.active { z-index: 10; }
 
-/* Hover effect */
+/* Hover effect for inactive tabs */
 .data-tab:hover:not(.active) {
-    background-color: #3a3a3a;
+    background-color: #444;
 }
 
-/* Cascade z-index for tabs before the active tab */
+/* Tabs after the active one */
 .data-tab.active ~ .data-tab {
-    z-index: 1; /* Tabs after active one get lower z-index */
+    border-left-color: #333;
 }
 
-/* Tabs before the active tab should have higher z-index */
+/* Tabs before the active one */
 .data-tab:not(.active):not(.active ~ .data-tab) {
-    z-index: 4; /* Tabs before active one get higher z-index */
+    border-right-color: #333;
 } 

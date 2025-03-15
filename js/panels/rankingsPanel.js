@@ -1,120 +1,13 @@
-/* dataPanels.js - Module for creating and updating data panels in country visualizations */
+/**
+ * rankingsPanel.js - Module for creating and managing the Rankings panel
+ * Handles displaying country rankings data with global and regional comparison views
+ * Incorporates global context functionality (formerly a separate tab)
+ */
 
-import { addStatSection, extractStats, highlightText, extractNumber, formatLabel, formatValue, isPrimaryStatistic, escapeRegExp } from '../utils.js';
-import { appState, countryDataCache, globalDataIndex, countriesList, countryFolders } from './state.js';
+import { extractNumber, formatLabel, formatValue, highlightText, escapeRegExp } from '../utils.js';
+import { appState, countryDataCache, globalDataIndex, countriesList, countryFolders } from '../state.js';
 
-// Update all data panels with new data
-export function updateDataPanels(data) {
-  console.log('Updating data panels with data:', data);
-  clearDataPanels();
-  try {
-    createStatsPanel(data);
-    createRankingsPanel(data);
-    createComparisonsPanel(data);
-    createTrendsPanel(data);
-  } catch (error) {
-    console.error('Error updating data panels:', error);
-    showDataError('Error processing country data: ' + error.message);
-  }
-}
-
-// Clears previous content from data panels
-export function clearDataPanels() {
-  const panelElements = document.querySelectorAll('.data-panels .data-panel');
-  panelElements.forEach(panelElement => {
-    while (panelElement.firstChild) {
-      panelElement.removeChild(panelElement.firstChild);
-    }
-  });
-}
-
-// Displays an error message in each data panel
-export function showDataError(message) {
-  const panelElements = document.querySelectorAll('.data-panels .data-panel');
-  panelElements.forEach(panelElement => {
-    panelElement.innerHTML = `<div class="data-error">${message}</div>`;
-  });
-}
-
-// Creates the Stats Panel with country key statistics
-export function createStatsPanel(data) {
-  const panelElement = document.querySelector('.data-panel[data-panel="0"]');
-  if (!panelElement) return;
-  if (!data) {
-    panelElement.innerHTML = '<div class="data-error">No country data available</div>';
-    return;
-  }
-  panelElement.innerHTML = `
-    <div class="stats-search-container">
-      <input type="text" class="stats-search" placeholder="Search statistics..." />
-      <button class="stats-search-clear" title="Clear search">×</button>
-    </div>
-    <div class="stats-container"></div>
-    <div class="stats-no-results" style="display: none;">No statistics found matching your search</div>
-  `;
-  const statsContainer = panelElement.querySelector('.stats-container');
-  const searchInput = panelElement.querySelector('.stats-search');
-  const clearButton = panelElement.querySelector('.stats-search-clear');
-  const noResults = panelElement.querySelector('.stats-no-results');
-
-  addStatSection(statsContainer, 'Geography', extractStats(data.Geography));
-  addStatSection(statsContainer, 'People & Society', extractStats(data['People and Society']));
-  addStatSection(statsContainer, 'Economy', extractStats(data.Economy));
-  addStatSection(statsContainer, 'Energy', extractStats(data.Energy));
-  addStatSection(statsContainer, 'Military', extractStats(data.Military));
-  if (data.Transportation) {
-    addStatSection(statsContainer, 'Transportation', extractStats(data.Transportation));
-  }
-  if (data.Communications) {
-    addStatSection(statsContainer, 'Communications', extractStats(data.Communications));
-  }
-
-  searchInput.addEventListener('input', function() {
-    const searchTerm = this.value.toLowerCase().trim();
-    filterStats(searchTerm);
-  });
-
-  clearButton.addEventListener('click', function() {
-    searchInput.value = '';
-    filterStats('');
-    searchInput.focus();
-  });
-
-  function filterStats(searchTerm) {
-    let visibleItems = 0;
-    const sections = statsContainer.querySelectorAll('.stat-section');
-    sections.forEach(section => {
-      let sectionHasVisibleItems = false;
-      const items = section.querySelectorAll('.stat-item');
-      items.forEach(item => {
-        const labelElement = item.querySelector('.stat-label');
-        const valueElement = item.querySelector('.stat-value');
-        const label = labelElement.textContent.toLowerCase();
-        const value = valueElement.textContent.toLowerCase();
-        if (searchTerm === '' || label.includes(searchTerm) || value.includes(searchTerm)) {
-          item.style.display = '';
-          sectionHasVisibleItems = true;
-          visibleItems++;
-          if (searchTerm !== '') {
-            highlightText(labelElement, searchTerm);
-            highlightText(valueElement, searchTerm);
-          } else {
-            labelElement.innerHTML = labelElement.textContent;
-            valueElement.innerHTML = valueElement.originalHTML || valueElement.innerHTML;
-          }
-        } else {
-          item.style.display = 'none';
-          labelElement.innerHTML = labelElement.textContent;
-          valueElement.innerHTML = valueElement.originalHTML || valueElement.innerHTML;
-        }
-      });
-      section.style.display = sectionHasVisibleItems ? '' : 'none';
-    });
-    noResults.style.display = visibleItems === 0 ? 'block' : 'none';
-  }
-}
-
-// Creates the Rankings Panel
+// Main export - creates/updates the Rankings panel with country data
 export function createRankingsPanel(data) {
   const panelElement = document.querySelector('.data-panel[data-panel="1"]');
   if (!panelElement) return;
@@ -122,6 +15,7 @@ export function createRankingsPanel(data) {
     panelElement.innerHTML = '<div class="data-error">No country data available</div>';
     return;
   }
+  
   const countryName = data.Government?.['Country name']?.conventional_short_form?.text || 
                       data.Government?.['Country name']?.text ||
                       data.name ||
@@ -130,6 +24,7 @@ export function createRankingsPanel(data) {
                       data.Communications?.['Internet country code']?.text ||
                       '';
 
+  // Set up basic panel structure
   panelElement.innerHTML = `
     <div class="rankings-controls">
       <div class="rankings-control-row">
@@ -279,6 +174,64 @@ export function createRankingsPanel(data) {
       appState.selectedRankingMetric = null;
     }
   }
+  
+  // Check if the Rankings tab should be enhanced (separate views for global and regional)
+  if (appState.rankingsTabEnhanced) {
+    enhanceRankingsTab(rankingsContainer, data);
+  }
+}
+
+// Find metrics in country data that could be used for rankings
+function findRankingMetrics(data) {
+  const metrics = [];
+  const processedKeys = new Set(); // To avoid duplicates
+  
+  // Process main sections like Economy, Geography, etc.
+  const processSection = (section, sectionName, path = []) => {
+    if (!section || typeof section !== 'object') return;
+    
+    Object.keys(section).forEach(key => {
+      // Skip text property
+      if (key === 'text') return;
+      
+      const value = section[key];
+      const currentPath = [...path, key];
+      const metricId = `${sectionName.toLowerCase()}_${key.toLowerCase().replace(/\s+/g, '_')}`;
+      
+      // Skip if we've already processed this key
+      if (processedKeys.has(metricId)) return;
+      
+      // If this is a leaf node with text
+      if (value && typeof value === 'object' && value.text) {
+        const numericValue = extractNumber(value.text);
+        if (!isNaN(numericValue)) {
+          metrics.push({
+            id: metricId,
+            label: `${sectionName}: ${formatLabel(key)}`,
+            value: numericValue,
+            text: value.text,
+            path: currentPath
+          });
+          processedKeys.add(metricId);
+        }
+      } else if (value && typeof value === 'object') {
+        // Continue recursively
+        processSection(value, sectionName, currentPath);
+      }
+    });
+  };
+  
+  // Process main sections that might have numeric data
+  if (data.Economy) processSection(data.Economy, 'Economy');
+  if (data.Geography) processSection(data.Geography, 'Geography');
+  if (data.People) processSection(data.People, 'People');
+  if (data['People and Society']) processSection(data['People and Society'], 'People');
+  if (data.Demographics) processSection(data.Demographics, 'Demographics');
+  if (data.Energy) processSection(data.Energy, 'Energy');
+  if (data.Government) processSection(data.Government, 'Government');
+  
+  // Filter to ensure we only have numeric metrics
+  return metrics.filter(metric => !isNaN(metric.value) && metric.value !== null);
 }
 
 // Process a specific metric for all cached countries
@@ -367,59 +320,6 @@ function extractMetricFromCountry(countryData, metricPath) {
   }
   
   return null;
-}
-
-// Find metrics in country data that could be used for rankings
-function findRankingMetrics(data) {
-  const metrics = [];
-  const processedKeys = new Set(); // To avoid duplicates
-  
-  // Process main sections like Economy, Geography, etc.
-  const processSection = (section, sectionName, path = []) => {
-    if (!section || typeof section !== 'object') return;
-    
-    Object.keys(section).forEach(key => {
-      // Skip text property
-      if (key === 'text') return;
-      
-      const value = section[key];
-      const currentPath = [...path, key];
-      const metricId = `${sectionName.toLowerCase()}_${key.toLowerCase().replace(/\s+/g, '_')}`;
-      
-      // Skip if we've already processed this key
-      if (processedKeys.has(metricId)) return;
-      
-      // If this is a leaf node with text
-      if (value && typeof value === 'object' && value.text) {
-        const numericValue = extractNumber(value.text);
-        if (!isNaN(numericValue)) {
-          metrics.push({
-            id: metricId,
-            label: `${sectionName}: ${formatLabel(key)}`,
-            value: numericValue,
-            text: value.text,
-            path: currentPath
-          });
-          processedKeys.add(metricId);
-        }
-      } else if (value && typeof value === 'object') {
-        // Continue recursively
-        processSection(value, sectionName, currentPath);
-      }
-    });
-  };
-  
-  // Process main sections that might have numeric data
-  if (data.Economy) processSection(data.Economy, 'Economy');
-  if (data.Geography) processSection(data.Geography, 'Geography');
-  if (data.People) processSection(data.People, 'People');
-  if (data['People and Society']) processSection(data['People and Society'], 'People');
-  if (data.Demographics) processSection(data.Demographics, 'Demographics');
-  if (data.Energy) processSection(data.Energy, 'Energy');
-  if (data.Government) processSection(data.Government, 'Government');
-  
-  // Filter to ensure we only have numeric metrics
-  return metrics.filter(metric => !isNaN(metric.value) && metric.value !== null);
 }
 
 // Display ranking with collected data
@@ -692,131 +592,133 @@ function formatPercentage(value) {
   return value.toFixed(2) + '%';
 }
 
-// Creates the Global Context (Comparisons) Panel
-export function createComparisonsPanel(data) {
-  const panelElement = document.querySelector('.data-panel[data-panel="2"]');
-  if (!panelElement) return;
-  if (!data) {
-    panelElement.innerHTML = '<div class="data-error">No country data available</div>';
-    return;
+// Enhance Rankings Panel with Global/Regional views
+export function enhanceRankingsTab(container, countryData) {
+  // Mark the Rankings tab as enhanced
+  appState.rankingsTabEnhanced = true;
+  
+  // Get container
+  const rankingsContainer = container || document.querySelector('.rankings-container');
+  if (!rankingsContainer) return;
+  
+  // Create toggle for view modes
+  const viewToggle = document.createElement('div');
+  viewToggle.className = 'view-toggle';
+  viewToggle.innerHTML = `
+    <button class="toggle-btn active" data-view="global">Compare with World</button>
+    <button class="toggle-btn" data-view="region">Compare with Region</button>
+  `;
+  
+  // Add the toggle to the container
+  rankingsContainer.prepend(viewToggle);
+  
+  // Wrap existing content in a div for toggling
+  const existingContent = Array.from(rankingsContainer.children)
+    .filter(el => !el.classList.contains('view-toggle'));
+  
+  const globalViewContent = document.createElement('div');
+  globalViewContent.className = 'rankings-view global-view active';
+  
+  // Move existing content into the global view
+  existingContent.forEach(el => globalViewContent.appendChild(el));
+  
+  // Create regional view content
+  const regionalViewContent = document.createElement('div');
+  regionalViewContent.className = 'rankings-view regional-view';
+  
+  // Initialize with a placeholder
+  regionalViewContent.innerHTML = `
+    <div class="regional-comparison-placeholder">
+      <p>Select a metric above to view regional comparisons</p>
+    </div>
+  `;
+  
+  // Add both views to the container
+  rankingsContainer.appendChild(globalViewContent);
+  rankingsContainer.appendChild(regionalViewContent);
+  
+  // Add event listeners for toggle
+  viewToggle.querySelectorAll('.toggle-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      // Update active state
+      viewToggle.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+      this.classList.add('active');
+      
+      // Update view based on selection
+      const view = this.dataset.view;
+      updateRankingsView(view, rankingsContainer, countryData);
+    });
+  });
+  
+  // Initialize regional view if country data and ranking metric are available
+  if (countryData && appState.selectedRankingMetric) {
+    populateRegionalView(regionalViewContent, countryData);
   }
-  const countryName = data.Government?.['Country name']?.conventional_short_form?.text || 
-                      data.Government?.['Country name']?.text ||
-                      'This country';
-  const countryCode = data.Government?.['Country name']?.['Country name code']?.text || 
-                      data.Communications?.['Internet country code']?.text ||
-                      'unknown';
-  const metricsForComparison = findComparableMetrics(data);
-  if (metricsForComparison.length === 0) {
-    panelElement.innerHTML = `
-      <div class="data-title">Global Context</div>
-      <div class="data-info">Not enough data is available for meaningful comparisons.</div>
-      <div class="data-info">Try selecting a different country or wait until more data is loaded.</div>
+}
+
+// Update the active view in Rankings panel
+function updateRankingsView(view, container, countryData) {
+  const globalView = container.querySelector('.global-view');
+  const regionalView = container.querySelector('.regional-view');
+  
+  if (view === 'global') {
+    globalView.classList.add('active');
+    regionalView.classList.remove('active');
+  } else {
+    globalView.classList.remove('active');
+    regionalView.classList.add('active');
+    
+    // Ensure regional data is populated
+    if (regionalView.querySelector('.regional-comparison-placeholder') && countryData && appState.selectedRankingMetric) {
+      populateRegionalView(regionalView, countryData);
+    }
+  }
+}
+
+// Populate the regional view with comparison data
+function populateRegionalView(container, countryData) {
+  if (!appState.selectedRankingMetric) {
+    container.innerHTML = `
+      <div class="regional-comparison-placeholder">
+        <p>Select a metric above to view regional comparisons</p>
+      </div>
     `;
     return;
   }
-  panelElement.innerHTML = `
-    <div class="data-title">Global Context</div>
-    <div class="comparisons-description">
-      Comparing <strong>${countryName}</strong> to global averages and similar countries.
-    </div>
-    <div class="comparisons-container"></div>
-  `;
-  const comparisonsContainer = panelElement.querySelector('.comparisons-container');
-  metricsForComparison.forEach(metric => {
-    const comparisonElement = createGlobalContextForMetric(metric, countryName, countryCode);
-    if (comparisonElement) {
-      comparisonsContainer.appendChild(comparisonElement);
-    }
-  });
-}
-
-// Creates the Historical Trends Panel
-export function createTrendsPanel(data) {
-  const panelElement = document.querySelector('.data-panel[data-panel="3"]');
-  if (!panelElement) return;
-  if (!data) {
-    panelElement.innerHTML = '<div class="data-error">No country data available</div>';
-    return;
-  }
-  const countryName = data.Government?.['Country name']?.conventional_short_form?.text || 
-                      data.Government?.['Country name']?.text ||
+  
+  const countryName = countryData.Government?.['Country name']?.conventional_short_form?.text || 
+                      countryData.Government?.['Country name']?.text ||
                       'This country';
-  const trendsData = findTrendMetrics(data);
-  if (trendsData.length === 0) {
-    panelElement.innerHTML = `
-      <div class="data-title">Historical Trends</div>
-      <div class="data-info">No historical trend data is available for ${countryName}.</div>
-      <div class="data-info">This feature requires time-series data which may not be present in the current dataset.</div>
-    `;
-    return;
-  }
-  panelElement.innerHTML = `
-    <div class="data-title">Historical Trends</div>
-    <div class="trends-description">
-      Historical data trends for <strong>${countryName}</strong>
-    </div>
-    <div class="trends-selector-container">
-      <label for="trend-selector">Select metric: </label>
-      <select class="trend-selector" id="trend-selector">
-        <option value="">Choose a metric...</option>
-      </select>
-    </div>
-    <div class="trends-container">
-      <div class="trends-placeholder">Select a metric to view historical trends</div>
+                      
+  const region = countryData.Geography?.Location?.text || 
+                countryData.Geography?.['Map references']?.text ||
+                'Unknown region';
+                
+  // Create regional comparison UI (this is a placeholder - implement actual comparison logic)
+  container.innerHTML = `
+    <div class="regional-comparison">
+      <h3>Regional Comparison: ${region}</h3>
+      <p>Comparing ${countryName} with other countries in ${region}.</p>
+      <div class="regional-visualization">
+        <!-- Insert regional comparison visualization here -->
+        <div class="chart-placeholder">Regional comparison chart will appear here</div>
+      </div>
+      <div class="regional-analysis">
+        <h4>Regional Analysis</h4>
+        <p>Analysis of how ${countryName} compares to other countries in its region for the selected metric.</p>
+        <p>This feature is currently in development. Check back soon for complete regional comparisons!</p>
+      </div>
     </div>
   `;
-  const trendSelector = panelElement.querySelector('#trend-selector');
-  trendsData.sort((a, b) => a.label.localeCompare(b.label));
-  trendsData.forEach(trend => {
-    const option = document.createElement('option');
-    option.value = trend.id;
-    option.textContent = trend.label;
-    trendSelector.appendChild(option);
-  });
-  const trendsContainer = panelElement.querySelector('.trends-container');
-  trendSelector.addEventListener('change', function() {
-    const selectedId = this.value;
-    if (!selectedId) {
-      trendsContainer.innerHTML = `<div class="trends-placeholder">Select a metric to view historical trends</div>`;
-      return;
-    }
-    const selectedTrend = trendsData.find(trend => trend.id === selectedId);
-    if (selectedTrend) {
-      displayTrendData(trendsContainer, selectedTrend);
-    } else {
-      trendsContainer.innerHTML = `<div class="trends-placeholder">Selected metric not found</div>`;
-    }
-  });
+  
+  // TODO: Implement actual regional comparison visualization
 }
 
-// Find metrics that can be compared across countries
-export function findComparableMetrics(data) {
-  // TODO: Implement comparison metrics extraction logic
-  return [];
-}
-
-// Find metrics that show trends over time
-export function findTrendMetrics(data) {
-  // TODO: Implement trend metrics extraction logic
-  return [];
-}
-
-// Create a global context visualization for a metric
-export function createGlobalContextForMetric(metric, countryName, countryCode) {
-  const element = document.createElement('div');
-  element.className = 'context-item';
-  // TODO: Build detailed global context visualization for the metric
-  element.innerHTML = `<div class="context-header"><div class="context-metric">${metric.label}</div></div>`;
-  return element;
-}
-
-// Display a trend visualization for time-series data
-export function displayTrendData(container, trendData) {
-  if (!trendData || !trendData.dataPoints || trendData.dataPoints.length < 2) {
-    container.innerHTML = '<div class="trends-placeholder">No valid trend data available for this metric</div>';
-    return;
+// This function would be called from the main application to enhance the Rankings tab
+export function initRankingsPanel() {
+  // Initialize the Rankings panel enhancements if needed
+  const rankingsContainer = document.querySelector('.rankings-container');
+  if (rankingsContainer && !appState.rankingsTabEnhanced) {
+    enhanceRankingsTab(rankingsContainer);
   }
-  // Simplified trend visualization rendering (placeholder)
-  container.innerHTML = `<div class="trend-visualization">Trend data for ${trendData.label}</div>`;
 } 
