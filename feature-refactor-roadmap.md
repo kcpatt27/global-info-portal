@@ -2,7 +2,7 @@
 
 ## Phase 1: Immediate UI & UX Enhancements
 - Finalize remaining visual polish:
-  - Implement smooth transitions (using D3 transitions) for country selection/deselection. (use 0.113s for speed and 0.23s, 0.311s, 0.32s or any prime number between 0.1 and 0.5 for slow transitions)
+  - Implement smooth transitions for country selection/deselection. (use 0.113s for speed and 0.23s, 0.311s, 0.32s or any prime number between 0.1 and 0.5 for slow transitions)
   - Verify z-index adjustments and overlay integrations.
 - Ensure the responsive grid, sidebar (collapsible & auto-show), and chart tab interfaces function correctly across devices.
 - Conduct user testing on current interactions and gather quick feedback.
@@ -12,7 +12,7 @@
   ~~- Create a visible bar when the info sidebar is collapsed.~~
   ~~- Add buttons for search, settings, help, about, and feedback.~~
 ~~- Implement and integrate search functionality with auto-complete/typeahead suggestions.~~
-- Connect search results to map interactions for dynamic info display. (???)
+- Connect search results to map interactions for dynamic info display.
 
 ## Phase 3: Codebase Modularization and Refactoring 
 - Separate core functionalities into distinct modules:

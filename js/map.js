@@ -6,6 +6,9 @@
  * Handles map rendering, country selection, and zoom/pan functionality
  */
 
+// import dotenv from 'dotenv'
+// dotenv.config()
+
 // Map state
 let mapState = {
     selectedCountry: null,
@@ -84,6 +87,8 @@ function setupMapEvents(options) {
 async function loadMapData(config) {
     const jsonURL = "https://raw.githubusercontent.com/kcpatt27/world-atlas-2-world-factbook/main/world%20atlas%20json%2050m";
     const tsvURL = "https://raw.githubusercontent.com/kcpatt27/world-atlas-2-world-factbook/main/world%20atlas%20tsv_rows.tsv";
+    // const jsonURL = process.env.WORLD_ATLAS_JSON_URL;
+    // const tsvURL = process.env.WORLD_ATLAS_TSV_URL;
     
     try {
         // Load data sources
@@ -129,7 +134,7 @@ function createCountryInfoLookup(tsvData) {
             folder: d.folder
         };
         acc[keyOriginal] = record;
-        acc[keyNumeric] = record;
+        // acc[keyNumeric] = record;
         return acc;
     }, {});
 }

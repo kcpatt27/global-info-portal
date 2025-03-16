@@ -31,9 +31,9 @@
     --font-size-xl: 1.2rem;
     
     /* Transitions - using prime numbers as requested */
-    --transition-fast: 0.113s;
-    --transition-medium: 0.233s;
-    --transition-slow: 0.311s;
+    --transition-fast: 0.122s;
+    --transition-medium: 0.23s;
+    --transition-slow: 0.32s;
     
     /* Breakpoints */
     --breakpoint-sm: 350px;
