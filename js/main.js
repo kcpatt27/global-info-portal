@@ -73,6 +73,10 @@ async function handleCountrySelect(country) {
         // Update the UI with the fetched data
         let backgroundText = data.Introduction?.Background?.text || "No background information available";
         backgroundText = processText(backgroundText);
+        // Remove any existing centered-text wrapper if it exists
+        if (document.querySelector(".background-info .centered-text")) {
+            document.querySelector(".background-info").innerHTML = "";
+        }
         document.querySelector(".background-info").innerHTML = backgroundText;
         
         // Cache the country data
@@ -99,6 +103,7 @@ async function handleCountrySelect(country) {
 function handleCountryDeselect() {
     // Reset UI elements
     document.querySelector('.country-info').textContent = 'COUNTRY INFO';
+    // Reset background-info with centered placeholder text
     document.querySelector('.background-info').innerHTML = '<div class="centered-text">INTRODUCTION / BACKGROUND</div>';
     
     // Reset the quick stats to default placeholder
@@ -159,7 +164,7 @@ function setupUIEventHandlers() {
 function openSidebar() {
     document.querySelector(".info-container").classList.remove("collapsed");
     document.querySelector("#nav-sidebar").classList.remove("visible");
-    contractMap(); // Contract the map when sidebar opens
+    contractMap(); // Contract the map when sidebar closes
 }
 
 /**

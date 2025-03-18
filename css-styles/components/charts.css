@@ -18,13 +18,13 @@
 /* Individual chart */
 .chart {
   display: none;
-  padding: 15px;
-  transition: opacity 0.2s ease;
+  padding: var(--space-md);
+  transition: opacity var(--transition-chart) ease;
   flex: 1;
-  background-color: #2a2a2a;
-  border: 1px solid #444;
+  background-color: var(--color-chart-bg);
+  border: 1px solid var(--color-border);
   border-top: none;
-  border-radius: 0 0 8px 8px;
+  border-radius: 0 0 var(--radius-small) var(--radius-small);
   opacity: 0;
   width: 100%;
   height: auto;
@@ -38,62 +38,62 @@
 .chart.active {
   display: block;
   opacity: 1;
-  animation: fadeIn 0.2s ease-in-out;
+  animation: fadeIn var(--transition-chart) ease-in-out;
 }
 
 /* Chart content elements */
 .data-title {
-  font-size: 18px;
+  font-size: var(--font-size-chart-title);
   font-weight: bold;
-  margin-bottom: 15px;
+  margin-bottom: var(--space-md);
   text-align: center;
-  color: #e0e0e0;
+  color: var(--color-text-primary);
 }
 
 .data-info {
   font-size: 14px;
-  color: #aaa;
+  color: var(--color-text-secondary);
   margin: 10px 0;
   text-align: center;
 }
 
 .data-value {
-  font-size: 24px;
+  font-size: var(--font-size-chart-value);
   font-weight: bold;
-  margin: 15px 0;
+  margin: var(--space-md) 0;
   text-align: center;
-  color: #e0e0e0;
+  color: var(--color-text-primary);
 }
 
 .data-error {
-  color: #ff6b6b;
+  color: var(--color-error);
   text-align: center;
-  padding: 20px;
+  padding: var(--space-chart-error);
   font-weight: bold;
 }
 
 /* D3 Chart Elements */
 .bar {
-  fill: #69b3a2;
-  transition: fill 0.3s;
+  fill: var(--color-accent);
+  transition: fill var(--transition-chart-fill);
 }
 
 .bar:hover {
-  fill: #8fd3c2;
+  fill: var(--color-accent-light);
 }
 
 /* Axis styling */
 svg text {
-  fill: #e0e0e0;
+  fill: var(--color-text-primary);
   font-size: 11px;
 }
 
 svg .domain, svg .tick line {
-  stroke: #555;
+  stroke: var(--color-axis-stroke);
 }
 
 svg .tick text {
-  fill: #aaa;
+  fill: var(--color-text-secondary);
 }
 
 .legend text {
@@ -103,16 +103,16 @@ svg .tick text {
 /* Responsive styles for charts */
 @media (max-width: 768px) {
   .chart {
-    padding: 10px;
+    padding: var(--space-chart-padding);
     min-height: 130px;
   }
   
   .data-title {
-    font-size: 13px;
+    font-size: var(--font-size-chart-title-sm);
   }
   
   .data-value {
-    font-size: 14px;
+    font-size: var(--font-size-chart-value-sm);
   }
 }
 

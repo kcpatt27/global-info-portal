@@ -1,12 +1,12 @@
 /* 
- * quick-stats.css
+ * Updated quick-stats.css
  * Styles for quick stats grid with icons and labels
  */
 
 /* Quick stats card */
 .quick-stats-card {
-  background-color: rgba(30, 30, 40, 0.5);
-  border-radius: 8px;
+  background-color: var(--color-quick-stats-card-bg);
+  border-radius: var(--radius-small);
   padding: 15px;
   margin-bottom: 10px;
 }
@@ -14,10 +14,10 @@
 .quick-stats-title {
   font-size: 1.1rem;
   font-weight: 600;
-  color: #eee;
+  color: var(--color-text-light);
   margin-bottom: 15px;
   padding-bottom: 8px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid var(--color-border-light);
 }
 
 .quick-stats-grid {
@@ -29,10 +29,10 @@
 }
 
 .quick-stats-grid .stat-item {
-  background-color: rgba(30, 30, 40, 0.4);
-  border-radius: 6px;
+  background-color: var(--color-quick-stats-item-bg);
+  border-radius: var(--radius-ranking);
   padding: 12px 15px;
-  transition: all 0.23s ease;
+  transition: all var(--transition-medium) var(--easing-standard);
   border: 1px solid transparent;
   display: flex;
   flex-direction: column;
@@ -41,7 +41,7 @@
 
 .quick-stats-grid .stat-item:hover {
   background-color: rgba(40, 40, 50, 0.6);
-  border-color: rgba(255, 255, 255, 0.1);
+  border-color: var(--color-border-light);
 }
 
 /* Header row with icon and label */
@@ -54,14 +54,14 @@
 
 .quick-stats-grid .stat-icon {
   font-size: 1.5rem;
-  color: #69b3a2;
+  color: var(--color-accent);
   margin-right: 12px;
   flex-shrink: 0;
 }
 
 .quick-stats-grid .stat-label {
   font-size: 0.9rem;
-  color: #aaa;
+  color: var(--color-text-secondary);
   margin-bottom: 0;
   flex-grow: 1;
 }
@@ -69,7 +69,7 @@
 .quick-stats-grid .stat-value {
   font-size: 1.2rem;
   font-weight: 600;
-  color: #eee;
+  color: var(--color-text-light);
   text-align: left;
   width: 100%;
 }
@@ -95,7 +95,7 @@
 
 .stat-item-interactive:hover {
   transform: translateY(-2px);
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--shadow-hover);
 }
 
 .stat-cycle-indicator {
@@ -105,7 +105,7 @@
   font-size: 0.8rem;
   color: rgba(255, 255, 255, 0.5);
   opacity: 0;
-  transition: opacity 0.2s ease;
+  transition: opacity var(--transition-medium) var(--easing-standard);
 }
 
 .stat-item-interactive:hover .stat-cycle-indicator {
@@ -124,11 +124,11 @@
 }
 
 .stat-transition-out {
-  animation: fadeOut 0.3s ease forwards;
+  animation: fadeOut var(--transition-slow) var(--easing-standard) forwards;
 }
 
 .stat-transition-in {
-  animation: fadeIn 0.3s ease forwards;
+  animation: fadeIn var(--transition-slow) var(--easing-standard) forwards;
 }
 
 /* Responsive adjustments */

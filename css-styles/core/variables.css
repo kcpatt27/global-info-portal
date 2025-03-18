@@ -7,13 +7,53 @@
     --color-border: #444;
     --color-text-primary: #e0e0e0;
     --color-text-secondary: #aaa;
+    --color-inactive-text: #888;
     --color-accent: #69b3a2;
     --color-accent-light: #8fd3c2;
     --color-highlight: rgba(52, 152, 219, 0.3);
     --color-positive: #2ecc71;
     --color-negative: #e74c3c;
     --color-neutral: #f1c40f;
+    --color-map-country: #90ee90;
+    --color-map-country-hover: #ff0000;
+    --color-map-country-selected: #ff0000;
+    --color-map-background: #000000;
+    --color-ocean: rgb(117, 114, 111);
+    --color-map-stroke: #000000;
+    --color-map-stroke-selected: #000000;
+    --color-map-stroke-selected-hover: #000000;
     
+    /* Additional Color Tokens */
+    --color-sidebar-bg: #1c1c1c;
+    --color-sidebar-button-bg: #3a3a3a;
+    --color-sidebar-button-bg-active: #69b3a2e6;
+    --color-button-border: #3b3a3a;
+    --color-info-bg: #2a2a2a;
+    --color-stat-hover: rgba(255, 255, 255, 0.05);
+    --color-primary-stat-bg: rgba(105, 179, 162, 0.1);
+    --color-primary-stat-hover-bg: rgba(105, 179, 162, 0.15);
+    --color-primary-stat-highlight: #8ee4ce;
+    --color-text-label: #ccc;
+    --color-rankings-bg: #222;
+    --color-ranking-desc: #ccc;
+    --ranking-scale-color-1: #c0392b;
+    --ranking-scale-color-2: #f1c40f;
+    --ranking-scale-color-3: #27ae60;
+    --color-gradient-marker-border: #3498db;
+    --color-nav-button-bg: #2a2a2a;
+    --color-nav-button-hover-bg: #3a3a3a;
+    --color-quick-stats-card-bg: rgba(30, 30, 40, 0.5);
+    --color-quick-stats-item-bg: rgba(30, 30, 40, 0.4);
+    --color-text-light: #eee;
+    --color-border-light: rgba(255, 255, 255, 0.1);
+    --color-pagination-hover: rgba(50, 50, 60, 0.9);
+    
+    /* Map Tokens */
+    --map-stroke-width: 0.64px;
+    --map-stroke-width-hover: 1.31px;
+    --map-stroke-width-selected: 1.51px;
+    --map-stroke-width-selected-hover: 2.3px;
+
     /* Spacing system */
     --space-xs: 4px;
     --space-sm: 8px;
@@ -29,11 +69,19 @@
     --font-size-base: 1rem;
     --font-size-lg: 1.1rem;
     --font-size-xl: 1.2rem;
+    --font-size-stat-label: 14px;
+    --font-size-stat-value: 14px;
+    --font-size-stat-title: 16px;
     
     /* Transitions - using prime numbers as requested */
     --transition-fast: 0.122s;
     --transition-medium: 0.23s;
     --transition-slow: 0.32s;
+    
+    /* Easing functions */
+    --easing-standard: ease;
+    --easing-smooth: ease-in-out;
+    --easing-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
     
     /* Breakpoints */
     --breakpoint-sm: 350px;
@@ -44,4 +92,21 @@
     --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.2);
     --shadow-md: 0 2px 5px rgba(0, 0, 0, 0.3);
     --shadow-lg: 0 3px 8px rgba(0, 0, 0, 0.4);
-  }
+    --shadow-hover: 0 4px 8px rgba(0, 0, 0, 0.1);
+    
+    /* Chart tokens */
+    --transition-chart: 0.2s;
+    --color-chart-bg: #2a2a2a;
+    --radius-small: 8px;
+    --radius-xs: 4px;
+    --radius-ranking: 6px;
+    --radius-pill: 15px;
+    --font-size-chart-title: 18px;
+    --font-size-chart-title-sm: 13px;
+    --font-size-chart-value: 24px;
+    --font-size-chart-value-sm: 14px;
+    --space-chart-error: 20px;
+    --transition-chart-fill: 0.3s;
+    --color-axis-stroke: #555;
+    --space-chart-padding: 10px;
+}

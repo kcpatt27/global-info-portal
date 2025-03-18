@@ -1,25 +1,28 @@
-
-
-```
-// Start of Selection
 # CSS Reference Guide
 
-This document contains reference CSS snippets and patterns for consistent implementation across the Global Information Portal project.
+This document provides CSS reference snippets and patterns for consistent implementation across the Global Information Portal project. All design tokens are defined in [core/variables.css](../core/variables.css) and are used throughout the project for colors, spacing, typography, transitions, and more.
 
-## Animation Timing Standards
+---
+
+## Core Tokens and Variables
+
+All foundational values such as colors, spacing, typography, transitions, and shadows are defined in the variables file. For example:
 
 ```css
-/* Standard animation timing variables */
 :root {
-  --animation-speed-fast: 0.113s;
-  --animation-speed-medium: 0.23s;
-  --animation-speed-slow: 0.311s;
+  /* Animation timing */
+  --animation-speed-fast: var(--transition-fast);
+  --animation-speed-medium: var(--transition-medium);
+  --animation-speed-slow: var(--transition-slow);
   
-  --easing-standard: ease;
-  --easing-smooth: ease-in-out;
-  --easing-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+  /* Easing functions */
+  --easing-standard: var(--easing-standard);
+  --easing-smooth: var(--easing-smooth);
+  --easing-bounce: var(--easing-bounce);
 }
 ```
+
+---
 
 ## Common Animation Patterns
 
@@ -45,72 +48,7 @@ This document contains reference CSS snippets and patterns for consistent implem
 }
 ```
 
-## Interactive Components
-
-### Stats Grid Item
-
-```css
-.stat-item-interactive {
-  cursor: pointer;
-  position: relative;
-}
-
-.stat-item-interactive:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
-}
-
-.stat-cycle-indicator {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  font-size: 0.8rem;
-  color: rgba(255, 255, 255, 0.5);
-  opacity: 0;
-  transition: opacity var(--animation-speed-fast) var(--easing-standard);
-}
-
-.stat-item-interactive:hover .stat-cycle-indicator {
-  opacity: 1;
-}
-```
-
-### Tab Navigation
-
-```css
-.data-tab {
-  padding: 8px 15px;
-  cursor: pointer;
-  transition: all var(--animation-speed-fast) var(--easing-standard);
-  border: 1px solid #444;
-  border-bottom: 3px solid #444;
-  border-top-left-radius: 8px;
-  border-top-right-radius: 8px;
-  margin-right: -5px;
-  position: relative;
-  background-color: #333;
-  flex: 1;
-  min-width: 0;
-  text-align: center;
-  font-size: 0.9rem;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  transform-origin: bottom center;
-  box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.2);
-}
-
-.data-tab.active {
-  background-color: #444;
-  border-color: #888;
-  border-bottom: none !important;
-  font-weight: bold;
-  z-index: 10;
-  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.3);
-  transform: translateY(-2px);
-  height: 42px;
-}
-```
+---
 
 ## Layout Patterns
 
@@ -118,33 +56,114 @@ This document contains reference CSS snippets and patterns for consistent implem
 
 ```css
 .info-container {
-  background-color: rgba(30, 30, 40, 0.95);
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  transition: transform var(--animation-speed-slow) var(--easing-standard), 
-             opacity var(--animation-speed-slow) var(--easing-standard);
-  box-shadow: -5px 0 15px rgba(0, 0, 0, 0.2);
-  position: relative;
-  z-index: 100;
+    background-color: var(--color-sidebar-bg);
+    padding: 20px;
+    overflow-y: auto;
+    position: relative;
+    transition: transform var(--transition-slow) var(--easing-standard),
+                opacity var(--transition-slow) var(--easing-standard),
+                width var(--transition-slow) var(--easing-standard);
+    box-shadow: -5px 0 15px rgba(0, 0, 0, 0.2);
 }
 
 .info-container.collapsed {
-  transform: translateX(100%);
-  opacity: 0;
-}
-
-.map-container {
-  position: relative;
-  height: 100%;
-  width: 100%;
-  overflow: hidden;
-  background-color: #1a1a1a;
-  transition: all var(--animation-speed-slow) var(--easing-standard);
-}
-
-.map-container.expanded {
-  grid-column: 1 / -1;
+    transform: translateX(100%);
+    opacity: 0;
 }
 ```
+
+---
+
+## Chart Styles
+
+The chart components leverage tokens for spacing, typography, and transitions to maintain a consistent visual language. For example:
+
+```css
+.chart {
+  display: none;
+  padding: var(--space-md);
+  transition: opacity var(--transition-chart) ease;
+  background-color: var(--color-chart-bg);
+  border: 1px solid var(--color-border);
+  border-top: none;
+  border-radius: 0 0 var(--radius-small) var(--radius-small);
+  opacity: 0;
+  width: 100%;
+  position: relative;
+  top: -1px;
+}
+
+.chart.active {
+  display: block;
+  opacity: 1;
+  animation: fadeIn var(--transition-chart) ease-in-out;
+}
+
+/* Chart content elements */
+.data-title {
+  font-size: var(--font-size-chart-title);
+  font-weight: bold;
+  margin-bottom: var(--space-md);
+  text-align: center;
+  color: var(--color-text-primary);
+}
+
+.data-value {
+  font-size: var(--font-size-chart-value);
+  font-weight: bold;
+  margin: var(--space-md) 0;
+  text-align: center;
+  color: var(--color-text-primary);
+}
+```
+
+Responsive adjustments also use our tokens to ensure the charts adapt gracefully on smaller screens.
+
+---
+
+## Map Styles
+
+Map components follow the same token-driven approach. For example, the country shapes in the map are styled as:
+
+```css
+.map-container svg {
+    width: 100%;
+    height: 100%;
+    transition: all var(--transition-medium) var(--easing-standard);
+    background-color: var(--color-map-background);
+}
+
+.country {
+    fill: var(--color-map-country);
+    stroke: var(--color-map-stroke);
+    stroke-width: var(--color-map-stroke-width);
+    cursor: pointer;
+    transition: fill var(--transition-fast) var(--easing-standard), stroke var(--transition-fast) var(--easing-standard);
+}
+
+.country:hover {
+    fill: var(--color-map-country-hover);
+    stroke-width: var(--color-map-stroke-width-hover);
+}
+
+.country.selected {
+    fill: var(--color-map-country-selected);
+    stroke: var(--color-map-stroke-selected);
+}
+
+.country.selected:hover {
+    stroke: var(--color-map-stroke-selected-hover);
+}
+```
+
+---
+
+## Other Components
+
+Components such as **Tabs**, **Stats**, **Panels**, **Navigation**, and **Quick Stats** have been refactored to consistently use our defined tokens. For complete details, refer to their respective CSS files in the [components](../components) directory.
+
+---
+
+*Note:* For a full list of tokens and their values, please review [core/variables.css](../core/variables.css).
+
+Happy styling! 🙏💛✨

@@ -37,9 +37,7 @@ const mapConfig = {
  * @param {Function} options.onCountryDeselect - Callback when country is deselected
  */
 export function initMap(options = {}) {
-    // Merge options with defaults
     const config = { ...mapConfig, ...options };
-    
     // Select the SVG element
     const svg = d3.select(options.svgSelector || "svg");
     mapState.mapElement = svg;
@@ -143,6 +141,11 @@ function createCountryInfoLookup(tsvData) {
  * Render country shapes on the map
  */
 function renderCountries(countries, pathGenerator, config) {
+    // Add the ocean background first
+    mapState.mapGroup.append("path")
+        .attr("class", "ocean")
+        .attr("d", pathGenerator({type: "Sphere"}));
+    
     mapState.mapGroup.selectAll("path.country")
         .data(countries)
         .enter().append("path")

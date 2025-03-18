@@ -5,7 +5,9 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    transition: all 0.3s ease-in-out;
+    transition: all var(--transition-medium) var(--easing-standard);
+    border: 0.32px solid var(--color-border);
+    background-color: var(--color-map-background);
 }
 
 /* Expanded map container when sidebar is collapsed */
@@ -16,22 +18,36 @@
 .map-container svg {
     width: 100%;
     height: 100%;
-    transition: all 0.3s ease-in-out;
+    transition: all var(--transition-medium) var(--easing-standard);
+    background-color: transparent;
+}
+
+/* Ocean background styling */
+.ocean {
+    fill: var(--color-ocean);
 }
 
 /* Country shape styling */
 .country {
-    fill: lightgreen;
-    stroke: #333;
-    stroke-width: 0.32px;
+    fill: var(--color-map-country);
+    stroke: var(--color-map-stroke);
+    stroke-width: var(--map-stroke-width);
     cursor: pointer;
-    transition: fill 0.113s ease, stroke 0.113s ease;
+    transition: fill var(--transition-fast) var(--easing-standard), stroke var(--transition-fast) var(--easing-standard);
 }
 
 .country:hover {
-    fill: red;
+    fill: var(--color-map-country-hover);
+    stroke-width: var(--map-stroke-width-hover);
 }
 
 .country.selected {
-    fill: red;
+    fill: var(--color-map-country-selected);
+    stroke: var(--color-map-stroke-selected);
+    stroke-width: var(--map-stroke-width-selected);
+} 
+
+.country.selected:hover {
+    stroke: var(--color-map-stroke-selected-hover);
+    stroke-width: var(--map-stroke-width-selected-hover);
 } 

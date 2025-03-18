@@ -14,27 +14,27 @@
 
 .data-panels .data-panel {
     display: none;
-    padding: 15px;
-    transition: all 0.2s ease;
+    padding: var(--space-md);
+    transition: all var(--transition-chart) var(--easing-standard);
     overflow: hidden;
-    background-color: #2a2a2a;
-    border: 1px solid #444;
+    background-color: var(--color-chart-bg);
+    border: 1px solid var(--color-border);
     border-top: 1px solid transparent; /* Make top border invisible for seamless connection with active tab */
-    border-radius: 0 0 8px 8px;
+    border-radius: 0 0 var(--radius-small) var(--radius-small);
     opacity: 0;
     width: 100%;
     min-height: 150px;
-    font-size: 0.9rem;
+    font-size: var(--font-size-md);
     margin-bottom: 0;
     flex: 0 1 auto;
-    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+    box-shadow: var(--shadow-md);
     z-index: 1;
 }
 
 .data-panels .data-panel.active {
     display: block;
     opacity: 1;
-    animation: fadeIn 0.2s ease-in-out;
+    animation: fadeIn var(--transition-chart) var(--easing-standard);
     height: auto;
 }
 
@@ -49,13 +49,13 @@
     font-weight: bold;
     margin-bottom: 10px;
     text-align: center;
-    color: #f0f0f0;
+    color: var(--color-text-light);
 }
 
 .data-info {
     font-size: 12px;
     margin-top: 5px;
-    color: #cccccc;
+    color: var(--color-text-secondary);
 }
 
 .data-value {
@@ -63,11 +63,11 @@
     font-weight: bold;
     text-align: center;
     margin: 15px 0;
-    color: #f0f0f0;
+    color: var(--color-text-light);
 }
 
 .data-error {
-    color: #ff6b6b;
+    color: var(--color-error);
     text-align: center;
     margin-top: 20px;
     font-weight: bold;

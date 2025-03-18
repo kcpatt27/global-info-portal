@@ -26,14 +26,14 @@
 .data-tab {
     padding: 8px 15px;
     cursor: pointer;
-    transition: all 0.113s ease;
-    border: 1px solid #444;
-    border-bottom: 3px solid #444;
+    transition: all var(--transition-fast) var(--easing-standard);
+    border: 1px solid var(--color-border);
+    border-bottom: 3px solid var(--color-border);
     border-top-left-radius: 8px;
     border-top-right-radius: 8px;
-    margin-right: -5px; /* Increased overlap for better cascading effect */
+    margin-right: -5px;
     position: relative;
-    background-color: #333;
+    background-color: var(--color-surface-lighter);
     flex: 1;
     min-width: 0;
     text-align: center;
@@ -41,7 +41,6 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    /* For cascading effect */
     transform-origin: bottom center;
     box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.2);
 }
@@ -51,18 +50,26 @@
 }
 
 .data-tab.active {
-    background-color: #444;
-    border-color: #888;
-    border-bottom: none !important; /* Force remove border completely */
+    background-color: var(--color-border);
+    border-color: var(--color-inactive-text);
+    border-bottom: none !important;
     font-weight: bold;
-    z-index: 10; /* Higher z-index for active tab */
+    z-index: 10;
     box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.3);
     transform: translateY(-2px);
-    height: 44px; /* Increased height for more pronounced paper effect */
-    border-top: 2px solid #666; /* Add top highlight to enhance 3D effect */
-    transform: translateY(-4px) scaleY(1.05); /* More vertical lift and stretch */
-    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.4); /* Deeper shadow for stronger elevation */
-    margin-bottom: -3px; /* Compensate for height increase to maintain alignment */
+    height: 42px;
+}
+
+.data-tab:hover:not(.active) {
+    background-color: var(--color-border);
+}
+
+.data-tab.active ~ .data-tab {
+    border-left-color: var(--color-surface-lighter);
+}
+
+.data-tab:not(.active):not(.active ~ .data-tab) {
+    border-right-color: var(--color-surface-lighter);
 }
 
 /* Z-index stacking for cascade effect - now only need for 2 tabs */
