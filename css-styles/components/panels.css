@@ -1,0 +1,78 @@
+/* Data container */
+.data-panels {
+    flex: 1;
+    display: flex;
+    overflow-y: hidden;
+    padding-top: 0;
+    margin-top: -1px; /* Slightly overlap with tabs for seamless connection */
+    width: 100%;
+    max-width: 100%;
+    margin-bottom: 10px;
+    background-color: transparent;
+    position: relative;
+}
+
+.data-panels .data-panel {
+    display: none;
+    padding: var(--space-md);
+    transition: all var(--transition-chart) var(--easing-standard);
+    overflow: hidden;
+    background-color: var(--color-chart-bg);
+    border: 1px solid var(--color-border);
+    border-top: 1px solid transparent; /* Make top border invisible for seamless connection with active tab */
+    border-radius: 0 0 var(--radius-small) var(--radius-small);
+    opacity: 0;
+    width: 100%;
+    min-height: 150px;
+    font-size: var(--font-size-md);
+    margin-bottom: 0;
+    flex: 0 1 auto;
+    box-shadow: var(--shadow-md);
+    z-index: 1;
+}
+
+.data-panels .data-panel.active {
+    display: block;
+    opacity: 1;
+    animation: fadeIn var(--transition-chart) var(--easing-standard);
+    height: auto;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Data Content Specific Styles */
+.data-title {
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 10px;
+    text-align: center;
+    color: var(--color-text-light);
+}
+
+.data-info {
+    font-size: 12px;
+    margin-top: 5px;
+    color: var(--color-text-secondary);
+}
+
+.data-value {
+    font-size: 16px;
+    font-weight: bold;
+    text-align: center;
+    margin: 15px 0;
+    color: var(--color-text-light);
+}
+
+.data-error {
+    color: var(--color-error);
+    text-align: center;
+    margin-top: 20px;
+    font-weight: bold;
+}
+
+.data-panels .data-panel {
+    overflow-y: auto;
+} 

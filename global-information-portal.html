@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Global Information Portal</title>
+    <link rel="stylesheet" href="css-styles/main.css">
+    <!-- Add Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <div class="map-container">
+            <svg width="960" height="500" viewBox="0 0 960 500" preserveAspectRatio="xMidYMid meet"></svg>
+        </div>
+        <div class="info-container">
+            <div class="info-header">
+                <div class="flag">FLAG</div>
+                <div class="country-info">COUNTRY INFO</div>
+                <button class="close-sidebar" id="close-sidebar" aria-label="Close Sidebar">×</button>
+            </div>
+            
+            <div class="sidebar-buttons">
+                <button class="sidebar-button active" data-panel="info">
+                    <i class="fas fa-info-circle"></i> Info
+                </button>
+                <button class="sidebar-button" data-panel="data">
+                    <i class="fas fa-database"></i> Data
+                </button>
+            </div>
+            
+            <div class="content-panel active" id="info-panel">
+                <div class="quick-stats-container">
+                    <div class="quick-stats-grid">
+                        <div class="stat-item stat-item-interactive">
+                            <div class="stat-header">
+                                <div class="stat-icon"><i class="fas fa-users"></i></div>
+                                <div class="stat-label">Population</div>
+                            </div>
+                            <div class="stat-value">--</div>
+                            <div class="stat-cycle-indicator"><i class="fas fa-sync-alt"></i></div>
+                        </div>
+                        <div class="stat-item stat-item-interactive">
+                            <div class="stat-header">
+                                <div class="stat-icon"><i class="fas fa-dollar-sign"></i></div>
+                                <div class="stat-label">GDP</div>
+                            </div>
+                            <div class="stat-value">--</div>
+                            <div class="stat-cycle-indicator"><i class="fas fa-sync-alt"></i></div>
+                        </div>
+                        <div class="stat-item stat-item-interactive">
+                            <div class="stat-header">
+                                <div class="stat-icon"><i class="fas fa-map"></i></div>
+                                <div class="stat-label">Area</div>
+                            </div>
+                            <div class="stat-value">--</div>
+                            <div class="stat-cycle-indicator"><i class="fas fa-sync-alt"></i></div>
+                        </div>
+                        <div class="stat-item stat-item-interactive">
+                            <div class="stat-header">
+                                <div class="stat-icon"><i class="fas fa-globe-europe"></i></div>
+                                <div class="stat-label">Region</div>
+                            </div>
+                            <div class="stat-value">--</div>
+                            <div class="stat-cycle-indicator"><i class="fas fa-sync-alt"></i></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="background-info"><div class="centered-text">INTRODUCTION / BACKGROUND</div></div>
+            </div>
+            
+            <div class="content-panel" id="data-panel">
+                <div class="data-tabs">
+                    <div class="data-tab active" data-tab="0">Statistics</div>
+                    <div class="data-tab" data-tab="1">Rankings</div>
+                </div>
+                <div class="data-panels">
+                    <div class="data-panel active" data-panel="0">Stats Data</div>
+                    <div class="data-panel" data-panel="1">Rankings Data</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Navigation sidebar that appears when info sidebar is collapsed -->
+    <div class="nav-sidebar" id="nav-sidebar">
+        <button class="nav-button" id="open-sidebar" title="Open Info Panel">
+            <i class="fas fa-info-circle"></i>
+        </button>
+        <button class="nav-button" id="toggle-data" title="Show Data">
+            <i class="fas fa-database"></i>
+        </button>
+        <button class="nav-button" id="toggle-search" title="Search">
+            <i class="fas fa-search"></i>
+        </button>
+        <button class="nav-button" id="toggle-settings" title="Settings">
+            <i class="fas fa-cog"></i>
+        </button>
+        <button class="nav-button" id="toggle-help" title="Help">
+            <i class="fas fa-question-circle"></i>
+        </button>
+    </div>
+    
+    <!-- External libraries -->
+    <script src="https://unpkg.com/d3@5.6.0/dist/d3.min.js"></script>
+    <script src="https://unpkg.com/topojson@3.0.2/dist/topojson.min.js"></script>
+    
+    <!-- Application main script -->
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>

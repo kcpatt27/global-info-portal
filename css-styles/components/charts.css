@@ -1,0 +1,128 @@
+/* 
+ * Common Chart Styles for Global Information Portal
+ */
+
+/* Chart containers */
+.charts {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+  margin-top: 0;
+  flex: 1;
+  position: relative;
+  z-index: 5;
+}
+
+/* Individual chart */
+.chart {
+  display: none;
+  padding: var(--space-md);
+  transition: opacity var(--transition-chart) ease;
+  flex: 1;
+  background-color: var(--color-chart-bg);
+  border: 1px solid var(--color-border);
+  border-top: none;
+  border-radius: 0 0 var(--radius-small) var(--radius-small);
+  opacity: 0;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+  min-height: auto;
+  font-size: 0.9rem;
+  position: relative;
+  top: -1px;
+}
+
+.chart.active {
+  display: block;
+  opacity: 1;
+  animation: fadeIn var(--transition-chart) ease-in-out;
+}
+
+/* Chart content elements */
+.data-title {
+  font-size: var(--font-size-chart-title);
+  font-weight: bold;
+  margin-bottom: var(--space-md);
+  text-align: center;
+  color: var(--color-text-primary);
+}
+
+.data-info {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  margin: 10px 0;
+  text-align: center;
+}
+
+.data-value {
+  font-size: var(--font-size-chart-value);
+  font-weight: bold;
+  margin: var(--space-md) 0;
+  text-align: center;
+  color: var(--color-text-primary);
+}
+
+.data-error {
+  color: var(--color-error);
+  text-align: center;
+  padding: var(--space-chart-error);
+  font-weight: bold;
+}
+
+/* D3 Chart Elements */
+.bar {
+  fill: var(--color-accent);
+  transition: fill var(--transition-chart-fill);
+}
+
+.bar:hover {
+  fill: var(--color-accent-light);
+}
+
+/* Axis styling */
+svg text {
+  fill: var(--color-text-primary);
+  font-size: 11px;
+}
+
+svg .domain, svg .tick line {
+  stroke: var(--color-axis-stroke);
+}
+
+svg .tick text {
+  fill: var(--color-text-secondary);
+}
+
+.legend text {
+  font-size: 10px;
+}
+
+/* Responsive styles for charts */
+@media (max-width: 768px) {
+  .chart {
+    padding: var(--space-chart-padding);
+    min-height: 130px;
+  }
+  
+  .data-title {
+    font-size: var(--font-size-chart-title-sm);
+  }
+  
+  .data-value {
+    font-size: var(--font-size-chart-value-sm);
+  }
+}
+
+@media (max-width: 480px) {
+  .chart {
+    padding: 8px;
+    min-height: 120px;
+  }
+  
+  svg text {
+    font-size: 9px;
+  }
+} 

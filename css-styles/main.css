@@ -1,0 +1,36 @@
+/**
+ * Global Info Portal - Main CSS
+ * A modular CSS structure for better organization and maintenance
+ */
+
+/* Core foundations */
+@import 'core/variables.css';
+@import 'core/reset.css';
+@import 'core/typography.css';
+@import 'core/animations.css';
+@import 'core/utils.css';
+@import 'core/base.css';
+
+/* Layout system */
+@import 'layout/grid.css';
+@import 'layout/content.css';
+@import 'layout/sidebar.css';
+@import 'layout/layout.css';
+/*/ Utilities /*/
+@import 'layout/scrollbars.css';
+@import 'layout/responsive.css';
+
+/* Component library */
+@import 'components/navigation.css';
+@import 'components/panels.css';
+@import 'components/tables.css';
+/*/ Map features /*/
+@import 'components/map.css';
+/*/ Tab system /*/
+@import 'components/tabs.css';
+/*/ Stats and Rankings modules /*/
+@import 'components/stats.css';
+@import 'components/quick-stats.css';
+@import 'components/rankings.css';
+/*/ Data visualization /*/
+@import 'components/charts.css';
