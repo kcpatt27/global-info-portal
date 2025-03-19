@@ -108,4 +108,100 @@
     background-color: var(--color-sidebar-button-bg-active);
     color: var(--color-background);
     font-weight: 600;
+}
+
+/* Background info cycling styles */
+.info-cycling-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  position: relative;
+}
+
+.navigation-content-wrapper {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.info-text-container {
+  flex: 1;
+  overflow-y: auto;
+  max-height: 100%;
+  padding: 0 5px;
+  margin-right: 8px; /* Space for scrollbar */
+}
+
+.info-text-content {
+  font-size: var(--font-size-md);
+  line-height: 1.4;
+  max-height: calc(100% - 30px);
+  padding-right: 10px; /* Extra padding to prevent text from getting too close to scrollbar */
+}
+
+.info-text-source {
+  font-size: var(--font-size-sm);
+  font-style: italic;
+  color: var(--color-text-secondary);
+  margin-top: 8px;
+  text-align: right;
+  padding-right: 10px; /* Match content padding */
+}
+
+.cycle-button {
+  background: rgba(0, 0, 0, 0.2);
+  border: none;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--color-text-light);
+  transition: all var(--transition-fast) var(--easing-standard);
+  opacity: 0.5;
+  z-index: 2;
+}
+
+.cycle-button.prev {
+  margin-right: 5px;
+}
+
+.cycle-button.next {
+  margin-left: 5px;
+}
+
+.cycle-button:hover {
+  background: rgba(0, 0, 0, 0.4);
+  opacity: 1;
+}
+
+.cycle-indicator {
+  position: absolute;
+  bottom: 5px;
+  right: 10px;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  background: rgba(0, 0, 0, 0.3);
+  padding: 2px 6px;
+  border-radius: 10px;
+  z-index: 3;
+}
+
+/* Transitions */
+.text-transition-out {
+  opacity: 0;
+  transform: translateY(-5px);
+  transition: all 0.3s ease;
+}
+
+.text-transition-in {
+  opacity: 1;
+  transform: translateY(0);
+  transition: all 0.3s ease;
 } 

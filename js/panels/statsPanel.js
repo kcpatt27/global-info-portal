@@ -34,19 +34,18 @@ export function createStatsPanel(data) {
   const noResults = panelElement.querySelector('.stats-no-results');
 
   // Add stats sections
-  addStatSection(statsContainer, 'Geography', extractStats(data.Geography));
-  addStatSection(statsContainer, 'People & Society', extractStats(data['People and Society']));
+  addStatSection(statsContainer, 'People', extractStats(data['People and Society']));
+  addStatSection(statsContainer, 'Transportation', extractStats(data.Transportation));
+  addStatSection(statsContainer, 'Communications', extractStats(data.Communications));
   addStatSection(statsContainer, 'Economy', extractStats(data.Economy));
   addStatSection(statsContainer, 'Energy', extractStats(data.Energy));
-  addStatSection(statsContainer, 'Military', extractStats(data.Military));
-  
-  if (data.Transportation) {
-    addStatSection(statsContainer, 'Transportation', extractStats(data.Transportation));
-  }
-  
-  if (data.Communications) {
-    addStatSection(statsContainer, 'Communications', extractStats(data.Communications));
-  }
+  addStatSection(statsContainer, 'Environment', extractStats(data.Environment));
+  addStatSection(statsContainer, 'Government', extractStats(data.Government));
+  addStatSection(statsContainer, 'Space', extractStats(data.Space));
+  addStatSection(statsContainer, 'Geography', extractStats(data.Geography));
+  addStatSection(statsContainer, 'Military and Security', extractStats(data['Military and Security']));
+  addStatSection(statsContainer, 'Terrorism', extractStats(data.Terrorism));
+  addStatSection(statsContainer, 'Transnational Issues', extractStats(data['Transnational Issues']));
 
   // Set up search functionality
   setupSearchFunctionality(searchInput, clearButton, noResults, statsContainer);
@@ -59,6 +58,8 @@ export function createStatsPanel(data) {
 
 // Set up search functionality within the Stats panel
 function setupSearchFunctionality(searchInput, clearButton, noResults, statsContainer) {
+  const searchContainer = searchInput.closest('.stats-search-container');
+  
   searchInput.addEventListener('input', function() {
     const searchTerm = this.value.toLowerCase().trim();
     filterStats(searchTerm, statsContainer, noResults);
@@ -69,6 +70,20 @@ function setupSearchFunctionality(searchInput, clearButton, noResults, statsCont
     filterStats('', statsContainer, noResults);
     searchInput.focus();
   });
+  
+  // when scrolling, remove the parent's top padding so the sticky search bar touches the top
+  const panelElement = searchContainer.closest('.data-panel');
+  if (panelElement) {
+    panelElement.addEventListener('scroll', function() {
+      if (this.scrollTop > 10) {
+        searchContainer.classList.add('scrolled');
+        this.classList.add('scrolled');
+      } else {
+        searchContainer.classList.remove('scrolled');
+        this.classList.remove('scrolled');
+      }
+    });
+  }
 }
 
 // Filter statistics based on search term

@@ -7,6 +7,7 @@ import { updateDataPanels, clearDataPanels, showDataError, initPanels } from './
 import { initDataTabs } from './events.js';
 import { initStatCycling, updateQuickStats } from './statCycling.js';
 import { countryDataCache, globalDataIndex, countriesList, appState } from './state.js';
+import { setupBackgroundInfoCycling } from './infoTextCycling.js';
 
 // Expose key functions to global scope for legacy compatibility
 window.initDataTabs = initDataTabs;
@@ -70,15 +71,14 @@ async function handleCountrySelect(country) {
         // Fetch country data
         const data = await fetchCountryData(country);
         
-        // Update the UI with the fetched data
-        let backgroundText = data.Introduction?.Background?.text || "No background information available";
-        backgroundText = processText(backgroundText);
         // Remove any existing centered-text wrapper if it exists
         if (document.querySelector(".background-info .centered-text")) {
             document.querySelector(".background-info").innerHTML = "";
         }
-        document.querySelector(".background-info").innerHTML = backgroundText;
         
+        // Set up the cycling feature with all text data
+        setupBackgroundInfoCycling(data);
+
         // Cache the country data
         const countryCode = country.a2Code.toLowerCase();
         if (window.countryDataCache) {
@@ -147,10 +147,20 @@ function setupUIEventHandlers() {
         openSidebar();
     });
     
-    // Toggle charts panel from navigation sidebar
+    // // Toggle info panel from navigation sidebar
+    // document.getElementById("toggle-info").addEventListener("click", () => {
+    //     openSidebar();
+    //     // Activate info panel
+    //     document.querySelectorAll('.sidebar-button').forEach(btn => btn.classList.remove('active'));
+    //     document.querySelectorAll('.content-panel').forEach(panel => panel.classList.remove('active'));
+    //     document.querySelector('.sidebar-button[info-panel="info"]').classList.add('active');
+    //     document.getElementById('info-panel').classList.add('active');
+    // });
+
+    // Toggle data panel from navigation sidebar
     document.getElementById("toggle-data").addEventListener("click", () => {
         openSidebar();
-        // Activate charts panel
+        // Activate data panel
         document.querySelectorAll('.sidebar-button').forEach(btn => btn.classList.remove('active'));
         document.querySelectorAll('.content-panel').forEach(panel => panel.classList.remove('active'));
         document.querySelector('.sidebar-button[data-panel="data"]').classList.add('active');
