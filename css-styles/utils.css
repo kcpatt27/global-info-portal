@@ -88,4 +88,27 @@
 
 .stat-label {
   font-weight: 600;
+}
+
+/* Performance optimized animation classes */
+.hardware-accelerated {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+}
+
+.animate-height {
+    transition: max-height var(--transition-medium) var(--easing-standard);
+    overflow: hidden;
+}
+
+/* Prefers-reduced-motion support */
+@media (prefers-reduced-motion: reduce) {
+    .stat-transition-out,
+    .stat-transition-in {
+        animation-duration: 0.1s !important;
+    }
+    
+    .stat-item-interactive:hover {
+        transform: none;
+    }
 } 

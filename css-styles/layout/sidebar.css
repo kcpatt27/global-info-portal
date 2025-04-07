@@ -10,7 +10,10 @@
     z-index: 20;
     display: flex;
     flex-direction: column;
-    box-shadow: -5px 0 15px rgba(0, 0, 0, 0.2); 
+    box-shadow: -5px 0 15px rgba(0, 0, 0, 0.2);
+    /* Use hardware acceleration for sidebar animations */
+    transform: translateZ(0);
+    will-change: transform, opacity;
 }
 
 .info-container.collapsed {
@@ -18,6 +21,7 @@
     opacity: 0;
 }
 
+/* Mobile-friendly header */
 .info-header {
     display: flex;
     justify-content: space-between;
@@ -25,10 +29,12 @@
     margin-bottom: 15px;
     padding-bottom: 10px;
     border-bottom: 1px solid var(--color-surface-lighter);
+    position: relative;
 }
 
 .flag {
     color: var(--color-inactive-text);
+    width: 36px; /* Make flag width fixed */
 }
 
 .country-info {
@@ -36,6 +42,13 @@
     font-size: 1.1em;
     text-align: center;
     flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    position: absolute; /* Position absolutely to center properly */
+    left: 0;
+    right: 0;
+    margin: 0 auto; /* Center horizontally */
 }
 
 .close-sidebar {
@@ -47,6 +60,55 @@
     font-size: 1.5em;
     color: var(--color-text-primary);
     cursor: pointer;
+    min-width: 36px;
+    min-height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color var(--transition-fast) var(--easing-standard),
+                transform var(--transition-fast) var(--easing-standard);
+    position: relative; /* Ensure it's above the centered text */
+    z-index: 1;
+}
+
+.close-sidebar:hover {
+    background-color: var(--color-surface-lighter);
+    transform: translateY(-1px);
+}
+
+.close-sidebar:hover {
+    will-change: transform;
+}
+
+/* Mobile adaptations */
+@media (max-width: 768px) {
+    .info-container {
+        border-top: 1px solid var(--color-border);
+    }
+    
+    .sidebar-buttons {
+        flex-wrap: wrap;
+    }
+    
+    .cycle-button {
+        width: 36px;
+        height: 36px;
+    }
+    
+    .info-text-container {
+        margin-right: -20px;
+    }
+}
+
+/* Prefers-reduced-motion support */
+@media (prefers-reduced-motion: reduce) {
+    .info-container {
+        transition-duration: 0.01ms !important;
+    }
+    
+    .close-sidebar:hover {
+        transform: none;
+    }
 }
 
 /* Background info with fixed height and scrollbar */

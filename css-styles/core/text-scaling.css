@@ -1,0 +1,212 @@
+/* 
+ * Text Scaling Core Utilities
+ * Implements fluid typography scaling for responsive text adjustments
+ * across diverse screen sizes and device types
+ */
+
+/* 
+ * Fluid Typography Base System
+ * Uses clamp() for smooth scaling between viewport sizes
+ * Format: clamp(min-size, preferred-size, max-size)
+ * Where preferred-size uses viewport width to scale smoothly
+ */
+
+:root {
+  /* Base Text Settings */
+  --min-text-size: 14px;
+  --max-text-size: 18px;
+  
+  /* Fluid base font size that scales between 14px and 18px */
+  --fluid-base-size: clamp(var(--min-text-size), 0.875rem + 0.5vw, var(--max-text-size));
+  
+  /* Scaling factors for different text sizes */
+  --scale-factor-xs: 0.75;
+  --scale-factor-sm: 0.875;
+  --scale-factor-base: 1;
+  --scale-factor-md: 1.125;
+  --scale-factor-lg: 1.25;
+  --scale-factor-xl: 1.5;
+  --scale-factor-xxl: 2;
+  
+  /* Fluid typography sizes */
+  --fluid-size-xs: calc(var(--fluid-base-size) * var(--scale-factor-xs));
+  --fluid-size-sm: calc(var(--fluid-base-size) * var(--scale-factor-sm));
+  --fluid-size-base: var(--fluid-base-size);
+  --fluid-size-md: calc(var(--fluid-base-size) * var(--scale-factor-md));
+  --fluid-size-lg: calc(var(--fluid-base-size) * var(--scale-factor-lg));
+  --fluid-size-xl: calc(var(--fluid-base-size) * var(--scale-factor-xl));
+  --fluid-size-xxl: calc(var(--fluid-base-size) * var(--scale-factor-xxl));
+  
+  /* Line height scale */
+  --line-height-tight: 1.2;
+  --line-height-base: 1.5;
+  --line-height-relaxed: 1.75;
+  
+  /* Fluid line heights for better readability at different sizes */
+  --fluid-line-height-heading: clamp(1.2, 1.2 + 0.2vw, 1.4);
+  --fluid-line-height-body: clamp(1.4, 1.5 + 0.2vw, 1.8);
+  
+  /* Letter spacing */
+  --letter-spacing-tight: -0.01em;
+  --letter-spacing-normal: 0;
+  --letter-spacing-wide: 0.02em;
+  --letter-spacing-wider: 0.05em;
+  
+  /* Minimum readable text size safeguards */
+  --min-readable-text: 12px;
+  --min-readable-heading: 16px;
+}
+
+/* 
+ * Responsive Typography Classes 
+ * Apply these utility classes directly to HTML elements
+ */
+
+/* Fluid text sizes */
+.text-fluid-xs {
+  font-size: var(--fluid-size-xs);
+  line-height: var(--fluid-line-height-body);
+  /* Ensure text never goes below minimum readable size */
+  font-size: max(var(--min-readable-text), var(--fluid-size-xs));
+}
+
+.text-fluid-sm {
+  font-size: var(--fluid-size-sm);
+  line-height: var(--fluid-line-height-body);
+  font-size: max(var(--min-readable-text), var(--fluid-size-sm));
+}
+
+.text-fluid-base {
+  font-size: var(--fluid-size-base);
+  line-height: var(--fluid-line-height-body);
+}
+
+.text-fluid-md {
+  font-size: var(--fluid-size-md);
+  line-height: var(--fluid-line-height-body);
+}
+
+.text-fluid-lg {
+  font-size: var(--fluid-size-lg);
+  line-height: var(--fluid-line-height-heading);
+  font-size: max(var(--min-readable-heading), var(--fluid-size-lg));
+}
+
+.text-fluid-xl {
+  font-size: var(--fluid-size-xl);
+  line-height: var(--fluid-line-height-heading);
+  font-size: max(var(--min-readable-heading), var(--fluid-size-xl));
+}
+
+.text-fluid-xxl {
+  font-size: var(--fluid-size-xxl);
+  line-height: var(--fluid-line-height-heading);
+  font-size: max(var(--min-readable-heading), var(--fluid-size-xxl));
+}
+
+/* Line height utilities */
+.leading-tight {
+  line-height: var(--line-height-tight);
+}
+
+.leading-base {
+  line-height: var(--line-height-base);
+}
+
+.leading-relaxed {
+  line-height: var(--line-height-relaxed);
+}
+
+.leading-fluid {
+  line-height: var(--fluid-line-height-body);
+}
+
+.leading-fluid-heading {
+  line-height: var(--fluid-line-height-heading);
+}
+
+/* Letter spacing utilities */
+.tracking-tight {
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+.tracking-normal {
+  letter-spacing: var(--letter-spacing-normal);
+}
+
+.tracking-wide {
+  letter-spacing: var(--letter-spacing-wide);
+}
+
+.tracking-wider {
+  letter-spacing: var(--letter-spacing-wider);
+}
+
+/* 
+ * Text Size Constraints for Readability 
+ * Apply minimum readable text sizes for various contexts
+ */
+
+/* Ensure all interface text meets minimum size requirements */
+@media (max-width: 768px) {
+  /* Data visualizations often have small labels */
+  .chart-label, .axis-label, .legend-item {
+    font-size: max(var(--min-readable-text), var(--font-size-xs));
+  }
+  
+  /* Critical UI elements */
+  button, .button, input, select, textarea {
+    font-size: max(16px, var(--font-size-base));
+  }
+  
+  /* Minimum size for any text on mobile */
+  .text-constrained {
+    font-size: max(var(--min-readable-text), 0.75em);
+  }
+}
+
+/* Screen orientation adjustments */
+@media (max-width: 768px) and (orientation: landscape) {
+  /* Adjust for landscape mode where height is limited */
+  h1, .h1 {
+    font-size: var(--fluid-size-lg);
+  }
+  
+  h2, .h2 {
+    font-size: var(--fluid-size-md);
+  }
+}
+
+/* 
+ * High-DPI Screens Adjustments 
+ * Fine-tune for high-resolution displays
+ */
+@media 
+  (-webkit-min-device-pixel-ratio: 2), 
+  (min-resolution: 192dpi) {
+  /* Slightly adjust typography for high-DPI displays */
+  body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+}
+
+/* 
+ * CSS Font Loading API Support 
+ * Prevent layout shifts with proper font loading
+ */
+.fonts-loading body {
+  /* Hide text until fonts load to prevent layout shift */
+  opacity: 0;
+  transition: opacity 0.1s ease-in;
+}
+
+.fonts-loaded body {
+  opacity: 1;
+}
+
+/* Fallback where JavaScript is disabled */
+.no-js body {
+  opacity: 1;
+} 

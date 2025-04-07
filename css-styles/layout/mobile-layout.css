@@ -1,0 +1,478 @@
+/* 
+ * Mobile Container Architecture
+ * This file contains the mobile-optimized container structure for the Global Information Portal
+ * 
+ * Implementation goals:
+ * - Redesign container structure for optimal mobile display
+ * - Create proper content hierarchy for mobile view
+ * - Implement responsive container relationships across screen sizes
+ * - Ensure proper handling of portrait and landscape orientations
+ */
+
+/* 
+ * Mobile Container Base Structure
+ * ==========================================================================
+ */
+
+/* Reset container structure for mobile devices */
+@media (max-width: 768px) {
+  /* Primary container structure - stack map and info vertically in portrait mode */
+  .container {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: minmax(0, 60vh) minmax(0, 40vh);
+    height: 100vh; /* Force full viewport height */
+    overflow: hidden; /* Prevent scrolling on the container */
+    width: 100%;
+    position: relative;
+  }
+
+  /* Map container takes full width, fixed height in portrait */
+  .map-container {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    grid-row: 1;
+    position: relative;
+    z-index: 10;
+    /* Hardware acceleration for smoother interactions */
+    transform: translateZ(0);
+    will-change: transform;
+  }
+
+  /* Info container slides up from bottom */
+  .info-container {
+    width: 100%;
+    grid-row: 2;
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+    background-color: #1c1c1c;
+    border-radius: 16px 16px 0 0;
+    box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.3);
+    /* Add subtle indication that panel can be expanded */
+    position: relative;
+    padding: 15px;
+    overflow: hidden; /* Changed from overflow-y: auto to prevent double scrolling */
+    height: 40vh; /* Fixed height to match grid template */
+    max-height: 40vh;
+    /* Enable smooth inertial scrolling on iOS */
+    -webkit-overflow-scrolling: touch;
+    /* Smoother animations */
+    transition: height 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+                transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+                box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform, height;
+  }
+
+  /* Pull handle for expanding the info container */
+  .info-container::before {
+    content: '';
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 36px;
+    height: 4px;
+    background-color: rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+    /* Add animation to indicate swipeable */
+    transition: width 0.3s ease, opacity 0.3s ease;
+  }
+
+  /* Handle animation on touch */
+  .info-container.swiping::before {
+    width: 50px;
+    opacity: 0.8;
+    background-color: rgba(255, 255, 255, 0.5);
+  }
+
+  /* Additional visual feedback for swiping */
+  .info-container.swiping {
+    box-shadow: 0 -8px 20px rgba(0, 0, 0, 0.4);
+  }
+
+  /* Add extra spacing to account for pull handle */
+  .info-header {
+    margin-top: 10px;
+  }
+  
+  /* Fix for proper scrolling within content panels */
+  .content-panel {
+    overflow: hidden; /* Prevent scroll leaking */
+    display: flex;
+    flex-direction: column;
+    height: calc(40vh - 60px); /* Account for header and padding */
+  }
+  
+  .content-panel.active {
+    display: flex;
+    flex: 1;
+  }
+  
+  /* Ensure panels are fully contained */
+  .data-panels {
+    height: 100%;
+    overflow: hidden;
+  }
+  
+  /* Make individual panels scrollable */
+  .data-panel {
+    overflow-y: auto;
+    height: 100%;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Handle collapsed state */
+  .info-container.collapsed {
+    transform: translateY(100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  /* Make navigation sidebar visible when info container is collapsed */
+  .nav-sidebar.visible {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+
+/*
+ * Expanded State
+ * ==========================================================================
+ */
+
+/* Define expanded state for info panel */
+@media (max-width: 768px) {
+  .info-container.expanded {
+    /* Take over most of the screen when expanded */
+    transform: translateY(-40vh);
+    height: 80vh;
+    max-height: 80vh;
+    z-index: 30;
+    /* Add overlay to dim the map */
+    box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.4);
+  }
+  
+  /* Update content panel height when expanded */
+  .info-container.expanded .content-panel {
+    height: calc(80vh - 60px); /* Account for header and padding */
+  }
+
+  /* When info container is expanded, adjust the map container */
+  .info-container.expanded ~ .map-container {
+    filter: brightness(0.7);
+    transition: filter 0.3s ease;
+  }
+
+  /* Style changes for expanded mode */
+  .info-container.expanded .background-info {
+    max-height: none;
+    overflow-y: auto;
+  }
+  
+  /* Ensure scrollable content in expanded mode */
+  .info-container.expanded .content-panel {
+    overflow: hidden;
+  }
+  
+  /* When expanded, ensure panels occupy full space */
+  .info-container.expanded .data-panels {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+/*
+ * Landscape Orientation
+ * ==========================================================================
+ */
+
+/* Landscape specific layout for mobile devices */
+@media (max-width: 768px) and (orientation: landscape) {
+  /* Side by side layout in landscape */
+  .container {
+    grid-template-columns: minmax(0, 65%) minmax(0, 35%);
+    grid-template-rows: 100vh;
+  }
+
+  /* Map on the left */
+  .map-container {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  /* Info panel on the right */
+  .info-container {
+    grid-column: 2;
+    grid-row: 1;
+    height: 100vh;
+    max-height: 100vh;
+    border-radius: 16px 0 0 0;
+    box-shadow: -5px 0 15px rgba(0, 0, 0, 0.3);
+  }
+
+  /* Remove pull handle in landscape mode */
+  .info-container::before {
+    display: none;
+  }
+
+  /* Reset top margin for header in landscape */
+  .info-header {
+    margin-top: 0;
+  }
+
+  /* Expanded state doesn't make sense in landscape, reset it */
+  .info-container.expanded {
+    transform: none;
+    height: 100vh;
+  }
+
+  /* Ensure inner containers utilize full height in landscape */
+  .content-panel {
+    max-height: calc(100vh - 120px);
+    height: calc(100vh - 120px);
+  }
+  
+  /* Fix for content panel height in landscape */
+  .content-panel.active {
+    height: calc(100vh - 120px);
+  }
+}
+
+/*
+ * Small Mobile Devices
+ * ==========================================================================
+ */
+
+@media (max-width: 375px) {
+  /* Adjust container proportions for very small screens */
+  .container {
+    grid-template-rows: minmax(0, 55vh) minmax(0, 45vh);
+  }
+
+  /* Further reduce padding to maximize usable space */
+  .info-container {
+    padding: 12px 10px;
+    height: 45vh;
+    max-height: 45vh;
+  }
+  
+  /* Update content panel height for small screens */
+  .content-panel {
+    height: calc(45vh - 60px);
+  }
+  
+  /* Update expanded content panel height for small screens */
+  .info-container.expanded .content-panel {
+    height: calc(85vh - 60px);
+  }
+
+  /* Optimize handle for smaller screens */
+  .info-container::before {
+    width: 30px;
+    height: 3px;
+    top: 6px;
+  }
+
+  /* Smaller initial height for compact screens */
+  .background-info {
+    min-height: 80px;
+  }
+}
+
+/*
+ * Container Relationship & Hierarchy
+ * ==========================================================================
+ */
+
+@media (max-width: 768px) {
+  /* Ensure proper nesting and hierarchy of containers */
+  .content-panel {
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Ensure panels fill available space but don't overflow */
+  .data-panels {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* Panels should scroll independently */
+  .data-panels .data-panel {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 12px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+
+  /* Only active panels should be visible and interactive */
+  .data-panels .data-panel.active {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  /* Optimize quick stats for mobile viewing */
+  .quick-stats-container {
+    margin-bottom: 12px;
+  }
+
+  .quick-stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto;
+    gap: 10px;
+    width: 100%;
+  }
+
+  /* Ensure stat items are touch-friendly */
+  .stat-item {
+    border-radius: 12px;
+    min-height: 80px;
+    display: flex;
+    flex-direction: column;
+    padding: 12px;
+    /* Make stat items tappable */
+    cursor: pointer;
+    /* Visual feedback on touch */
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .stat-item:active {
+    transform: scale(0.98);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  }
+  
+  /* Fix background info scrolling */
+  .background-info {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    flex: 1;
+  }
+}
+
+/*
+ * Touch & Gesture Support
+ * ==========================================================================
+ */
+
+@media (max-width: 768px) {
+  /* Enable swipe gestures for panels */
+  .swipeable-container {
+    width: 100%;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* Swipeable panel row */
+  .swipeable-content {
+    display: flex;
+    transition: transform 0.3s ease;
+    width: 100%;
+    will-change: transform;
+  }
+
+  /* Add momentum scrolling to all scrollable areas */
+  .scrollable {
+    -webkit-overflow-scrolling: touch;
+    overflow-y: auto;
+    scrollbar-width: thin;
+  }
+
+  /* Touch indication for interactive elements */
+  .touch-highlight:active {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+}
+
+/*
+ * Z-Index Management
+ * ==========================================================================
+ */
+
+@media (max-width: 768px) {
+  /* Ensure proper layering of UI elements */
+  .nav-sidebar {
+    z-index: 40; /* Always on top */
+  }
+
+  .info-container {
+    z-index: 20; /* Above map but below nav */
+  }
+
+  .map-container {
+    z-index: 10; /* Base layer */
+  }
+  
+  /* Mobile navigation should be on top */
+  .mobile-nav-container {
+    z-index: 50;
+  }
+  
+  /* Ensure mobile nav is only visible when info container is collapsed */
+  .mobile-nav-container {
+    transform: translateY(100%); /* Hidden by default */
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  /* Show mobile nav when sidebar is collapsed */
+  .info-container.collapsed ~ .mobile-nav-container {
+    transform: translateY(0);
+  }
+  
+  /* Hamburger menu should be on top of everything */
+  .hamburger-menu-toggle {
+    z-index: 60;
+  }
+  
+  .hamburger-menu-panel {
+    z-index: 55;
+  }
+}
+
+/* 
+ * Navigation Bar Positioning
+ * ==========================================================================
+ */
+
+@media (max-width: 768px) {
+  /* Position navigation bar horizontally on mobile */
+  .nav-sidebar {
+    position: fixed;
+    bottom: 70px; /* Position above the mobile nav bar */
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    background: transparent;
+  }
+  
+  /* Make nav buttons horizontal */
+  .nav-sidebar .nav-button {
+    margin: 0 8px;
+    background-color: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+  }
+  
+  /* Show nav-sidebar only when info container is collapsed */
+  .info-container.collapsed ~ .nav-sidebar,
+  .nav-sidebar.visible {
+    opacity: 1;
+    pointer-events: auto;
+  }
+} 

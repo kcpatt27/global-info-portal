@@ -8,6 +8,12 @@ import { initDataTabs } from './events.js';
 import { initStatCycling, updateQuickStats } from './statCycling.js';
 import { countryDataCache, globalDataIndex, countriesList, appState } from './state.js';
 import { setupBackgroundInfoCycling } from './infoTextCycling.js';
+import { initializeTouchInteractions, isTouchDevice } from './utils/touch.js';
+// import { initInteractiveComponents } from './components/interactive/index.js';
+import { initMobileNav } from './components/navigation/MobileNav.js';
+import { initMobilePanels } from './components/panels/PanelMobileManager.js';
+import { initMobileInteractions } from './utils/mobile-interactions.js';
+import { initMobileTypography } from './utils/typography-enhancements.js';
 
 // Expose key functions to global scope for legacy compatibility
 window.initDataTabs = initDataTabs;
@@ -15,6 +21,7 @@ window.updateDataPanels = updateDataPanels;
 window.clearDataPanels = clearDataPanels;
 window.initStatCycling = initStatCycling;
 window.updateQuickStats = updateQuickStats;
+window.clearSelection = clearSelection;
 
 // Make data structures available to the global scope
 window.countryDataCache = countryDataCache;
@@ -23,6 +30,8 @@ window.countriesList = countriesList;
 
 // Initialize the application when the DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('Main script loaded, initializing application...');
+    
     // Initialize the map
     const map = initMap({
         svgSelector: 'svg',
@@ -30,16 +39,72 @@ document.addEventListener('DOMContentLoaded', () => {
         onCountryDeselect: handleCountryDeselect
     });
     
-    // Set up UI event handlers
+    // Make map instance available globally for gesture handling
+    window.mapInstance = map;
+    
+    // Initialize touch interactions
+    if (isTouchDevice()) {
+        initializeTouchInteractions();
+        
+        // Initialize advanced gesture-based interactive components
+        // initInteractiveComponents();
+        
+        // Initialize mobile navigation
+        const mobileNav = initMobileNav({
+            // Custom callbacks
+            onNavItemClick: (navId, item) => {
+                console.log(`Mobile nav item clicked: ${navId}`);
+                // Additional custom handling if needed
+            },
+            onHamburgerOpen: () => {
+                console.log('Hamburger menu opened');
+            },
+            onHamburgerClose: () => {
+                console.log('Hamburger menu closed');
+            }
+        });
+        
+        // Initialize mobile panel optimizations
+        initMobilePanels();
+        
+        // Initialize enhanced mobile interactions
+        initMobileInteractions({
+            customInit: () => {
+                console.log('Custom mobile interaction initialization');
+                // Add drag handles to expandable containers
+                // addDragHandlesToExpandableContainers();
+            }
+        });
+        
+        // Initialize enhanced mobile typography
+        initMobileTypography({
+            enableReadingMode: true,
+            customInit: () => {
+                console.log('Custom mobile typography initialization');
+                // Optimize font sizes for key content areas
+                optimizeContentTypography();
+            }
+        });
+        
+        // Make mobile nav instance available globally
+        window.mobileNavInstance = mobileNav;
+    }
+    
+    // Remove loading indicators
+    document.querySelectorAll('.loading-indicator').forEach(el => {
+        el.style.display = 'none';
+    });
+    
+    // Set up UI event handlers - core functionality
     setupUIEventHandlers();
     
-    // Initialize other components
+    // Initialize core components synchronously
     initDataTabs();
     initStatCycling();
     initPanels();
     
-    // Initialize enhanced tab functionality
-    initEnhancedTabs();
+    // Load non-critical components asynchronously
+    // loadNonCriticalComponents();
 });
 
 /**
@@ -191,4 +256,124 @@ function expandMap() {
 function contractMap() {
     document.querySelector(".container").classList.remove("sidebar-collapsed");
     document.querySelector(".map-container").classList.remove("expanded");
+}
+
+// Load non-critical components using dynamic imports
+// function loadNonCriticalComponents() {
+//     // Enhanced visualization components
+//     import(/* webpackChunkName: "charts" */ './components/charts/index.js')
+//         .then(module => {
+//             const { initCharts } = module;
+//             initCharts();
+//         })
+//         .catch(error => {
+//             console.warn('Charts module failed to load:', error);
+//         });
+    
+//     // Enhanced tabs
+//     import(/* webpackChunkName: "enhanced-tabs" */ './components/tabs/enhanced.js')
+//         .then(module => {
+//             const { initEnhancedTabs } = module;
+//             initEnhancedTabs();
+//         })
+//         .catch(error => {
+//             console.warn('Enhanced tabs module failed to load:', error);
+//         });
+    
+//     // Only load these on desktop or fast connections
+//     if (window.innerWidth >= 1024 || navigator.connection?.effectiveType === '4g') {
+//         // Advanced map features
+//         import(/* webpackChunkName: "map-advanced" */ './map/advanced.js')
+//             .then(module => {
+//                 const { initAdvancedMapFeatures } = module;
+//                 initAdvancedMapFeatures();
+//             });
+        
+//         // Animations and transitions
+//         import(/* webpackChunkName: "animations" */ './ui/animations.js')
+//             .then(module => {
+//                 const { initAnimations } = module;
+//                 initAnimations();
+//             });
+//     }
+// }
+
+/**
+ * Optimize typography for key content areas
+ */
+function optimizeContentTypography() {
+    // Apply optimized typography to primary content areas
+    document.querySelectorAll('.background-info, .info-text, .data-description').forEach(element => {
+        // Add typography optimization classes
+        element.classList.add('mobile-typography-optimized');
+        
+        // Find and optimize paragraphs within
+        const paragraphs = element.querySelectorAll('p');
+        if (paragraphs.length > 0) {
+            // Add proper paragraph spacing
+            element.classList.add('paragraph-optimized');
+        }
+    });
+    
+    // Optimize table text for mobile
+    document.querySelectorAll('table').forEach(table => {
+        table.classList.add('mobile-table-optimized');
+    });
+    
+    // Optimize list typography
+    document.querySelectorAll('ul, ol').forEach(list => {
+        list.classList.add('mobile-list-optimized');
+    });
+    
+    // Add fade indicators to scrollable content
+    document.querySelectorAll('.scroll-container, .data-panel, .overflow-y').forEach(container => {
+        // Only add if container has overflow
+        if (container.scrollHeight > container.clientHeight) {
+            container.classList.add('scroll-fade-indicators');
+        }
+    });
+}
+
+/**
+ * Add drag handles to expandable containers for better mobile interaction
+ */
+function addDragHandlesToExpandableContainers() {
+    // Add drag handle to info container for better mobile usability
+    const infoContainer = document.querySelector('.info-container');
+    if (infoContainer && !infoContainer.querySelector('.draggable')) {
+        const dragHandle = document.createElement('div');
+        dragHandle.className = 'draggable';
+        // Insert as first child, before any other content
+        infoContainer.insertBefore(dragHandle, infoContainer.firstChild);
+    }
+    
+    // Add drag handles to any other expandable panels
+    // const expandablePanels = document.querySelectorAll('.panel-container, [data-expandable="true"]');
+    // expandablePanels.forEach(panel => {
+    //     if (!panel.querySelector('.draggable')) {
+    //         const dragHandle = document.createElement('div');
+    //         dragHandle.className = 'draggable';
+    //         panel.insertBefore(dragHandle, panel.firstChild);
+    //     }
+    // });
+    
+    // Add touch-ripple-container class to all interactive elements
+    document.querySelectorAll('button, [role="button"], .stat-item, .nav-button, .data-tab')
+        .forEach(element => {
+            element.classList.add('touch-ripple-container');
+        });
+    
+    // Add staggered animation to list items in panels
+    const dataPanels = document.querySelectorAll('.data-panel');
+    dataPanels.forEach(panel => {
+        const listContainer = panel.querySelector('ul, ol, .list-container');
+        if (listContainer) {
+            listContainer.classList.add('stagger-container');
+            
+            // Add stagger-item class to list items
+            listContainer.querySelectorAll('li, .list-item').forEach(item => {
+                item.classList.add('stagger-item');
+            });
+        }
+    });
 } 

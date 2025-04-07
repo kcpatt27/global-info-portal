@@ -1,92 +1,128 @@
 :root {
-    /* Color system */
+    /* Color System - Core Palette */
     --color-background: #121212;
     --color-surface: #1a1a1a;
     --color-surface-light: #2d2d2d;
     --color-surface-lighter: #333;
     --color-border: #444;
+    --color-border-light: #555;
+    
+    /* Text Colors */
     --color-text-primary: #e0e0e0;
     --color-text-secondary: #aaa;
+    --color-text-light: #ccc;
     --color-inactive-text: #888;
+    
+    /* Accent Colors */
     --color-accent: #69b3a2;
     --color-accent-light: #8fd3c2;
-    --color-highlight: rgba(52, 152, 219, 0.3);
+    --color-accent-transparent: rgba(105, 179, 162, 0.1);
+    --color-accent-transparent-hover: rgba(105, 179, 162, 0.15);
+    --color-accent-highlight: #8ee4ce;
+    
+    /* Semantic Colors */
     --color-positive: #2ecc71;
     --color-negative: #e74c3c;
     --color-neutral: #f1c40f;
+    --color-highlight: rgba(52, 152, 219, 0.3);
+    --color-ranking-highlight: rgba(105, 179, 162, 0.2);
+    
+    /* Map Colors */
+    --color-map-background: #000000;
     --color-map-country: #90ee90;
     --color-map-country-hover: #ff0000;
     --color-map-country-selected: #ff0000;
-    --color-map-background: #000000;
     --color-ocean: rgb(117, 114, 111);
     --color-map-stroke: #000000;
     --color-map-stroke-selected: #000000;
     --color-map-stroke-selected-hover: #000000;
+    --map-stroke-width: 0.5px;
+    --map-stroke-width-hover: 1px;
+    --map-stroke-width-selected: 1px;
+    --map-stroke-width-selected-hover: 1.5px;
     
-    /* Additional Color Tokens */
+    /* UI Component Colors */
     --color-sidebar-bg: #1c1c1c;
     --color-sidebar-button-bg: #3a3a3a;
-    --color-sidebar-button-bg-active: #69b3a2e6;
+    --color-sidebar-button-bg-active: rgba(105, 179, 162, 0.9);
     --color-button-border: #3b3a3a;
     --color-info-bg: #2a2a2a;
-    --color-stat-hover: rgba(255, 255, 255, 0.05);
-    --color-primary-stat-bg: rgba(105, 179, 162, 0.1);
-    --color-primary-stat-hover-bg: rgba(105, 179, 162, 0.15);
-    --color-primary-stat-highlight: #8ee4ce;
-    --color-text-label: #ccc;
+    --color-chart-bg: #2a2a2a;
     --color-rankings-bg: #222;
-    --color-ranking-desc: #ccc;
+    --color-stat-hover: rgba(255, 255, 255, 0.05);
+    --color-nav-button-bg: #2a2a2a;
+    --color-nav-button-hover-bg: #3a3a3a;
+    --color-search-clear-hover: #444;
+    --color-error: #e74c3c;
+    
+    /* Component Background Colors */
+    --color-quick-stats-card-bg: rgba(30, 30, 40, 0.5);
+    --color-quick-stats-item-bg: rgba(30, 30, 40, 0.4);
+    
+    /* Ranking Scale Colors */
     --ranking-scale-color-1: #c0392b;
     --ranking-scale-color-2: #f1c40f;
     --ranking-scale-color-3: #27ae60;
-    --color-gradient-marker-border: #3498db;
-    --color-nav-button-bg: #2a2a2a;
-    --color-nav-button-hover-bg: #3a3a3a;
-    --color-quick-stats-card-bg: rgba(30, 30, 40, 0.5);
-    --color-quick-stats-item-bg: rgba(30, 30, 40, 0.4);
-    --color-text-light: #eee;
-    --color-border-light: rgba(255, 255, 255, 0.1);
-    --color-pagination-hover: rgba(50, 50, 60, 0.9);
     
-    /* Map Tokens */
-    --map-stroke-width: 0.64px;
-    --map-stroke-width-hover: 1.31px;
-    --map-stroke-width-selected: 1.51px;
-    --map-stroke-width-selected-hover: 2.3px;
-
-    /* Spacing system */
-    --space-xs: 4px;
-    --space-sm: 8px;
-    --space-md: 15px;
-    --space-lg: 20px;
-    --space-xl: 30px;
+    /* Spacing Scale (using 4px as base unit) */
+    --space-xxs: 0.25rem; /* 4px */
+    --space-xs: 0.5rem;   /* 8px */
+    --space-sm: 0.75rem;  /* 12px */
+    --space-md: 1rem;     /* 16px */
+    --space-lg: 1.5rem;   /* 24px */
+    --space-xl: 2rem;     /* 32px */
+    --space-xxl: 3rem;    /* 48px */
     
-    /* Typography */
-    --font-family: 'Helvetica Neue', Arial, sans-serif;
-    --font-size-xs: 0.7rem;
-    --font-size-sm: 0.8rem;
-    --font-size-md: 0.9rem;
-    --font-size-base: 1rem;
-    --font-size-lg: 1.1rem;
-    --font-size-xl: 1.2rem;
-    --font-size-stat-label: 14px;
-    --font-size-stat-value: 14px;
-    --font-size-stat-title: 16px;
+    /* Typography Scale (based on 16px base) */
+    --font-size-xs: 0.75rem;  /* 12px */
+    --font-size-sm: 0.875rem; /* 14px */
+    --font-size-base: 1rem;   /* 16px */
+    --font-size-md: 1.125rem; /* 18px */
+    --font-size-lg: 1.25rem;  /* 20px */
+    --font-size-xl: 1.5rem;   /* 24px */
+    --font-size-xxl: 2rem;    /* 32px */
     
-    /* Transitions - using prime numbers as requested */
+    /* Component-specific Typography (now derived) */
+    --font-size-stat-label: var(--font-size-sm);
+    --font-size-stat-value: var(--font-size-sm);
+    --font-size-stat-title: var(--font-size-base);
+    --font-size-chart-title: var(--font-size-md);
+    --font-size-chart-title-sm: 0.8125rem; /* 13px */
+    --font-size-chart-value: 1.5rem;       /* 24px */
+    --font-size-chart-value-sm: 0.875rem;  /* 14px */
+    
+    /* Border Radius Scale */
+    --radius-xs: 0.25rem;     /* 4px */
+    --radius-sm: 0.375rem;    /* 6px */
+    --radius-md: 0.5rem;      /* 8px */
+    --radius-lg: 0.75rem;     /* 12px */
+    --radius-xl: 0.9375rem;   /* 15px */
+    
+    /* Component-specific Radius (now derived) */
+    --radius-small: var(--radius-md);
+    --radius-ranking: var(--radius-sm);
+    --radius-pill: var(--radius-xl);
+    
+    /* Transitions - prime numbers as requested */
     --transition-fast: 0.122s;
     --transition-medium: 0.23s;
     --transition-slow: 0.32s;
+    
+    /* Component-specific transitions (now derived) */
+    --transition-chart: var(--transition-medium);
+    --transition-chart-fill: 0.3s;
     
     /* Easing functions */
     --easing-standard: ease;
     --easing-smooth: ease-in-out;
     --easing-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
     
-    /* Breakpoints */
-    --breakpoint-sm: 350px;
+    /* Breakpoints - Mobile First */
+    --breakpoint-xs: 350px;
+    --breakpoint-sm: 480px;
     --breakpoint-md: 768px;
     --breakpoint-lg: 1024px;
+    --breakpoint-xl: 1280px;
     
     /* Elevation/Shadows */
     --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.2);
@@ -94,19 +130,8 @@
     --shadow-lg: 0 3px 8px rgba(0, 0, 0, 0.4);
     --shadow-hover: 0 4px 8px rgba(0, 0, 0, 0.1);
     
-    /* Chart tokens */
-    --transition-chart: 0.2s;
-    --color-chart-bg: #2a2a2a;
-    --radius-small: 8px;
-    --radius-xs: 4px;
-    --radius-ranking: 6px;
-    --radius-pill: 15px;
-    --font-size-chart-title: 18px;
-    --font-size-chart-title-sm: 13px;
-    --font-size-chart-value: 24px;
-    --font-size-chart-value-sm: 14px;
-    --space-chart-error: 20px;
-    --transition-chart-fill: 0.3s;
+    /* Chart and Data Visualization */
     --color-axis-stroke: #555;
+    --space-chart-error: 20px;
     --space-chart-padding: 10px;
 }

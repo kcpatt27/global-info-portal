@@ -32,7 +32,8 @@
   background-color: var(--color-quick-stats-item-bg);
   border-radius: var(--radius-ranking);
   padding: 12px 15px;
-  transition: all var(--transition-medium) var(--easing-standard);
+  transition: transform var(--transition-medium) var(--easing-standard),
+              background-color var(--transition-medium) var(--easing-standard);
   border: 1px solid transparent;
   display: flex;
   flex-direction: column;
@@ -42,6 +43,9 @@
 .quick-stats-grid .stat-item:hover {
   background-color: rgba(40, 40, 50, 0.6);
   border-color: var(--color-border-light);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-hover);
+  will-change: transform;
 }
 
 /* Header row with icon and label */
@@ -93,11 +97,6 @@
   position: relative;
 }
 
-.stat-item-interactive:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-hover);
-}
-
 .stat-cycle-indicator {
   position: absolute;
   top: 10px;
@@ -112,7 +111,7 @@
   opacity: 1;
 }
 
-/* Transition animations for stat cycling */
+/* Optimize transition animations */
 @keyframes fadeOut {
   from { opacity: 1; transform: translateY(0); }
   to { opacity: 0; transform: translateY(-10px); }
@@ -125,16 +124,20 @@
 
 .stat-transition-out {
   animation: fadeOut var(--transition-slow) var(--easing-standard) forwards;
+  will-change: transform, opacity;
 }
 
 .stat-transition-in {
   animation: fadeIn var(--transition-slow) var(--easing-standard) forwards;
+  will-change: transform, opacity;
 }
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .quick-stats-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto;
+    gap: 10px;
   }
   
   .quick-stats-grid .stat-item {

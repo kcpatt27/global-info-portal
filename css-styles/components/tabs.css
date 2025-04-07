@@ -10,6 +10,8 @@
     flex-shrink: 0;
     z-index: 10;
     height: 40px;
+    /* Prevent layout shifts during animations */
+    overflow: visible;
 }
 
 .data-tabs::after {
@@ -26,7 +28,9 @@
 .data-tab {
     padding: 8px 15px;
     cursor: pointer;
-    transition: all var(--transition-fast) var(--easing-standard);
+    transition: background-color var(--transition-fast) var(--easing-standard),
+                transform var(--transition-fast) var(--easing-standard),
+                box-shadow var(--transition-fast) var(--easing-standard);
     border: 1px solid var(--color-border);
     border-bottom: 3px solid var(--color-border);
     border-top-left-radius: 8px;
@@ -58,10 +62,15 @@
     box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.3);
     transform: translateY(-2px);
     height: 42px;
+    /* Add will-change only to active tab for better performance */
+    will-change: transform, box-shadow;
 }
 
 .data-tab:hover:not(.active) {
     background-color: var(--color-border);
+    transform: translateY(-1px);
+    /* Add will-change only during hover */
+    will-change: transform, background-color;
 }
 
 .data-tab.active ~ .data-tab {
@@ -93,4 +102,35 @@
 /* Tabs before the active one */
 .data-tab:not(.active):not(.active ~ .data-tab) {
     border-right-color: #333;
+}
+
+/* Prefers-reduced-motion support */
+@media (prefers-reduced-motion: reduce) {
+    .data-tab {
+        transition-duration: 0.01ms !important;
+    }
+    
+    .data-tab.active {
+        transform: none;
+    }
+    
+    .data-tab:hover:not(.active) {
+        transform: none;
+    }
+}
+
+/* Mobile optimizations */
+@media (max-width: 500px) {
+    .data-tabs {
+        height: 36px;
+    }
+    
+    .data-tab {
+        padding: 6px 10px;
+        font-size: 0.8rem;
+    }
+    
+    .data-tab.active {
+        height: 38px;
+    }
 } 

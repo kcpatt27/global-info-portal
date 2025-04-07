@@ -1,47 +1,122 @@
-/* Navigation sidebar */
+/* Navigation sidebar - positioned on the right side */
 .nav-sidebar {
     position: fixed;
-    right: 0;
-    top: 0;
-    height: 100vh;
-    width: 60px;
-    background-color: var(--color-surface);
+    top: 20px;
+    right: 20px;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    padding: 20px 0;
-    z-index: 15;
-    box-shadow: -2px 0 5px rgba(0, 0, 0, 0.3);
-    transform: translateX(100%);
-    transition: transform var(--transition-slow) var(--easing-standard);
+    background-color: var(--color-sidebar-bg);
+    border-radius: 8px;
+    padding: 10px;
+    z-index: 30;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    /* Hidden by default */
+    opacity: 0;
+    transform: translateX(50px);
+    transition: opacity var(--transition-medium) var(--easing-standard),
+                transform var(--transition-medium) var(--easing-standard);
+    will-change: transform, opacity;
+    pointer-events: none;
 }
 
+/* Show nav sidebar when it has the visible class */
 .nav-sidebar.visible {
-    transform: translateX(0);
+    opacity: 1;
+    pointer-events: all;
+    transform: translateX(0); /* Desktop transform */
 }
 
 .nav-button {
     width: 40px;
     height: 40px;
-    border-radius: 50%;
+    margin-bottom: 10px;
     background-color: var(--color-nav-button-bg);
     border: none;
+    border-radius: 6px;
     color: var(--color-text-primary);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-bottom: 15px;
     cursor: pointer;
-    transition: all var(--transition-medium) var(--easing-standard);
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    transition: background-color var(--transition-fast) var(--easing-standard),
+                transform var(--transition-fast) var(--easing-standard);
 }
 
 .nav-button:hover {
-    background-color: var(--color-nav-button-hover-bg);
     transform: translateY(-2px);
-    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+    background-color: var(--color-nav-button-hover);
+}
+
+/* Apply will-change only during hover to save resources */
+.nav-button:hover {
+    will-change: transform;
+}
+
+.nav-button:last-child {
+    margin-bottom: 0;
 }
 
 .nav-button i {
     font-size: 20px;
-} 
+}
+
+/* Grouped media queries */
+@media (max-width: 768px) {
+    .nav-sidebar {
+        top: auto; /* Override desktop positioning */
+        right: auto; /* Override desktop positioning */
+        left: 50%; /* Center horizontally */
+        bottom: 10px; /* Position at bottom */
+        padding: 8px;
+        flex-direction: row; /* Horizontal layout on mobile */
+    }
+    
+    /* Override transform for mobile specifically */
+    .nav-sidebar.visible {
+        transform: translateX(-50%); /* Restore mobile-specific transform */
+    }
+    
+    .nav-button {
+        height: 28px;
+        width: 36px;
+        border-radius: 50%; /* Make buttons round on mobile */
+        margin: 0 4px; /* Horizontal margins for row layout */
+    }
+    
+    /* Override last-child margin for horizontal layout */
+    .nav-button:last-child {
+        margin-bottom: 0;
+        margin-right: 0;
+    }
+    
+    /* Override first-child margin for horizontal layout */
+    .nav-button:first-child {
+        margin-left: 0;
+    }
+    
+    .nav-button i {
+        font-size: 18px;
+    }
+}
+
+@media (max-width: 480px) {
+    .nav-button {
+        width: 36px;
+        height: 28px;
+    }
+    
+    /* Add a toggle button for mobile navigation */
+    .mobile-nav-toggle {
+        position: fixed;
+        top: 10px;
+        right: 10px;
+        width: 36px;
+        height: 36px;
+        background-color: var(--color-surface);
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 16;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        border: none;
+        color: var(--color-text-primary);
+    }
+}

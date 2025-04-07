@@ -1,5 +1,5 @@
 // map.js - Module for interactive map rendering and country selection
-// This file contains all map-related functionality extracted from index.html
+// This file contains all map-related functionality extracted from draggable
 
 /**
  * Map Module

@@ -1,0 +1,12 @@
+---
+description: generating files, editing files
+globs: 
+---
+
+# Always Check for Similar File when Creating a New File
+
+- When creating a new file, always check the codebase for that file or something similar to ensure that you need to create instead of edit or vice versa.
+
+# Always Check for Similar Files when Editing a File
+
+- When editing a file, always check the codebase for that file or something similar to ensure that you need to edit instead of create or vice versa.

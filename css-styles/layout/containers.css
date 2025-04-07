@@ -1,0 +1,223 @@
+/* Container Queries */
+
+/*
+ * Container queries allow for component-specific responsive behaviors
+ * independent of viewport size. This is a more modular approach to responsive design.
+ * 
+ * Implementation Notes:
+ * - container-type: inline-size - allows for queries based on the container's inline size
+ * - container-name - assigns a name to the container for more specific targeting
+ * - @container - applies styles when the container meets the size conditions
+ */
+
+/* Define containers */
+.info-container {
+  container-type: inline-size;
+  container-name: info;
+  display: flex;
+  flex-direction: column;
+}
+
+.map-container {
+  container-type: inline-size;
+  container-name: map;
+}
+
+.quick-stats-container {
+  container-type: inline-size;
+  container-name: stats;
+}
+
+.data-panels {
+  container-type: inline-size;
+  container-name: data;
+}
+
+/* Make background-info expand to fill available space 
+ * These styles augment those in sidebar.css
+ */
+.background-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  min-height: 150px; /* Minimum height to ensure visibility */
+  max-height: none !important; /* Override any max-height restrictions */
+}
+
+.background-info .centered-text {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex: 1;
+  height: 100%;
+  text-align: center;
+}
+
+/* Content panels should take full height */
+.content-panel {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  height: 100%;
+}
+
+/* Hide inactive panels but maintain layout */
+.content-panel:not(.active) {
+  display: none;
+}
+
+/* Container query for info container */
+@container info (min-width: 400px) {
+  .quick-stats-grid {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto;
+  }
+  
+  .info-header {
+    margin-bottom: 15px;
+  }
+  
+  .background-info {
+    margin-bottom: 15px;
+    min-height: 200px;
+  }
+}
+
+@container info (min-width: 600px) {
+  .quick-stats-grid {
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: auto;
+  }
+  
+  .data-tabs {
+    flex-direction: row;
+  }
+  
+  .background-info {
+    min-height: 250px;
+  }
+}
+
+@container info (max-width: 400px) {
+  .info-header {
+    margin-bottom: 10px;
+  }
+  
+  .background-info {
+    margin-bottom: 10px;
+    min-height: 100px;
+  }
+  
+  .data-panels .data-panel {
+    padding: 10px;
+    font-size: 0.8rem;
+    min-height: 120px;
+  }
+  
+  .sidebar-button {
+    padding: 6px 8px;
+    font-size: 0.8rem;
+  }
+}
+
+/* Container query for stats container */
+@container stats (max-width: 350px) {
+  .stat-item {
+    padding: 8px;
+  }
+  
+  .stat-value {
+    font-size: 0.9rem;
+  }
+  
+  .stat-label {
+    font-size: 0.7rem;
+  }
+}
+
+/* Container query for data panels */
+@container data (max-width: 450px) {
+  .data-tab {
+    padding: 6px 8px;
+    font-size: 0.7rem;
+  }
+  
+  .data-panels .data-panel {
+    padding: 8px;
+    font-size: 0.7rem;
+    min-height: 100px;
+  }
+}
+
+/* Fallback styles for browsers without container query support 
+ * These are applied when the .no-container-queries class is added to the body
+ * by the container-queries.js polyfill
+ */
+.no-container-queries .info-container-md .quick-stats-grid {
+  grid-template-columns: 1fr 1fr;
+}
+
+.no-container-queries .info-container-md .info-header {
+  margin-bottom: 15px;
+}
+
+.no-container-queries .info-container-md .background-info {
+  margin-bottom: 15px;
+  min-height: 200px;
+}
+
+.no-container-queries .info-container-lg .quick-stats-grid {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.no-container-queries .info-container-lg .data-tabs {
+  flex-direction: row;
+}
+
+.no-container-queries .info-container-lg .background-info {
+  min-height: 250px;
+}
+
+.no-container-queries .info-container-sm .info-header {
+  margin-bottom: 10px;
+}
+
+.no-container-queries .info-container-sm .background-info {
+  margin-bottom: 10px;
+  min-height: 100px;
+}
+
+.no-container-queries .info-container-sm .data-panels .data-panel {
+  padding: 10px;
+  font-size: 0.8rem;
+  min-height: 120px;
+}
+
+.no-container-queries .info-container-sm .sidebar-button {
+  padding: 6px 8px;
+  font-size: 0.8rem;
+}
+
+.no-container-queries .stats-container-sm .stat-item {
+  padding: 8px;
+}
+
+.no-container-queries .stats-container-sm .stat-value {
+  font-size: 0.9rem;
+}
+
+.no-container-queries .stats-container-sm .stat-label {
+  font-size: 0.7rem;
+}
+
+.no-container-queries .data-container-sm .data-tab {
+  padding: 6px 8px;
+  font-size: 0.7rem;
+}
+
+.no-container-queries .data-container-sm .data-panels .data-panel {
+  padding: 8px;
+  font-size: 0.7rem;
+  min-height: 100px;
+} 

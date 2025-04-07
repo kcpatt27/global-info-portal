@@ -1,36 +1,43 @@
 /**
  * Global Info Portal - Main CSS
- * A modular CSS structure for better organization and maintenance
+ * Modular CSS approach with critical vs non-critical paths
  */
 
-/* Core foundations */
+/* Core styles - basic styling already inlined in HTML */
 @import 'core/variables.css';
-@import 'core/reset.css';
 @import 'core/typography.css';
+@import 'core/text-scaling.css';
 @import 'core/animations.css';
-@import 'core/utils.css';
-@import 'core/base.css';
+@import 'utils.css';
 
-/* Layout system */
-@import 'layout/grid.css';
-@import 'layout/content.css';
-@import 'layout/sidebar.css';
+/* Layout styles */
 @import 'layout/layout.css';
-/*/ Utilities /*/
+@import 'layout/sidebar.css';
 @import 'layout/scrollbars.css';
 @import 'layout/responsive.css';
+@import 'layout/containers.css'; /* Container queries styles */
 
-/* Component library */
+/* Mobile typography - loaded conditionally for mobile devices */
+@import 'typography/mobile.css';
+
+/* Mobile navigation patterns */
+@import 'navigation/mobile.css';
+
+/* Device-specific optimizations - feature detection within CSS handles conditional loading */
+@import 'devices/ios.css';
+@import 'devices/android.css';
+
+/* Map component (critical path - loaded early) */
+@import 'components/map.css';
+
+/* Component library - these are loaded asynchronously via css-loader.js
+ * Don't uncomment these - they're now handled by the loader!
+  
 @import 'components/navigation.css';
 @import 'components/panels.css';
-@import 'components/tables.css';
-/*/ Map features /*/
-@import 'components/map.css';
-/*/ Tab system /*/
 @import 'components/tabs.css';
-/*/ Stats and Rankings modules /*/
 @import 'components/stats.css';
-@import 'components/quick-stats.css';
 @import 'components/rankings.css';
-/*/ Data visualization /*/
 @import 'components/charts.css';
+@import 'components/quick-stats.css';
+*/

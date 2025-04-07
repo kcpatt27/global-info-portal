@@ -1,0 +1,433 @@
+/* 
+ * Mobile-specific styles for enhanced touch experience
+ * This file contains styles optimized for mobile devices
+ */
+
+/* Base Mobile Adjustments
+   ========================================================================== */
+
+@media (max-width: 768px) {
+  /* Hide elements on mobile */
+  .mobile-hidden {
+    display: none !important;
+  }
+  
+  /* Make buttons more compact on mobile */
+  .sidebar-button {
+    padding: 5px 8px;
+    font-size: 0.85rem;
+    min-width: 70px; /* Limit minimum width */
+  }
+  
+  /* Better spacing between sidebar buttons */
+  .sidebar-buttons {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 8px; /* Add spacing below buttons */
+  }
+  
+  body {
+    /* Prevent bounce scrolling on iOS */
+    overscroll-behavior: contain;
+    /* Touch-friendly scrolling */
+    -webkit-overflow-scrolling: touch;
+    /* Disable text selection for better touch experience */
+    user-select: none;
+  }
+  
+  /* Fix viewport issues on mobile devices */
+  html, body {
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+  }
+  
+  /* Remove hover states that cause sticky hover issues on mobile */
+  a:hover, button:hover, .button:hover, [role="button"]:hover {
+    transition: none !important;
+  }
+  
+  /* Apply active states for touch feedback instead */
+  .touch-active {
+    transform: scale(0.97);
+    opacity: 0.9;
+    transition: transform 0.1s ease, opacity 0.1s ease;
+  }
+  
+  /* Safari-specific fixes */
+  @supports (-webkit-touch-callout: none) {
+    .data-panel {
+      /* Fix momentum scrolling for Safari */
+      -webkit-overflow-scrolling: touch;
+    }
+  }
+}
+
+/* Optimized Tap Targets
+   ========================================================================== */
+
+@media (max-width: 768px) {
+  /* Increase touch target sizes to at least 44px (Apple's recommendation) */
+  button, .button, [role="button"], 
+  .data-tab, .sidebar-button,
+  input[type="checkbox"], input[type="radio"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Add spacing between tap targets */
+  .data-tabs {
+    gap: 8px;
+  }
+  
+  .data-tab {
+    margin-right: 4px;
+    padding: 10px 16px;
+  }
+  
+  /* Increase font size for better readability */
+  body {
+    font-size: 16px;
+  }
+  
+  /* Adjust inputs for touch */
+  input, select, textarea {
+    font-size: 16px; /* Prevents auto-zoom on iOS */
+    padding: 12px;
+  }
+  
+  /* Enlarge critical UI elements */
+  .sidebar-button {
+    padding: 12px;
+  }
+  
+  /* Make close buttons larger and more accessible */
+  .close-button {
+    padding: 10px;
+    margin: 5px;
+  }
+}
+
+/* Enhanced Mobile UI Improvements
+   ========================================================================== */
+
+@media (max-width: 768px) {
+  /* Improve the map interaction on small screens */
+  svg {
+    touch-action: pan-x pan-y; /* Enable native browser panning */
+  }
+  
+  /* Optimize data panels for mobile viewing */
+  .data-panel {
+    padding: 16px;
+    max-height: 65vh; /* Limit height to prevent panels from covering full screen */
+    border-radius: 20px 20px 0 0; /* Rounded corners at the top */
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Add pull-to-refresh indicator style */
+  .pull-to-refresh {
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #888;
+    font-size: 14px;
+  }
+  
+  /* Stats grid optimization for mobile - ensure 2x2 layout */
+  .quick-stats-grid {
+    grid-template-columns: 1fr 1fr; /* 2 columns on mobile */
+    grid-template-rows: auto auto; /* 2 rows explicitly defined */
+    gap: 12px;
+  }
+  
+  .stat-item {
+    padding: 12px;
+  }
+  
+  /* Progress indicators for mobile */
+  .loading-progress {
+    height: 4px; /* Thicker for better visibility */
+  }
+  
+  /* Loading indicator adjustments */
+  .loading-indicator {
+    height: 4px; /* Thicker for better visibility */
+  }
+  
+  /* Improve scrollbar appearance on mobile */
+  ::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+  }
+}
+
+/* Mobile-Specific Navigation
+   ========================================================================== */
+
+@media (max-width: 768px) {
+  /* Bottom navigation bar for mobile */
+  .mobile-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #fff;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    height: 60px;
+    align-items: center;
+    justify-content: space-around;
+  }
+  
+  .mobile-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    height: 100%;
+    padding: 8px 4px;
+    color: #666;
+    text-decoration: none;
+  }
+  
+  .mobile-nav-item i {
+    font-size: 20px;
+    margin-bottom: 4px;
+  }
+  
+  .mobile-nav-item span {
+    font-size: 12px;
+  }
+  
+  .mobile-nav-item.active {
+    color: #3498db;
+  }
+  
+  /* Hide desktop sidebar when mobile nav is active */
+  @media (max-width: 768px) {
+    .sidebar {
+      display: none;
+    }
+    
+    .main-content {
+      margin-left: 0;
+      padding-bottom: 60px; /* Add space for mobile nav */
+    }
+  }
+}
+
+/* Mobile Touch/Scroll Enhancements
+   ========================================================================== */
+
+@media (max-width: 768px) {
+  /* Enhance scrolling performance */
+  .data-panel, .stats-container, .info-cycling-container {
+    -webkit-overflow-scrolling: touch;
+    overflow-y: auto;
+    /* Improve scrolling performance */
+    will-change: transform;
+    /* Enable momentum scrolling */
+    scroll-behavior: smooth;
+  }
+  
+  /* Fix iOS scroll issues */
+  .panel-content-wrapper {
+    width: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Add iOS-style scroll indicators */
+  .scroll-indicator {
+    position: absolute;
+    right: 2px;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 2px;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  
+  .data-panel:hover .scroll-indicator,
+  .data-panel:active .scroll-indicator {
+    opacity: 1;
+  }
+  
+  /* Special handling for fixed elements */
+  .fixed-header, .fixed-tabs {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: #fff;
+  }
+}
+
+/* Safe Area Insets for Modern Mobile Devices
+   ========================================================================== */
+
+@supports (padding: max(0px)) {
+  @media (max-width: 768px) {
+    body {
+      --safe-area-inset-top: env(safe-area-inset-top, 0px);
+      --safe-area-inset-right: env(safe-area-inset-right, 0px);
+      --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+      --safe-area-inset-left: env(safe-area-inset-left, 0px);
+      
+      padding-top: var(--safe-area-inset-top);
+      padding-right: var(--safe-area-inset-right);
+      padding-bottom: var(--safe-area-inset-bottom);
+      padding-left: var(--safe-area-inset-left);
+    }
+    
+    .mobile-nav {
+      padding-bottom: max(10px, var(--safe-area-inset-bottom));
+      height: calc(60px + var(--safe-area-inset-bottom));
+    }
+    
+    .data-panel {
+      padding-bottom: max(16px, var(--safe-area-inset-bottom));
+    }
+  }
+}
+
+/* Gesture-based Interaction Styles
+   ========================================================================== */
+
+/* Styles for touch-specific interactions */
+.touch-device {
+  /* Subtle visual feedback for touch interactions */
+  --touch-feedback-color: rgba(255, 255, 255, 0.1);
+  --touch-active-scale: 0.97;
+  --touch-transition: transform 0.1s ease, opacity 0.1s ease;
+}
+
+/* Touch active state for interactive elements */
+.touch-device button:active,
+.touch-device .button:active,
+.touch-device [role="button"]:active,
+.touch-device .data-tab:active,
+.touch-device .sidebar-button:active,
+.touch-device .nav-button:active,
+.touch-device .touch-active {
+  transform: scale(var(--touch-active-scale));
+  opacity: 0.9;
+  background-color: var(--touch-feedback-color);
+  transition: var(--touch-transition);
+}
+
+/* Enhanced gesture support for map interactions */
+.touch-device .map-container svg {
+  touch-action: none; /* Disable browser handling to allow custom gestures */
+  -webkit-tap-highlight-color: transparent; /* Remove tap highlight on iOS */
+}
+
+/* Panel expansion styles for gesture-based interactions */
+.panel-expanded {
+  max-height: 90vh !important;
+  transition: max-height 0.3s ease;
+}
+
+.data-panels .data-panel.expanded {
+  max-height: 80vh;
+  transition: max-height 0.3s ease;
+}
+
+/* Visual feedback for swipeable elements */
+.swipeable {
+  position: relative;
+}
+
+.swipeable::after {
+  content: '';
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40px;
+  height: 4px;
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  transition: opacity 0.3s;
+}
+
+/* Stats detail modal styles */
+.stat-details-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stat-details-content {
+  background: #1c1c1c;
+  border-radius: 10px;
+  padding: 20px;
+  width: 80%;
+  max-width: 400px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.stat-value-large {
+  font-size: 32px;
+  font-weight: bold;
+  margin: 15px 0;
+  color: #90ee90;
+}
+
+/* Animation for pinch and zoom */
+@keyframes pulse {
+  0% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(1.1); opacity: 0.5; }
+  100% { transform: scale(1); opacity: 0.8; }
+}
+
+.zoom-indicator {
+  animation: pulse 1.5s infinite;
+  pointer-events: none;
+}
+
+/* Add smooth transitions for gesture-based UI changes */
+.info-container,
+.map-container,
+.data-panel,
+.sidebar-button,
+.nav-button {
+  transition: transform 0.3s ease, opacity 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Specific interaction states */
+.interaction-hint {
+  position: absolute;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.interaction-hint.visible {
+  opacity: 1;
+} 

@@ -1,0 +1,243 @@
+/* 
+ * iOS-Specific Optimizations
+ * Handles quirks and optimizations specific to iOS devices
+ */
+
+/* 
+ * iOS Detection
+ * These styles will only apply to iOS devices through feature detection
+ * Using -webkit-touch-callout which is only supported on iOS
+ */
+@supports (-webkit-touch-callout: none) {
+  /* 
+   * General iOS Optimizations
+   * ========================================================================== 
+   */
+  
+  body {
+    /* Prevent iOS text size adjustment when orientation changes, without disabling user zoom */
+    -webkit-text-size-adjust: 100%;
+    
+    /* Ensure smooth scrolling for all iOS devices */
+    -webkit-overflow-scrolling: touch;
+    
+    /* Fix for iOS zooming oddities */
+    touch-action: manipulation;
+  }
+  
+  /* Prevent tap highlight color */
+  * {
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+  }
+  
+  /* Prevent iOS text highlighting/selection during normal touch navigation */
+  .no-select, .prevent-selection {
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  
+  /* Allow selection for text content areas */
+  p, h1, h2, h3, h4, h5, h6, blockquote, .allow-selection {
+    -webkit-user-select: text;
+    user-select: text;
+  }
+  
+  /* Fix momentum scrolling for div containers */
+  .scroll-container, .data-panel, .content-scrollable {
+    -webkit-overflow-scrolling: touch;
+    overflow-y: scroll;
+  }
+  
+  /* 
+   * iOS Safe Areas and Notch Handling
+   * ========================================================================== 
+   */
+  
+  /* Handle iPhone X and newer devices with notches */
+  .app-container {
+    /* Respect iOS safe areas for all edges */
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+  
+  /* Fixed header that respects the top safe area (notch) */
+  .app-header {
+    padding-top: max(env(safe-area-inset-top), 10px);
+  }
+  
+  /* Fixed footer that respects the bottom safe area (home indicator) */
+  .mobile-nav {
+    padding-bottom: max(env(safe-area-inset-bottom), 10px);
+  }
+  
+  /* Side panels that respect left/right safe areas */
+  .side-panel-left {
+    padding-left: env(safe-area-inset-left);
+  }
+  
+  .side-panel-right {
+    padding-right: env(safe-area-inset-right);
+  }
+  
+  /* 
+   * iOS-Specific UI Adjustments
+   * ========================================================================== 
+   */
+  
+  /* Fix for iOS button styling */
+  button, .button, [role="button"] {
+    /* Prevent odd rounded corners on buttons */
+    -webkit-appearance: none;
+    border-radius: var(--radius-sm);
+  }
+  
+  /* Fix for iOS input styling */
+  input, select, textarea {
+    /* Prevent iOS styling */
+    -webkit-appearance: none;
+    border-radius: var(--radius-sm);
+    
+    /* Fix for iOS fonts not matching system UI in forms */
+    font-family: inherit;
+    
+    /* Prevent iOS zoom on focus for inputs */
+    font-size: 16px;
+  }
+  
+  /* iOS-specific checkbox and radio styling */
+  input[type="checkbox"], input[type="radio"] {
+    /* Override iOS default styles */
+    -webkit-appearance: none;
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    width: 20px;
+    height: 20px;
+    position: relative;
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 8px;
+  }
+  
+  /* Checkbox specific styling */
+  input[type="checkbox"] {
+    border-radius: var(--radius-xs);
+  }
+  
+  /* Radio specific styling */
+  input[type="radio"] {
+    border-radius: 50%;
+  }
+  
+  /* Checked states */
+  input[type="checkbox"]:checked, input[type="radio"]:checked {
+    background-color: var(--color-accent);
+    border-color: var(--color-accent);
+  }
+  
+  /* Checkbox checkmark */
+  input[type="checkbox"]:checked::after {
+    content: '';
+    position: absolute;
+    left: 6px;
+    top: 2px;
+    width: 5px;
+    height: 10px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+  }
+  
+  /* Radio button dot */
+  input[type="radio"]:checked::after {
+    content: '';
+    position: absolute;
+    left: 6px;
+    top: 6px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: white;
+  }
+  
+  /* 
+   * iOS Orientation Specific Fixes
+   * ========================================================================== 
+   */
+  
+  /* iPhone in landscape mode */
+  @media screen and (orientation: landscape) {
+    /* Adjust for limited height in landscape mode */
+    .mobile-nav {
+      height: 50px; /* Smaller nav height in landscape */
+    }
+    
+    .data-panel {
+      max-height: 60vh; /* Smaller panels in landscape */
+    }
+    
+    /* Fix for viewport issues in landscape */
+    .fullscreen-container {
+      height: 100vh;
+      width: 100vw;
+      position: fixed;
+      top: 0;
+      left: 0;
+    }
+  }
+  
+  /* 
+   * iOS Keyboard Appearance Fix
+   * ========================================================================== 
+   */
+  
+  /* Fix for elements jumping when keyboard appears */
+  .keyboard-active .mobile-nav {
+    display: none;
+  }
+  
+  /* Prevent fixed elements from jumping when keyboard appears */
+  @media screen and (max-height: 500px) {
+    .keyboard-likely-visible {
+      position: absolute;
+    }
+  }
+  
+  /* 
+   * iOS Viewport Height Fix
+   * ========================================================================== 
+   */
+  
+  /* Fix iOS 100vh issues (excludes the address bar from vh calculation) */
+  .full-height {
+    height: 100%;
+    height: -webkit-fill-available;
+  }
+  
+  /* Alternative full viewport height for iOS */
+  .viewport-height {
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
+  }
+  
+  /* 
+   * iOS Specific Motion Effects Control
+   * ========================================================================== 
+   */
+  
+  /* Respects user's reduce motion settings */
+  @media (prefers-reduced-motion) {
+    * {
+      animation-duration: 0.001s !important;
+      transition-duration: 0.001s !important;
+    }
+  }
+  
+  /* Special handling for iOS older versions */
+  @supports (-webkit-touch-callout: inherit) {
+    /* Legacy iOS fixes */
+    .legacy-ios-fix {
+      /* Fix for overflow issues in old iOS */
+      position: relative;
+      z-index: 1;
+    }
+  }
+} 

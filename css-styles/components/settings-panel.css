@@ -1,0 +1,184 @@
+/**
+ * settings-panel.css
+ * Styles for the settings panel and its components
+ */
+
+/* Settings Panel */
+#settings-panel {
+  display: none; /* Hidden by default */
+  flex-direction: column;
+  height: 100%;
+  position: absolute; /* Position over other content */
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 100; /* Ensure it's on top of other panels */
+  background-color: var(--color-sidebar-bg, #1c1c1c); /* Match background color */
+}
+
+/* Make the settings panel visible when active */
+#settings-panel.active {
+  display: flex;
+}
+
+/* Panel Header */
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 15px;
+  border-bottom: 1px solid var(--color-border-light, rgba(255, 255, 255, 0.1));
+  margin-bottom: 15px;
+}
+
+.panel-header h2 {
+  font-size: 1.2rem;
+  color: var(--color-text-light, #ffffff);
+  margin: 0;
+}
+
+.close-panel-button {
+  background: transparent;
+  border: none;
+  color: var(--color-text-secondary, #aaaaaa);
+  font-size: 1.5rem;
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.close-panel-button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--color-text-light, #ffffff);
+}
+
+/* Panel Content */
+.panel-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 15px 15px;
+}
+
+/* Settings Sections */
+.settings-section {
+  margin-bottom: 25px;
+}
+
+.settings-section h3 {
+  font-size: 1rem;
+  color: var(--color-text-light, #ffffff);
+  margin: 0 0 15px 0;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--color-border-light, rgba(255, 255, 255, 0.1));
+}
+
+/* Settings Items */
+.settings-item {
+  margin-bottom: 15px;
+  padding: 10px;
+  background-color: var(--color-quick-stats-item-bg, rgba(30, 30, 40, 0.5));
+  border-radius: 8px;
+}
+
+/* Toggle Container */
+.settings-toggle-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.settings-option-label {
+  font-size: 0.95rem;
+  color: var(--color-text-secondary, #aaaaaa);
+}
+
+/* Settings Toggle Buttons */
+.reading-mode-toggle {
+  background-color: var(--color-element-bg, #2a2a35);
+  color: var(--color-text-secondary, #aaaaaa);
+  border: 1px solid var(--color-border-dark, #3a3a45);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.reading-mode-toggle:hover {
+  background-color: var(--color-element-hover, #3a3a45);
+  color: var(--color-text-light, #ffffff);
+}
+
+.reading-mode-toggle.active {
+  background-color: var(--color-accent, #3498db);
+  color: white;
+  border-color: var(--color-accent, #3498db);
+}
+
+/* Icon Button in Header */
+.icon-button {
+  background: transparent;
+  border: none;
+  color: var(--color-text-secondary, #aaaaaa);
+  font-size: 1.1rem;
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.2s, color 0.2s;
+  margin-right: 5px;
+}
+
+.icon-button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--color-text-light, #ffffff);
+}
+
+/* Header Controls Container */
+.header-controls {
+  display: flex;
+  align-items: center;
+}
+
+/* Mobile Optimizations */
+@media (max-width: 768px) {
+  .panel-header {
+    padding: 8px 12px;
+    margin-bottom: 10px;
+  }
+  
+  .panel-content {
+    padding: 0 12px 12px;
+  }
+  
+  .settings-section h3 {
+    font-size: 0.95rem;
+    margin-bottom: 12px;
+  }
+  
+  .settings-item {
+    padding: 8px;
+    margin-bottom: 12px;
+  }
+  
+  .reading-mode-toggle {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .settings-option-label {
+    font-size: 0.9rem;
+  }
+} 

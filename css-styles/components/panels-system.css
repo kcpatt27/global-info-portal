@@ -1,0 +1,354 @@
+/**
+ * Panel System Standardized Styles
+ * 
+ * Common styles for standardized panel components:
+ * - Panel layout and structure
+ * - Loading and error states
+ * - Virtual scrolling styles
+ * - Responsive behavior
+ */
+
+/* Base Panel Container */
+.panel {
+  display: flex;
+  flex-direction: column;
+  background: var(--panel-bg, #ffffff);
+  border-radius: var(--panel-radius, 4px);
+  box-shadow: var(--panel-shadow, 0 2px 8px rgba(0, 0, 0, 0.1));
+  overflow: hidden;
+  height: 100%;
+  position: relative;
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+.panel.active {
+  box-shadow: var(--panel-active-shadow, 0 4px 12px rgba(0, 0, 0, 0.15));
+}
+
+/* Panel Header */
+.panel-header {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  background: var(--panel-header-bg, #f5f5f7);
+  border-bottom: 1px solid var(--panel-border-color, #eaeaea);
+  z-index: 2; /* Keep above panel content when scrolling */
+}
+
+.panel-title {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--panel-title-color, #333);
+  flex: 1;
+}
+
+/* Panel Content Container */
+.panel-content {
+  flex: 1;
+  overflow: auto;
+  position: relative;
+  padding: 16px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb, rgba(0, 0, 0, 0.2)) transparent;
+}
+
+.panel-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.panel-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.panel-content::-webkit-scrollbar-thumb {
+  background-color: var(--scrollbar-thumb, rgba(0, 0, 0, 0.2));
+  border-radius: 4px;
+}
+
+/* Loading Indicator */
+.panel-loading {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.8);
+  z-index: 10;
+  backdrop-filter: blur(2px);
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(0, 0, 0, 0.1);
+  border-radius: 50%;
+  border-top-color: var(--primary-color, #3498db);
+  animation: spin 1s ease-in-out infinite;
+  margin-bottom: 10px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Error Display */
+.panel-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(255, 235, 235, 0.9);
+  color: #e74c3c;
+  border-radius: 4px;
+  margin: 10px;
+  text-align: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.error-icon {
+  font-size: 2rem;
+  margin-bottom: 10px;
+}
+
+.error-message {
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+/* Virtual Scrolling */
+.virtual-scroll-container {
+  position: relative;
+  overflow-y: auto;
+  overflow-x: hidden;
+  width: 100%;
+  height: 100%;
+}
+
+.virtual-scroll-content {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  will-change: transform;
+}
+
+.virtual-scroll-spacer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.virtual-item {
+  width: 100%;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--item-border-color, #eee);
+  box-sizing: border-box;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.virtual-item:hover {
+  background-color: var(--item-hover-bg, rgba(0, 0, 0, 0.02));
+}
+
+/* Panel Default Content */
+.panel-default-content {
+  padding: 20px;
+  color: #666;
+}
+
+.panel-default-content h3 {
+  margin-top: 0;
+  color: #333;
+}
+
+.panel-default-content pre {
+  background: #f5f5f5;
+  padding: 10px;
+  border-radius: 4px;
+  overflow: auto;
+  font-size: 0.9rem;
+  max-height: 300px;
+}
+
+/* Panel Controls */
+.panel-controls {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.panel-control-btn {
+  background: none;
+  border: none;
+  padding: 6px;
+  border-radius: 4px;
+  cursor: pointer;
+  color: var(--control-color, #666);
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.panel-control-btn:hover {
+  background-color: var(--control-hover-bg, rgba(0, 0, 0, 0.05));
+  color: var(--control-hover-color, #333);
+}
+
+/* Panel Empty State */
+.panel-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  text-align: center;
+  color: #999;
+  height: 100%;
+}
+
+.panel-empty-state .icon {
+  font-size: 3rem;
+  margin-bottom: 15px;
+  opacity: 0.6;
+}
+
+.panel-empty-state .message {
+  font-size: 1.1rem;
+  margin-bottom: 10px;
+}
+
+.panel-empty-state .sub-message {
+  font-size: 0.9rem;
+  max-width: 300px;
+  line-height: 1.5;
+}
+
+/* Responsive Behavior */
+@media (max-width: 768px) {
+  .panel-content {
+    padding: 12px;
+  }
+  
+  .panel-header {
+    padding: 10px 12px;
+  }
+  
+  .panel-title {
+    font-size: 1rem;
+  }
+  
+  .virtual-item {
+    padding: 8px 12px;
+  }
+}
+
+/* High Contrast Mode & Accessibility */
+@media (prefers-contrast: more) {
+  .panel {
+    border: 2px solid #000;
+  }
+  
+  .panel-header {
+    background: #f0f0f0;
+    border-bottom: 2px solid #000;
+  }
+  
+  .panel-title {
+    color: #000;
+  }
+  
+  .panel-loading {
+    background: rgba(255, 255, 255, 0.95);
+  }
+  
+  .spinner {
+    border-color: rgba(0, 0, 0, 0.3);
+    border-top-color: #000;
+  }
+  
+  .panel-error {
+    background: #ffebeb;
+    color: #d00;
+    border: 2px solid #d00;
+  }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  .panel {
+    transition: none;
+  }
+  
+  .spinner {
+    animation-duration: 2s;
+  }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  .panel {
+    background: var(--panel-bg-dark, #272727);
+    box-shadow: var(--panel-shadow-dark, 0 2px 8px rgba(0, 0, 0, 0.3));
+  }
+  
+  .panel.active {
+    box-shadow: var(--panel-active-shadow-dark, 0 4px 12px rgba(0, 0, 0, 0.4));
+  }
+  
+  .panel-header {
+    background: var(--panel-header-bg-dark, #333);
+    border-bottom-color: var(--panel-border-color-dark, #444);
+  }
+  
+  .panel-title {
+    color: var(--panel-title-color-dark, #eee);
+  }
+  
+  .panel-loading {
+    background: rgba(30, 30, 30, 0.8);
+  }
+  
+  .spinner {
+    border-color: rgba(255, 255, 255, 0.1);
+    border-top-color: var(--primary-color, #3498db);
+  }
+  
+  .panel-error {
+    background: rgba(40, 20, 20, 0.9);
+    color: #ff6b6b;
+  }
+  
+  .panel-default-content {
+    color: #bbb;
+  }
+  
+  .panel-default-content h3 {
+    color: #ddd;
+  }
+  
+  .panel-default-content pre {
+    background: #333;
+    color: #eee;
+  }
+  
+  .virtual-item {
+    border-bottom-color: var(--item-border-color-dark, #333);
+  }
+  
+  .virtual-item:hover {
+    background-color: var(--item-hover-bg-dark, rgba(255, 255, 255, 0.05));
+  }
+  
+  .panel-empty-state {
+    color: #777;
+  }
+} 

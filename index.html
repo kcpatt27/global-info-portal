@@ -2,11 +2,98 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- Enhanced viewport configuration for mobile devices -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, minimum-scale=1.0, viewport-fit=cover">
+    <!-- Prevent phone number detection on iOS -->
+    <meta name="format-detection" content="telephone=no">
+    <!-- Disable automatic text size adjustment on iOS -->
+    <meta name="text-size-adjust" content="100%">
+    <!-- Ensure proper rendering and touch zooming -->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <!-- Mobile web app capable -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <!-- Status bar style for iOS -->
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <!-- Theme color for browser UI elements -->
+    <meta name="theme-color" content="#121212">
     <title>Global Information Portal</title>
-    <link rel="stylesheet" href="css-styles/main.css">
-    <!-- Add Font Awesome for icons -->
+    <style>
+        /* Critical CSS inlined */
+        *{margin:0;padding:0;box-sizing:border-box}
+        body,html{height:100%;font-family:'Helvetica Neue',Arial,sans-serif;background-color:#121212;color:#e0e0e0}
+        .container{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);grid-template-rows:100vh;width:100%;height:100vh;overflow:hidden}
+        .info-container{background-color:#1c1c1c;padding:20px;overflow-y:auto;position:relative;z-index:20;display:flex;flex-direction:column;box-shadow:-5px 0 15px rgba(0,0,0,0.2)}
+        .map-container{position:relative;overflow:hidden;display:flex;justify-content:center;align-items:center;background-color:#000}
+        .country{fill:#90ee90;stroke:#000;cursor:pointer}
+        .ocean{fill:rgb(117,114,111)}
+        @media (max-width:768px){
+          .container{grid-template-columns:1fr;grid-template-rows:minmax(0,60vh) minmax(0,40vh);height:100%;overflow:auto}
+          .info-container{padding:15px;width:100%;position:relative;bottom:0;box-shadow:0 -5px 15px rgba(0,0,0,0.2);max-height:40vh}
+        }
+    </style>
+    <!-- Async load non-critical CSS -->
+    <link rel="preload" href="css-styles/main.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="css-styles/main.css"></noscript>
+    <!-- Add Font Awesome for icons ; dev: "might not need to be inlined" -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="css-styles/mobile.css">
+    <!-- Add our new mobile layout CSS file -->
+    <link rel="stylesheet" href="css-styles/layout/mobile-layout.css">
+    <!-- Mobile navigation styles -->
+    <link rel="stylesheet" href="css-styles/navigation/mobile.css">
+    <!-- Settings panel styles -->
+    <link rel="stylesheet" href="css-styles/components/settings-panel.css">
+    <!-- Preload mobile interaction styles -->
+    <link rel="preload" href="css-styles/interaction/mobile-touch.css" as="style" media="(max-width: 768px)">
+    <!-- Preload enhanced mobile typography styles -->
+    <link rel="preload" href="css-styles/typography/mobile-refined.css" as="style" media="(max-width: 768px)">
+    
+    <!-- CSS Loader Script -->
+    <script>
+    // This function will load CSS files asynchronously
+    function loadCSS(href) {
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = href;
+      link.media = 'all';
+      document.head.appendChild(link);
+    }
+
+    // Load non-critical CSS files after page load
+    window.addEventListener('load', function() {
+      // Detect if we're on a mobile device
+      const isMobile = window.innerWidth <= 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      
+      // Component styles that aren't needed immediately
+      const nonCriticalCSS = [
+        'css-styles/components/tabs.css',
+        'css-styles/components/stats.css',
+        'css-styles/components/rankings.css',
+        'css-styles/components/charts.css',
+        'css-styles/components/quick-stats.css',
+        'css-styles/components/navigation.css',
+        'css-styles/components/panels.css'
+      ];
+      
+      // Load mobile-specific styles if on mobile device
+      if (isMobile) {
+        nonCriticalCSS.push('css-styles/components/panels-mobile.css');
+        nonCriticalCSS.push('css-styles/interaction/mobile-touch.css');
+        nonCriticalCSS.push('css-styles/typography/mobile-refined.css');
+      }
+      
+      // Load each file with a small delay to prioritize interactivity
+      let delay = 100;
+      nonCriticalCSS.forEach(file => {
+        setTimeout(() => loadCSS(file), delay);
+        delay += 50; // Stagger the loading
+      });
+    });
+    </script>
+    
+    <!-- Device Detection Script - loads deferred to not block rendering -->
+    <script src="css-styles/devices/device-detection.js" defer></script>
 </head>
 <body>
     <div class="container">
@@ -17,7 +104,9 @@
             <div class="info-header">
                 <div class="flag">FLAG</div>
                 <div class="country-info">COUNTRY INFO</div>
-                <button class="close-sidebar" id="close-sidebar" aria-label="Close Sidebar">×</button>
+                <div class="header-controls">
+                    <button class="close-sidebar mobile-hidden" id="close-sidebar" aria-label="Close Sidebar">×</button>
+                </div>
             </div>
             
             <div class="sidebar-buttons">
@@ -79,6 +168,22 @@
                     <div class="data-panel" data-panel="1">Rankings Data</div>
                 </div>
             </div>
+            
+            <!-- Settings Panel -->
+            <div class="content-panel" id="settings-panel">
+                <div class="panel-header">
+                    <h2>Settings</h2>
+                    <button class="close-panel-button" aria-label="Close Settings">&times;</button>
+                </div>
+                <div class="panel-content">
+                    <div class="settings-section">
+                        <h3>Display Options</h3>
+                        <div id="reading-mode-container" class="settings-item">
+                            <!-- Reading mode toggle will be inserted here by typography-enhancements.js -->
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
     
@@ -101,11 +206,430 @@
         </button>
     </div>
     
+    <!-- Mobile Navigation Container (will be populated by MobileNav.js) -->
+    <div class="mobile-nav-container">
+        <div class="mobile-nav-bar">
+            <!-- <a href="#" class="mobile-nav-item" data-nav-id="map">
+                <i class="fas fa-map-marked-alt nav-icon"></i>
+                <span class="nav-text">Map</span>
+            </a> -->
+            <a href="#" class="mobile-nav-item" data-nav-id="info">
+                <i class="fas fa-info-circle nav-icon"></i>
+                <span class="nav-text">Info</span>
+            </a>
+            <a href="#" class="mobile-nav-item" data-nav-id="data">
+                <i class="fas fa-chart-bar nav-icon"></i>
+                <span class="nav-text">Data</span>
+            </a>
+            <a href="#" class="mobile-nav-item" data-nav-id="search">
+                <i class="fas fa-search nav-icon"></i>
+                <span class="nav-text">Search</span>
+            </a>
+            <a href="#" class="mobile-nav-item" data-nav-id="settings">
+                <i class="fas fa-cog nav-icon"></i>
+                <span class="nav-text">More</span>
+            </a>
+        </div>
+    </div>
+    
+    <!-- Hamburger Menu Components -->
+    <!-- <button class="hamburger-menu-toggle" aria-label="Toggle Menu">
+        <div class="hamburger-icon">
+            <span></span><span></span><span></span><span></span>
+        </div>
+    </button> -->
+    <!-- <div class="hamburger-menu-panel">
+        <div class="hamburger-menu-items">
+            <div class="hamburger-menu-section">Navigation</div>
+            <div class="hamburger-menu-item">
+                <a href="#" class="hamburger-menu-link" data-menu-id="map">
+                    <i class="fas fa-map-marked-alt"></i>
+                    <span>World Map</span>
+                </a>
+            </div>
+            <div class="hamburger-menu-item">
+                <a href="#" class="hamburger-menu-link" data-menu-id="info">
+                    <i class="fas fa-info-circle"></i>
+                    <span>Country Info</span>
+                </a>
+            </div>
+            <div class="hamburger-menu-item">
+                <a href="#" class="hamburger-menu-link" data-menu-id="data">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>Data &amp; Statistics</span>
+                </a>
+            </div>
+            <div class="hamburger-menu-divider"></div>
+            <div class="hamburger-menu-section">Tools</div>
+            <div class="hamburger-menu-item">
+                <a href="#" class="hamburger-menu-link" data-menu-id="search">
+                    <i class="fas fa-search"></i>
+                    <span>Search Countries</span>
+                </a>
+            </div>
+            <div class="hamburger-menu-item">
+                <a href="#" class="hamburger-menu-link" data-menu-id="compare">
+                    <i class="fas fa-balance-scale"></i>
+                    <span>Compare Countries</span>
+                </a>
+            </div>
+            <div class="hamburger-menu-divider"></div>
+            <div class="hamburger-menu-section">Settings</div>
+            <div class="hamburger-menu-item">
+                <a href="#" class="hamburger-menu-link" data-menu-id="theme">
+                    <i class="fas fa-palette"></i>
+                    <span>Change Theme</span>
+                </a>
+            </div>
+            <div class="hamburger-menu-item">
+                <a href="#" class="hamburger-menu-link" data-menu-id="help">
+                    <i class="fas fa-question-circle"></i>
+                    <span>Help &amp; Documentation</span>
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="hamburger-menu-overlay"></div> -->
+    
+    <!-- Touch protection area for devices with home indicators -->
+    <div class="touch-protection-area"></div>
+    
     <!-- External libraries -->
     <script src="https://unpkg.com/d3@5.6.0/dist/d3.min.js"></script>
     <script src="https://unpkg.com/topojson@3.0.2/dist/topojson.min.js"></script>
     
     <!-- Application main script -->
     <script type="module" src="js/main.js"></script>
+
+    <!-- Mobile layout expansion script -->
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Check if we're on a mobile device
+      const isMobile = window.matchMedia('(max-width: 768px)').matches;
+      
+      if (isMobile) {
+        // Initialize info container interactions
+        const infoContainer = document.querySelector('.info-container');
+        const mapContainer = document.querySelector('.map-container');
+        const navSidebar = document.querySelector('.nav-sidebar');
+        const mobileNavContainer = document.querySelector('.mobile-nav-container');
+        
+        // Function to handle sidebar collapse
+        window.collapseSidebar = function() {
+          infoContainer.classList.add('collapsed');
+          navSidebar.classList.add('visible');
+          
+          // Show mobile navigation when sidebar is collapsed
+          if (mobileNavContainer) {
+            mobileNavContainer.classList.remove('hidden');
+          }
+          
+          // Show the map fully when sidebar is collapsed
+          if (mapContainer) {
+            mapContainer.classList.add('expanded');
+          }
+        };
+        
+        // Function to handle sidebar expansion
+        window.expandSidebar = function() {
+          infoContainer.classList.remove('collapsed');
+          navSidebar.classList.remove('visible');
+          
+          // Hide mobile navigation when sidebar is expanded
+          if (mobileNavContainer) {
+            mobileNavContainer.classList.add('hidden');
+          }
+          
+          // Contract the map when sidebar is shown
+          if (mapContainer) {
+            mapContainer.classList.remove('expanded');
+          }
+        };
+        
+        // Set up initial state - sidebar is visible initially on mobile
+        if (infoContainer) {
+          // Ensure sidebar is visible initially 
+          infoContainer.classList.remove('collapsed');
+          navSidebar.classList.remove('visible');
+          
+          // Hide mobile navigation initially when sidebar is expanded
+          if (mobileNavContainer) {
+            mobileNavContainer.classList.add('hidden');
+          }
+          
+          // Add swipe-down gesture to close panel
+          let touchStartY = 0;
+          let touchEndY = 0;
+          const SWIPE_THRESHOLD = 50; // Minimum distance for swipe
+          
+          infoContainer.addEventListener('touchstart', (e) => {
+            touchStartY = e.touches[0].clientY;
+          }, { passive: true });
+          
+          infoContainer.addEventListener('touchmove', (e) => {
+            touchEndY = e.touches[0].clientY;
+            
+            // Calculate distance
+            const swipeDistance = touchEndY - touchStartY;
+            
+            // If swiping down and not scrolling an inner element
+            if (swipeDistance > 10) {
+              // Add visual feedback during swipe
+              infoContainer.classList.add('swiping');
+              
+              // Add slight move to the panel based on swipe distance (max 30px)
+              const moveDistance = Math.min(swipeDistance * 0.3, 30);
+              infoContainer.style.transform = `translateY(${moveDistance}px)`;
+              
+              // Prevent default only when we're at the top of the scrollable content
+              // to avoid interfering with normal scrolling
+              const scrollTop = e.target.closest('.content-panel')?.scrollTop || 0;
+              if (scrollTop <= 0) {
+                e.preventDefault();
+              }
+            }
+          }, { passive: false });
+          
+          infoContainer.addEventListener('touchend', (e) => {
+            const swipeDistance = touchEndY - touchStartY;
+            
+            // Remove visual feedback
+            infoContainer.classList.remove('swiping');
+            
+            // Reset transform
+            infoContainer.style.transform = '';
+            
+            // If swipe down distance is greater than threshold
+            if (swipeDistance > SWIPE_THRESHOLD) {
+              window.collapseSidebar();
+            }
+            
+            // Reset values
+            touchStartY = 0;
+            touchEndY = 0;
+          });
+          
+          // Also remove swiping class when touch is canceled
+          infoContainer.addEventListener('touchcancel', () => {
+            infoContainer.classList.remove('swiping');
+            infoContainer.style.transform = '';
+            touchStartY = 0;
+            touchEndY = 0;
+          });
+          
+          // Close button event - explicitly binding the collapseSidebar function
+          const closeButton = document.getElementById('close-sidebar');
+          if (closeButton) {
+            closeButton.addEventListener('click', function(e) {
+              e.preventDefault();
+              window.collapseSidebar();
+            });
+          }
+          
+          // Open button event
+          const openButton = document.getElementById('open-sidebar');
+          if (openButton) {
+            openButton.addEventListener('click', function(e) {
+              e.preventDefault();
+              window.expandSidebar();
+            });
+          }
+          
+          // Handle mobile nav item clicks
+          document.querySelectorAll('.mobile-nav-item').forEach(item => {
+            item.addEventListener('click', (e) => {
+              e.preventDefault();
+              
+              // Get the nav ID
+              const navId = item.getAttribute('data-nav-id');
+              
+              // Set active nav item
+              document.querySelectorAll('.mobile-nav-item').forEach(navItem => {
+                navItem.classList.remove('active');
+              });
+              item.classList.add('active');
+              
+              // Handle navigation action
+              if (navId === 'map') {
+                window.collapseSidebar();
+              } else if (navId === 'info' || navId === 'data') {
+                window.expandSidebar();
+                
+                // Switch to correct panel
+                document.querySelectorAll('.sidebar-button').forEach(btn => {
+                  btn.classList.remove('active');
+                });
+                document.querySelectorAll('.content-panel').forEach(panel => {
+                  panel.classList.remove('active');
+                });
+                
+                const panelId = navId + '-panel';
+                document.querySelector(`.sidebar-button[data-panel="${navId}"]`).classList.add('active');
+                document.getElementById(panelId).classList.add('active');
+              }
+            });
+          });
+          
+          // Set the first nav item as active by default
+          const firstNavItem = document.querySelector('.mobile-nav-item');
+          if (firstNavItem) {
+            firstNavItem.classList.add('active');
+          }
+          
+          // Handle hamburger menu
+          const hamburgerToggle = document.querySelector('.hamburger-menu-toggle');
+          const hamburgerPanel = document.querySelector('.hamburger-menu-panel');
+          const hamburgerOverlay = document.querySelector('.hamburger-menu-overlay');
+          
+          if (hamburgerToggle && hamburgerPanel && hamburgerOverlay) {
+            // Toggle menu on hamburger click
+            hamburgerToggle.addEventListener('click', () => {
+              hamburgerToggle.classList.toggle('active');
+              hamburgerPanel.classList.toggle('active');
+              hamburgerOverlay.classList.toggle('active');
+            });
+            
+            // Close menu on overlay click
+            hamburgerOverlay.addEventListener('click', () => {
+              hamburgerToggle.classList.remove('active');
+              hamburgerPanel.classList.remove('active');
+              hamburgerOverlay.classList.remove('active');
+            });
+            
+            // Handle menu item clicks
+            document.querySelectorAll('.hamburger-menu-link').forEach(link => {
+              link.addEventListener('click', (e) => {
+                e.preventDefault();
+                
+                // Close the menu
+                hamburgerToggle.classList.remove('active');
+                hamburgerPanel.classList.remove('active');
+                hamburgerOverlay.classList.remove('active');
+                
+                // Handle navigation based on menu-id
+                const menuId = link.getAttribute('data-menu-id');
+                
+                // Find and trigger the corresponding mobile nav item if it exists
+                const navItem = document.querySelector(`.mobile-nav-item[data-nav-id="${menuId}"]`);
+                if (navItem) {
+                  navItem.click();
+                }
+              });
+            });
+          }
+          
+          // Add device-specific class detection
+          // Check for iOS devices
+          const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+          if (isIOS) {
+            document.body.classList.add('ios-device');
+          }
+          
+          // Check for home indicator (iPhone X and newer)
+          if (isIOS && window.screen.height >= 812) {
+            document.body.classList.add('has-home-indicator');
+          }
+          
+          // Check for Android devices
+          const isAndroid = /Android/.test(navigator.userAgent);
+          if (isAndroid) {
+            document.body.classList.add('android-device');
+          }
+          
+          // Handle Settings Panel Toggle
+          const settingsToggleButton = document.getElementById('toggle-settings');
+          const settingsPanel = document.getElementById('settings-panel');
+          const closePanelButton = document.querySelector('#settings-panel .close-panel-button');
+          let lastActivePanel = null;
+          
+          if (settingsToggleButton && settingsPanel) {
+            // Open settings when the settings button is clicked
+            settingsToggleButton.addEventListener('click', function(e) {
+              e.preventDefault();
+              
+              // Expand the sidebar if it's collapsed
+              if (infoContainer.classList.contains('collapsed')) {
+                window.expandSidebar();
+              }
+              
+              // Store the currently active panel
+              lastActivePanel = document.querySelector('.content-panel.active');
+              
+              // Hide all content panels
+              document.querySelectorAll('.content-panel').forEach(panel => {
+                panel.classList.remove('active');
+              });
+              
+              // Show settings panel
+              settingsPanel.classList.add('active');
+              
+              // Update sidebar buttons visual state (unselect all)
+              document.querySelectorAll('.sidebar-button').forEach(btn => {
+                btn.classList.remove('active');
+              });
+            });
+            
+            // Close settings when the close button is clicked
+            if (closePanelButton) {
+              closePanelButton.addEventListener('click', function() {
+                // Hide settings panel
+                settingsPanel.classList.remove('active');
+                
+                // Restore the last active panel or default to info panel
+                if (lastActivePanel) {
+                  lastActivePanel.classList.add('active');
+                  
+                  // Update sidebar button state to match
+                  const panelId = lastActivePanel.id;
+                  const panelType = panelId.replace('-panel', '');
+                  const sidebarButton = document.querySelector(`.sidebar-button[data-panel="${panelType}"]`);
+                  if (sidebarButton) {
+                    sidebarButton.classList.add('active');
+                  }
+                } else {
+                  // Default to info panel
+                  document.getElementById('info-panel').classList.add('active');
+                  document.querySelector('.sidebar-button[data-panel="info"]').classList.add('active');
+                }
+              });
+            }
+          }
+          
+          // Make the mobile nav settings button also open the settings panel
+          const mobileSettingsButton = document.querySelector('.mobile-nav-item[data-nav-id="settings"]');
+          if (mobileSettingsButton && settingsPanel) {
+            mobileSettingsButton.addEventListener('click', function(e) {
+              e.preventDefault();
+              
+              // Set active nav item
+              document.querySelectorAll('.mobile-nav-item').forEach(navItem => {
+                navItem.classList.remove('active');
+              });
+              mobileSettingsButton.classList.add('active');
+              
+              // Expand sidebar if collapsed
+              window.expandSidebar();
+              
+              // Store the currently active panel
+              lastActivePanel = document.querySelector('.content-panel.active');
+              
+              // Hide all content panels
+              document.querySelectorAll('.content-panel').forEach(panel => {
+                panel.classList.remove('active');
+              });
+              
+              // Show settings panel
+              settingsPanel.classList.add('active');
+              
+              // Update sidebar buttons visual state (unselect all)
+              document.querySelectorAll('.sidebar-button').forEach(btn => {
+                btn.classList.remove('active');
+              });
+            });
+          }
+        }
+      }
+    });
+    </script>
 </body>
 </html>

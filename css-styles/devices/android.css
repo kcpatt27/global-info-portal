@@ -1,0 +1,268 @@
+/* 
+ * Android-Specific Optimizations
+ * Handles quirks and optimizations specific to Android devices
+ */
+
+/* 
+ * Android Detection 
+ * Only apply these styles to Android devices using feature detection
+ * Looking for properties that only apply to Android browsers (primarily Chrome for Android)
+ */
+@supports (-webkit-overflow-scrolling: touch) and (not (-webkit-touch-callout: none)) {
+  /* 
+   * General Android Optimizations
+   * ========================================================================== 
+   */
+  
+  body {
+    /* Optimize legibility for Android */
+    text-rendering: optimizeLegibility;
+    /* Android Chrome scroll behavior */
+    overflow-x: hidden;
+    /* Prevent Android text size adjustment on orientation change */
+    -webkit-text-size-adjust: 100%;
+    /* Improve input touch behavior */
+    touch-action: manipulation;
+  }
+  
+  /* Prevent tap highlight color on mobile Chrome/Android browsers */
+  * {
+    -webkit-tap-highlight-color: transparent;
+    /* Smoothing text on Android */
+    -webkit-font-smoothing: antialiased;
+  }
+  
+  /* Improved handling for fixed position elements */
+  .fixed-element {
+    /* Fix for Android Chrome fixed position issues */
+    transform: translateZ(0);
+    will-change: transform;
+  }
+  
+  /* Fix scrolling issues on Android */
+  .scroll-container, .data-panel, .content-scrollable {
+    /* Enable smoother scrolling for Android */
+    -webkit-overflow-scrolling: auto;
+    overflow-y: auto;
+    /* Fix for overscroll effects */
+    overscroll-behavior: contain;
+  }
+  
+  /* 
+   * Android Fragmentation Fixes
+   * ========================================================================== 
+   */
+  
+  /* Target older Android devices */
+  @supports (-webkit-border-image: none) {
+    /* Support for older Android browsers (pre-Chrome) */
+    .legacy-android-support {
+      /* Fallbacks for older Android browsers */
+      -webkit-overflow-scrolling: auto;
+      overflow-y: auto;
+    }
+    
+    /* Fix rendering issues on older Androids */
+    .data-panel, .chart-container {
+      /* Force GPU acceleration on older devices */
+      transform: translateZ(0);
+    }
+  }
+  
+  /* Target specific Android browser issues */
+  @media screen and (-webkit-min-device-pixel-ratio: 0) {
+    /* Chrome/Android-specific fixes */
+    select, textarea, input[type="text"], input[type="search"] {
+      /* Improved font rendering */
+      font-size: 16px; /* Prevent zoom on focus */
+    }
+    
+    /* Fix for Android Chrome input field styling */
+    input {
+      border-radius: 0;
+    }
+  }
+  
+  /* 
+   * Android UI Component Adjustments
+   * ========================================================================== 
+   */
+  
+  /* Android Material Design-inspired adjustments */
+  .button, button, [role="button"] {
+    /* Android touch feedback ripple effect */
+    position: relative;
+    overflow: hidden;
+  }
+  
+  /* Custom ripple effect to match Android Material Design */
+  .button::after, button::after, [role="button"]::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 5px;
+    height: 5px;
+    background: rgba(255, 255, 255, 0.4);
+    opacity: 0;
+    border-radius: 100%;
+    transform: scale(1, 1) translate(-50%, -50%);
+    transform-origin: 50% 50%;
+  }
+  
+  /* Apply the ripple effect on activation */
+  .button:active::after, button:active::after, [role="button"]:active::after {
+    animation: ripple 0.4s ease-out;
+  }
+  
+  /* Custom ripple effect animation */
+  @keyframes ripple {
+    0% {
+      transform: scale(0, 0);
+      opacity: 1;
+    }
+    20% {
+      transform: scale(25, 25);
+      opacity: 1;
+    }
+    100% {
+      transform: scale(50, 50);
+      opacity: 0;
+    }
+  }
+  
+  /* Material Design inspired inputs */
+  input[type="checkbox"], input[type="radio"] {
+    position: relative;
+    width: 20px;
+    height: 20px;
+    margin-right: 8px;
+    vertical-align: middle;
+    border: 2px solid var(--color-border);
+    background: transparent;
+    transition: background 0.2s, border-color 0.2s;
+  }
+  
+  /* Checkbox style */
+  input[type="checkbox"] {
+    border-radius: 2px;
+  }
+  
+  /* Radio style */
+  input[type="radio"] {
+    border-radius: 50%;
+  }
+  
+  /* Checked states */
+  input[type="checkbox"]:checked, input[type="radio"]:checked {
+    border-color: var(--color-accent);
+    background-color: var(--color-accent);
+  }
+  
+  /* Checkbox checkmark */
+  input[type="checkbox"]:checked::after {
+    content: '';
+    position: absolute;
+    left: 6px;
+    top: 2px;
+    width: 5px;
+    height: 10px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+  }
+  
+  /* Radio button dot */
+  input[type="radio"]:checked::after {
+    content: '';
+    position: absolute;
+    left: 5px;
+    top: 5px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: white;
+  }
+  
+  /* 
+   * Android Device-Specific Fixes
+   * ========================================================================== 
+   */
+  
+  /* Android devices with notches */
+  @supports (padding-top: env(safe-area-inset-top)) {
+    .app-container {
+      /* Support Android devices with notches */
+      padding-top: env(safe-area-inset-top);
+    }
+  }
+  
+  /* Adjust for navigation bar on bottom */
+  .has-android-navigation-bar .mobile-nav {
+    padding-bottom: 10px;
+  }
+  
+  /* 
+   * Android Orientation & Screen Size Fixes
+   * ========================================================================== 
+   */
+  
+  /* Fix for small Android screens */
+  @media screen and (max-width: 360px) {
+    /* Adjust components for very small devices */
+    .data-panel {
+      padding: 10px;
+    }
+    
+    .mobile-nav {
+      height: 56px; /* Android Material Design guideline */
+    }
+    
+    /* Make action buttons larger on small screens */
+    .action-button {
+      min-height: 48px;
+      min-width: 48px;
+    }
+  }
+  
+  /* Fix for Android tablets */
+  @media screen and (min-width: 600px) and (max-width: 960px) {
+    .tablet-optimized {
+      /* Android tablet optimizations */
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: var(--space-md);
+    }
+  }
+  
+  /* 
+   * Android Chrome/WebView-Specific Issues
+   * ========================================================================== 
+   */
+  
+  /* Fix for Android Chrome/WebView address bar */
+  .android-chrome-fix {
+    height: calc(100vh - 56px); /* Subtract Chrome mobile navbar height */
+  }
+  
+  /* Fix issues with Android WebView scrolling */
+  @media (pointer: coarse) {
+    .scrollable-content {
+      -webkit-overflow-scrolling: touch;
+      overflow-y: scroll;
+      /* Improve scroll performance */
+      will-change: transform;
+    }
+  }
+  
+  /* Fix for soft keyboard issues */
+  @media (max-height: 500px) {
+    .keyboard-open {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      overflow: auto;
+    }
+  }
+} 

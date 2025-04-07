@@ -6,8 +6,8 @@
     justify-content: center;
     align-items: center;
     transition: all var(--transition-medium) var(--easing-standard);
-    border: 0.32px solid var(--color-border);
     background-color: var(--color-map-background);
+    touch-action: pan-x pan-y;
 }
 
 /* Expanded map container when sidebar is collapsed */
@@ -20,6 +20,57 @@
     height: 100%;
     transition: all var(--transition-medium) var(--easing-standard);
     background-color: transparent;
+}
+
+/* Mobile zoom controls */
+.mobile-map-controls {
+    position: absolute;
+    bottom: 15px;
+    right: 15px;
+    display: none;
+    flex-direction: column;
+    gap: 5px;
+    z-index: 10;
+}
+
+.zoom-button {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(30, 30, 30, 0.7);
+    border: 1px solid var(--color-border-light);
+    color: var(--color-text-light);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 18px;
+    cursor: pointer;
+}
+
+.zoom-button:active {
+    background: rgba(60, 60, 60, 0.7);
+}
+
+/* Mobile-specific controls */
+@media (max-width: 768px) {
+    .mobile-map-controls {
+        display: flex;
+    }
+    
+    /* Allow pinch zoom and panning on mobile */
+    .map-container {
+        overflow: hidden;
+        touch-action: manipulation;
+    }
+    
+    /* Adjust country hover behavior for touch */
+    .country:hover {
+        fill: var(--color-map-country);
+    }
+    
+    .country:active {
+        fill: var(--color-map-country-hover);
+    }
 }
 
 /* Ocean background styling */

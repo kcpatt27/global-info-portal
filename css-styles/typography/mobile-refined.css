@@ -1,0 +1,542 @@
+/* 
+ * Mobile Typography Enhancements
+ * Further refines typography for mobile devices with optimized readability and visual hierarchy
+ * Implementation for task 9.5: Mobile Typography Enhancement
+ */
+
+/* 
+ * Enhanced Typography Base for Mobile
+ * ========================================================================== 
+ */
+
+@media (max-width: 768px) {
+  /* Improved base typography settings */
+  body {
+    /* Optimize for mobile reading with slightly larger base size */
+    font-size: 16px;
+    line-height: 1.6;
+    /* Improve legibility with slight letter-spacing adjustments */
+    letter-spacing: 0.015em;
+    /* Apply text rendering optimization for legibility */
+    text-rendering: optimizeLegibility;
+    /* Ensure proper font smoothing across devices */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    /* Prevent text adjustment on orientation change */
+    -webkit-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+  
+  /* Enhanced typography scale with better visual hierarchy */
+  h1, .h1 {
+    font-size: 1.5rem; /* 24px */
+    line-height: 1.2;
+    letter-spacing: -0.01em; /* Tighter for headlines */
+    margin-bottom: 0.7em;
+    font-weight: 700;
+  }
+  
+  h2, .h2 {
+    font-size: 1.25rem; /* 20px */
+    line-height: 1.3;
+    letter-spacing: -0.005em;
+    margin-bottom: 0.6em;
+    font-weight: 600;
+  }
+  
+  h3, .h3 {
+    font-size: 1.125rem; /* 18px */
+    line-height: 1.4;
+    margin-bottom: 0.5em;
+    font-weight: 600;
+  }
+  
+  h4, .h4 {
+    font-size: 1rem; /* 16px */
+    line-height: 1.4;
+    margin-bottom: 0.5em;
+    font-weight: 600;
+  }
+  
+  h5, .h5, h6, .h6 {
+    font-size: 0.875rem; /* 14px */
+    line-height: 1.5;
+    margin-bottom: 0.5em;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+  
+  /* Paragraph and body text optimization */
+  p {
+    font-size: 1rem; /* 16px */
+    line-height: 1.6;
+    margin-bottom: 1em;
+    /* Optimize line length for mobile reading (30-40 characters) */
+    max-width: 40em;
+  }
+  
+  /* List text optimization */
+  li {
+    font-size: 1rem;
+    line-height: 1.5;
+    margin-bottom: 0.5em;
+    padding-left: 0.25em;
+  }
+  
+  /* Optimized line height for bullet lists */
+  ul li, ol li {
+    line-height: 1.4;
+  }
+  
+  /* Enhanced blockquote styling */
+  blockquote {
+    font-size: 1rem;
+    line-height: 1.6;
+    font-style: italic;
+    padding-left: 1em;
+    border-left: 3px solid rgba(255, 255, 255, 0.2);
+    margin: 1.5em 0;
+  }
+  
+  /* Caption and small text optimization */
+  small, .small, figcaption, .caption {
+    font-size: 0.75rem; /* 12px */
+    line-height: 1.4;
+    letter-spacing: 0.02em;
+    opacity: 0.85;
+  }
+}
+
+/* 
+ * Screen Size-Specific Typography Adjustments
+ * ========================================================================== 
+ */
+
+/* Very small devices (phones under 360px) */
+@media (max-width: 360px) {
+  body {
+    font-size: 15px; /* Slightly smaller base for very small screens */
+  }
+  
+  h1, .h1 {
+    font-size: 1.3rem; /* 20.8px */
+    line-height: 1.3;
+  }
+  
+  h2, .h2 {
+    font-size: 1.15rem; /* 18.4px */
+    line-height: 1.35;
+  }
+  
+  /* Scale down other headings proportionally */
+  h3, .h3 { font-size: 1.05rem; } /* 16.8px */
+  h4, .h4 { font-size: 0.95rem; } /* 15.2px */
+  
+  /* Ensure touch targets remain accessible while text size decreases */
+  button, .button, [role="button"] {
+    font-size: 0.9375rem; /* 15px */
+    min-height: 44px;
+    padding: 10px 14px;
+  }
+}
+
+/* 
+ * Component Typography Refinements
+ * ========================================================================== 
+ */
+
+@media (max-width: 768px) {
+  /* Card and panel typography refinements */
+  .data-card-title, .panel-title {
+    font-size: 1.125rem; /* 18px */
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    line-height: 1.3;
+    margin-bottom: 0.5em;
+  }
+  
+  .data-card-subtitle, .panel-subtitle {
+    font-size: 0.875rem; /* 14px */
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.7);
+    margin-top: -0.3em;
+    margin-bottom: 0.8em;
+  }
+  
+  /* Stats display refinements */
+  .stat-value {
+    font-size: 1.5rem; /* 24px */
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+  }
+  
+  .stat-label {
+    font-size: 0.75rem; /* 12px */
+    font-weight: 500;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    opacity: 0.85;
+  }
+  
+  /* Navigation item refinements */
+  .mobile-nav-item {
+    font-size: 0.875rem; /* 14px */
+    font-weight: 500;
+    letter-spacing: 0.02em;
+  }
+  
+  /* Tab refinements */
+  .data-tab {
+    font-size: 0.875rem; /* 14px */
+    font-weight: 600;
+    letter-spacing: 0.01em;
+  }
+  
+  /* Lists and tables */
+  .data-list-item {
+    font-size: 0.9375rem; /* 15px */
+    line-height: 1.5;
+    padding: 10px 0;
+  }
+  
+  .data-table-cell {
+    font-size: 0.875rem; /* 14px */
+    line-height: 1.4;
+    padding: 8px 10px;
+  }
+  
+  .data-table-header {
+    font-size: 0.75rem; /* 12px */
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+  
+  /* Chart label refinements */
+  .chart-axis-label {
+    font-size: 0.6875rem; /* 11px */
+    letter-spacing: 0.02em;
+    font-weight: 500;
+  }
+  
+  .chart-title {
+    font-size: 0.9375rem; /* 15px */
+    font-weight: 600;
+    margin-bottom: 0.5em;
+  }
+  
+  .chart-legend-item {
+    font-size: 0.75rem; /* 12px */
+    letter-spacing: 0.01em;
+  }
+}
+
+/* 
+ * Line Length and Paragraph Spacing Optimization
+ * ========================================================================== 
+ */
+
+@media (max-width: 768px) {
+  /* Optimize content container widths */
+  .content-container, .info-text, .detail-text {
+    padding-right: 5%;
+    padding-left: 5%;
+    max-width: 100%;
+  }
+  
+  /* Optimize paragraph spacing */
+  p + p {
+    margin-top: -0.3em; /* Tighten space between paragraphs */
+  }
+  
+  /* Optimized paragraph spacing in different contexts */
+  .info-section p {
+    margin-bottom: 0.8em;
+  }
+  
+  .detail-section p {
+    margin-bottom: 1em;
+  }
+  
+  /* Handle line breaks better */
+  .info-text br {
+    display: block;
+    content: "";
+    margin-top: 0.8em;
+  }
+  
+  /* Adjust list spacing */
+  ul, ol {
+    padding-left: 1.2em;
+    margin-bottom: 1em;
+  }
+  
+  /* Add space after lists */
+  ul + p, ol + p {
+    margin-top: 0.8em;
+  }
+}
+
+/* 
+ * Text Overflow and Visibility Refinements
+ * ========================================================================== 
+ */
+
+@media (max-width: 768px) {
+  /* Improved truncation with better fade effect */
+  .text-fade-container {
+    position: relative;
+    max-height: 6em; /* Approximately 4 lines at 1.5 line height */
+    overflow: hidden;
+  }
+  
+  .text-fade-container::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 2em;
+    background: linear-gradient(to bottom, transparent, var(--color-background, #121212));
+    pointer-events: none;
+  }
+  
+  /* Improved multi-line truncation */
+  .truncate-2-lines {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .truncate-3-lines {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  /* More visible link styling */
+  a {
+    text-decoration: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+    transition: border-color 0.2s ease;
+  }
+  
+  a:hover, a:focus {
+    border-bottom-color: rgba(255, 255, 255, 0.7);
+  }
+  
+  /* Expand/collapse button for truncated text */
+  .expand-collapse-btn {
+    background: none;
+    border: none;
+    color: #4da3ff;
+    font-size: 0.875rem;
+    padding: 6px 0;
+    text-decoration: underline;
+    cursor: pointer;
+    margin-top: -0.5em;
+    margin-bottom: 0.5em;
+    display: block;
+  }
+  
+  /* Fade indicators for scrollable content */
+  .scroll-fade-indicators {
+    position: relative;
+  }
+  
+  .fade-top,
+  .fade-bottom {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 25px;
+    pointer-events: none;
+    z-index: 5;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+  
+  .fade-top {
+    top: 0;
+    background: linear-gradient(to bottom, rgba(18, 18, 18, 0.9), transparent);
+  }
+  
+  .fade-bottom {
+    bottom: 0;
+    background: linear-gradient(to top, rgba(18, 18, 18, 0.9), transparent);
+  }
+  
+  .fade-top.visible,
+  .fade-bottom.visible {
+    opacity: 1;
+  }
+}
+
+/* 
+ * Reading Mode Toggle & UI
+ * ========================================================================== 
+ */
+
+@media (max-width: 768px) {
+  /* Reading mode toggle button */
+  .reading-mode-toggle {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background-color: rgba(77, 163, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    /* Ensure safe area on newer devices */
+    bottom: max(20px, env(safe-area-inset-bottom, 20px) + 5px);
+    right: max(20px, env(safe-area-inset-right, 20px) + 5px);
+  }
+  
+  .reading-mode-toggle:active {
+    transform: scale(0.95);
+  }
+  
+  .reading-mode-toggle.active {
+    background-color: rgba(77, 163, 255, 0.6);
+    border-color: rgba(255, 255, 255, 0.4);
+  }
+  
+  /* Ensure button doesn't interfere with home indicator on newer iPhones */
+  .has-home-indicator .reading-mode-toggle {
+    bottom: calc(env(safe-area-inset-bottom, 34px) + 10px);
+  }
+  
+  /* Text container optimizations */
+  .text-container {
+    max-width: 100%;
+    padding: 0;
+  }
+  
+  /* Mobile typography optimized elements */
+  .mobile-typography-optimized {
+    font-size: 16px;
+    line-height: 1.6;
+  }
+  
+  /* Paragraph optimized containers */
+  .paragraph-optimized p:not(:last-child) {
+    margin-bottom: 0.8em;
+  }
+  
+  /* Mobile optimized tables */
+  .mobile-table-optimized th {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+  
+  .mobile-table-optimized td {
+    font-size: 0.875rem;
+    line-height: 1.4;
+  }
+  
+  /* Mobile optimized lists */
+  .mobile-list-optimized li {
+    margin-bottom: 0.5em;
+    line-height: 1.4;
+  }
+}
+
+/* 
+ * Accessibility and Reading Experience Improvements
+ * ========================================================================== 
+ */
+
+@media (max-width: 768px) {
+  /* High contrast improvements */
+  @media (prefers-contrast: more) {
+    body {
+      line-height: 1.7; /* Increased line height */
+      letter-spacing: 0.025em; /* Increased letter spacing */
+    }
+    
+    /* Higher contrast for links */
+    a {
+      color: #4da3ff; /* Brighter blue for links */
+      text-decoration: underline;
+      border-bottom: none;
+    }
+    
+    /* Improve contrast for secondary text */
+    .text-secondary, .subdued-text, .caption, small, .small {
+      opacity: 0.9; /* Higher opacity for better contrast */
+    }
+    
+    /* Improve contrast for borders */
+    hr, .divider {
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+  }
+  
+  /* Reading mode improvements */
+  @media (prefers-color-scheme: dark) {
+    body {
+      --mobile-reading-bg: #121212;
+      --mobile-reading-text: rgba(255, 255, 255, 0.87);
+    }
+  }
+  
+  @media (prefers-color-scheme: light) {
+    body {
+      --mobile-reading-bg: #f8f9fa;
+      --mobile-reading-text: rgba(0, 0, 0, 0.87);
+    }
+  }
+  
+  /* Apply reading mode when explicitly enabled */
+  .reading-mode {
+    background-color: var(--mobile-reading-bg);
+    color: var(--mobile-reading-text);
+    font-size: 1.05rem; /* Slightly larger text */
+    line-height: 1.7; /* Increased line height */
+    padding: 1rem;
+  }
+  
+  .reading-mode p {
+    margin-bottom: 1.2em;
+  }
+  
+  /* Enhance reading mode styles */
+  .reading-mode .data-panel-title,
+  .reading-mode h1, 
+  .reading-mode h2,
+  .reading-mode h3 {
+    margin-top: 0.5em;
+    margin-bottom: 0.8em;
+  }
+  
+  .reading-mode ul, 
+  .reading-mode ol {
+    margin-bottom: 1.2em;
+  }
+  
+  .reading-mode li {
+    margin-bottom: 0.7em;
+  }
+  
+  .reading-mode a {
+    color: #4da3ff;
+    text-decoration: underline;
+    border-bottom: none;
+  }
+} 

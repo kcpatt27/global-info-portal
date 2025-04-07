@@ -1,30 +1,50 @@
 /* Responsive styles */
 
-/* Tablet and smaller devices */
-@media (max-width: 768px) {
+/* Mobile-first approach: Start with base styles for mobile */
+
+/* Tablet and above (≥ 768px) */
+@media (min-width: 768px) {
     .container {
-        grid-template-columns: 1fr;
-        grid-template-rows: minmax(0, 60vh) minmax(0, 40vh);
+        grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+        grid-template-rows: 100vh;
     }
     
     .info-container {
-        padding: 15px;
+        padding: 20px;
+        box-shadow: -5px 0 15px rgba(0, 0, 0, 0.2);
+        max-height: 100vh;
     }
     
-    .info-header {
-        margin-bottom: 15px;
+    .quick-stats-grid {
+        grid-template-columns: 1fr 1fr;
     }
     
-    .background-info {
-        margin-bottom: 15px;
-        max-height: 120px;
+    .nav-sidebar {
+        top: 20px;
+        right: 20px;
+    }
+}
+
+/* Desktop (≥ 1024px) */
+@media (min-width: 1024px) {
+    .quick-stats-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+    
+    .data-tabs {
+        flex-direction: row;
     }
 }
 
 /* Mobile devices */
 @media (max-width: 500px) {
+    .container {
+        grid-template-rows: minmax(0, 55vh) minmax(0, 45vh);
+    }
+    
     .info-container {
         padding: 10px;
+        max-height: 45vh;
     }
     
     .info-header {
@@ -36,10 +56,45 @@
         max-height: 100px;
     }
     
+    .quick-stats-grid {
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: auto auto;
+        gap: 10px;
+    }
+    
     .data-panels .data-panel {
         padding: 10px;
         font-size: 0.8rem;
         min-height: 120px;
+    }
+    
+    .nav-sidebar {
+        width: 45px;
+        right: 10px;
+    }
+    
+    .nav-button {
+        width: 32px;
+        height: 32px;
+        margin-bottom: 10px;
+    }
+    
+    .sidebar-button {
+        padding: 5px 8px;
+        font-size: 0.8rem;
+        min-width: 0;
+    }
+    
+    /* Better spacing between sidebar buttons */
+    .sidebar-buttons {
+        display: flex;
+        gap: 8px;
+    }
+    
+    /* Improve touch targets */
+    .cycle-button {
+        width: 36px;
+        height: 36px;
     }
 }
 
@@ -54,5 +109,86 @@
         padding: 8px;
         font-size: 0.7rem;
         min-height: 100px;
+    }
+    
+    .nav-sidebar {
+        width: 40px;
+        right: 5px;
+    }
+    
+    .nav-button {
+        width: 30px;
+        height: 30px;
+        margin-bottom: 8px;
+    }
+    
+    .sidebar-buttons {
+        flex-direction: column;
+    }
+    
+    .sidebar-button {
+        margin: 3px 0;
+    }
+}
+
+/* Orientation specific adjustments */
+@media (max-height: 500px) and (orientation: landscape) {
+    .container {
+        /* Adjust grid slightly if needed, or keep existing */
+        grid-template-columns: minmax(0, 65%) minmax(0, 35%); /* Example: Adjust split */
+        grid-template-rows: 100vh;
+    }
+    
+    .info-container {
+        max-height: none; /* Remove max-height restriction */
+    }
+}
+
+/* Specific adjustments for landscape mobile/small tablet with limited height (e.g., iPhone landscape) */
+@media (min-width: 768px) and (max-width: 1023px) and (max-height: 500px) and (orientation: landscape) {
+    .container {
+        /* Ensure side-by-side layout */
+        grid-template-columns: minmax(0, 60%) minmax(0, 40%); /* Adjust split as needed */
+        grid-template-rows: 100vh;
+    }
+
+    .info-container {
+        height: 100vh; /* Explicitly set height */
+        overflow-y: auto;  /* Enable vertical scrolling */
+        overflow-x: hidden; /* Disable horizontal scrolling */
+        padding-bottom: 20px; /* Add padding at the bottom for scroll spacing */
+        -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+        scroll-snap-type: y mandatory; /* Enable vertical snapping */
+        scroll-behavior: smooth; /* Animate the snap */
+    }
+
+    /* Define snap points - adjust selectors if needed based on actual structure */
+    /* Assuming .quick-stats-container and .background-info are within the scroll flow */
+    .quick-stats-container, 
+    .background-info {
+        scroll-snap-align: start; /* Snap the top of these elements */
+        scroll-snap-stop: always; /* Force stop at these elements */
+    }
+
+    .quick-stats-grid {
+        grid-template-columns: 1fr; /* Stack stats in a single column */
+        grid-template-rows: repeat(4, auto); /* Explicitly allow 4 rows to auto-size */
+        gap: 10px; /* Adjust gap if needed */
+        /* Ensure grid items don't shrink excessively */
+        & > .stat-item { 
+            min-height: 60px; /* Adjust min-height if needed */
+        }
+    }
+    
+    /* Ensure background info can take up space and acts as a distinct snap target */
+    .background-info {
+       min-height: 50vh; /* Ensure it occupies significant vertical space */
+       /* Allow it to grow if content requires */
+       flex-shrink: 0; 
+    }
+
+    /* Ensure data panels scroll internally if needed, within the main scrollable container */
+    .data-panels .data-panel {
+       /* Adjust padding or styles if needed for this view */
     }
 } 

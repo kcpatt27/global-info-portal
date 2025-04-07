@@ -1,0 +1,359 @@
+/* 
+ * Mobile-Optimized Panel Styles
+ * Provides enhanced mobile presentation, scrolling, and transitions for content panels
+ */
+
+/* 
+ * Base Mobile Panel Styles
+ * ========================================================================== 
+ */
+
+@media (max-width: 768px) {
+  /* Optimize panel dimensions and spacing for mobile viewports */
+  .data-panels {
+    flex-direction: column;
+    padding: 0;
+    margin: 0;
+    height: auto;
+    /* Allow panels to take remaining height in the container */
+    flex: 1 1 auto;
+    overflow: hidden; /* Prevent double scrolling issues */
+    position: relative;
+    border-radius: 0;
+  }
+
+  /* Base panel styles for mobile */
+  .data-panels .data-panel {
+    padding: 12px;
+    border-radius: 0;
+    box-shadow: none;
+    border: none;
+    margin: 0;
+    min-height: 120px;
+    max-height: none;
+    /* Take full size of container */
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    /* Improve scrolling performance */
+    will-change: transform, opacity;
+    -webkit-overflow-scrolling: touch;
+    overflow-y: auto;
+    /* Fix iOS momentum scrolling */
+    /* overflow-clip-margin: touch; */
+    /* Transitions for panel switching */
+    transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    /* Start with opacity 0 and transform out of view */
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(20px);
+  }
+
+  /* Only make active panel visible and interactive */
+  .data-panels .data-panel.active {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(0);
+    z-index: 2;
+  }
+
+  /* Create slide out animation for panels being deactivated */
+  .data-panels .data-panel.leaving {
+    opacity: 0;
+    transform: translateX(-20px);
+    transition: opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+                transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1;
+  }
+
+  /* Adjust tab styles for mobile */
+  .data-tabs {
+    border-radius: 0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+    background-color: var(--color-sidebar-bg);
+    padding: 8px 8px 0;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    display: flex;
+    justify-content: flex-start;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none; /* Hide scrollbar on Firefox */
+    -ms-overflow-style: none; /* Hide scrollbar on IE/Edge */
+    /* Smooth sticky scrolling */
+    transition: box-shadow 0.2s ease;
+  }
+
+  /* Hide scrollbar on WebKit browsers */
+  .data-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Individual tabs */
+  .data-tab {
+    flex: 0 0 auto;
+    padding: 10px 16px;
+    margin-right: 6px;
+    min-width: 100px;
+    text-align: center;
+    position: relative;
+    border-radius: 8px 8px 0 0;
+    white-space: nowrap;
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  /* Add indicator for active tab */
+  .data-tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--color-accent);
+    border-radius: 3px 3px 0 0;
+  }
+}
+
+/* 
+ * Scrolling Behavior for Long Content
+ * ========================================================================== 
+ */
+
+@media (max-width: 768px) {
+  /* Create clear scroll areas within panels */
+  .panel-scroll-container {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    height: 100%;
+    padding-bottom: 16px;
+    /* Create proper momentum scrolling */
+    will-change: transform;
+    /* Prevent content jumping on scroll */
+    overscroll-behavior: contain;
+  }
+
+  /* Scroll indicators */
+  .panel-scroll-indicator {
+    position: absolute;
+    right: 4px;
+    top: 10%;
+    height: 80%;
+    width: 4px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .panel-scroll-indicator::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(255, 255, 255, 0.25);
+    border-radius: 2px;
+  }
+
+  .panel-scroll-indicator.visible {
+    opacity: 1;
+  }
+
+  /* Refresh indicator for pull-to-refresh */
+  .panel-refresh-indicator {
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-text-secondary);
+    font-size: 12px;
+    transform: translateY(-100%);
+    transition: transform 0.2s ease;
+  }
+
+  .panel-refresh-indicator.visible {
+    transform: translateY(0);
+  }
+
+  .panel-refresh-indicator .spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid transparent;
+    border-top-color: var(--color-accent);
+    border-radius: 50%;
+    margin-right: 8px;
+    animation: panel-spinner 0.8s linear infinite;
+  }
+
+  @keyframes panel-spinner {
+    to { transform: rotate(360deg); }
+  }
+}
+
+/* 
+ * Responsive Panel Dimensions & Spacing
+ * ========================================================================== 
+ */
+
+@media (max-width: 768px) {
+  /* Base content padding */
+  .data-content {
+    padding: 12px 2px;
+  }
+
+  /* Optimize spacing for small screens */
+  @media (max-width: 375px) {
+    .data-panels .data-panel {
+      padding: 10px 8px;
+    }
+
+    .data-tab {
+      padding: 8px 12px;
+      font-size: 13px;
+      min-width: 90px;
+    }
+  }
+
+  /* Adjust for landscape orientation */
+  @media (orientation: landscape) {
+    .data-panels {
+      max-height: calc(100vh - 150px);
+    }
+  }
+  
+  /* Adjust for safe area insets on modern devices */
+  @supports (padding: max(0px)) {
+    .data-panels .data-panel {
+      padding-bottom: max(12px, var(--safe-area-inset-bottom, 0px));
+    }
+  }
+}
+
+/* 
+ * Panel Content Optimizations
+ * ========================================================================== 
+ */
+
+@media (max-width: 768px) {
+  /* Optimize data tables for mobile */
+  .data-table {
+    width: 100%;
+    font-size: 13px;
+    border-collapse: collapse;
+  }
+
+  .data-table th,
+  .data-table td {
+    padding: 8px 6px;
+    text-align: left;
+  }
+
+  /* Allow tables to scroll horizontally if needed */
+  .table-container {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin-bottom: 16px;
+  }
+
+  /* Charts optimizations */
+  .chart-container {
+    height: 220px;
+    width: 100%;
+    margin-bottom: 16px;
+  }
+
+  /* Interactive list items */
+  .interactive-list-item {
+    padding: 12px 8px;
+    border-bottom: 1px solid var(--color-border);
+    display: flex;
+    align-items: center;
+  }
+
+  .interactive-list-item:active {
+    background-color: rgba(255, 255, 255, 0.05);
+  }
+}
+
+/* 
+ * Navigation Bar Positioning
+ * ========================================================================== 
+ */
+
+@media (max-width: 768px) {
+  /* Only show when sidebar is collapsed */
+  .nav-sidebar {
+    display: none;
+    position: fixed;
+    top: auto; /* Reset top position */
+    right: auto; /* Reset right position */
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: auto;
+    flex-direction: row;
+    flex-wrap: nowrap; /* Prevent wrapping */
+    justify-content: center; /* Center buttons */
+    align-items: center; /* Vertically center */
+    background-color: var(--color-sidebar-bg);
+    border-radius: 24px;
+    padding: 6px 16px; /* Increased horizontal padding further */
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    z-index: 990;
+    min-width: 230px; /* Ensure minimum width to fit all buttons */
+  }
+
+  .nav-sidebar.visible {
+    display: flex;
+    max-width: 95%; /* Ensure it doesn't overflow screen */
+  }
+
+  /* Adjust button styling for mobile nav */
+  .nav-button {
+    width: 36px;
+    height: 36px;
+    margin: 0 4px; /* Slightly more spacing between buttons */
+    border-radius: 50%;
+    flex-shrink: 0; /* Prevent buttons from shrinking */
+  }
+
+  /* When navigation bar is visible and info container is collapsed */
+  .container.sidebar-collapsed .map-container {
+    padding-bottom: 65px; /* Make space for the navigation bar */
+  }
+}
+
+/* 
+ * Accessibility and User Preference Adjustments
+ * ========================================================================== 
+ */
+
+@media (max-width: 768px) {
+  /* For users who prefer reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    .data-panels .data-panel,
+    .data-panels .data-panel.leaving,
+    .data-tabs {
+      transition-duration: 0.1s;
+    }
+  }
+
+  /* High contrast mode */
+  @media (prefers-contrast: more) {
+    .data-tab.active {
+      background-color: var(--color-accent);
+      color: black;
+    }
+
+    .data-tab.active::after {
+      background-color: white;
+    }
+  }
+} 
