@@ -38,6 +38,9 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  min-height: auto;
+  height: auto;
+  align-self: start;
 }
 
 .quick-stats-grid .stat-item:hover {
@@ -76,6 +79,9 @@
   color: var(--color-text-light);
   text-align: left;
   width: 100%;
+  word-wrap: break-word;
+  word-break: break-word;
+  line-height: 1.2;
 }
 
 /* Hidden content div for statCycling.js compatibility */

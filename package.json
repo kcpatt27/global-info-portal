@@ -11,7 +11,8 @@
     "test": "jest"
   },
   "dependencies": {
-    "core-js": "^3.30.1"
+    "core-js": "^3.30.1",
+    "node-fetch": "^3.3.2"
   },
   "devDependencies": {
     "@babel/core": "^7.21.4",
@@ -45,4 +46,4 @@
   "sideEffects": [
     "*.css"
   ]
-} 
+}

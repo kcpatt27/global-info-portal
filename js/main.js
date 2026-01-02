@@ -119,6 +119,8 @@ function initEnhancedTabs() {
     appState.rankingsTabEnhanced = true;
 }
 
+import { fipsToIso } from './utils/countryCodeMap.js';
+
 /**
  * Normalize ISO A2 code and fix common anomalies
  * @param {string} a2Code
@@ -127,8 +129,14 @@ function initEnhancedTabs() {
  */
 function normalizeIsoA2(a2Code, countryName) {
     const raw = (a2Code || '').toLowerCase();
+    
+    // Check our comprehensive FIPS -> ISO map first
+    if (fipsToIso[raw]) {
+        return fipsToIso[raw];
+    }
+
     if (raw && /^[a-z]{2}$/.test(raw)) {
-        // Map known anomalies
+        // Map known anomalies (Legacy / Fallbacks)
         const map = {
             'uk': 'gb', // UK -> GB
             'el': 'gr', // Greece alternative
@@ -300,8 +308,36 @@ async function handleCountrySelect(country) {
     
     // Update the UI
     setCountryFlag(country.a2Code, country.name);
-    document.querySelector(".country-info").textContent =
-        country.name + " (" + country.a2Code + ") - " + country.continent;
+    const headerEl = document.querySelector(".country-info");
+    if (headerEl) {
+        // Preserve original but expand common abbreviations where the source is truncated.
+        let displayName = String(country.name || '');
+
+        // Common manual expansions to ensure educational clarity (no silent truncation)
+        // Bosnia abbreviated as "Bosnia and Herz." -> expand to full "Bosnia and Herzegovina"
+        displayName = displayName.replace(/\bHerz\.\s*$/i, 'Herzegovina');
+
+        // For DR Congo, display the concise educational form requested: "Dem. Rep. of Congo"
+        if ((/\bDem\.?\s*Rep\.?/i.test(displayName) || /\bdemocratic republic\b/i.test(displayName)) && /congo/i.test(displayName)) {
+            displayName = 'Dem. Rep. of Congo';
+        }
+
+        headerEl.textContent = displayName;
+
+        // Allow wrapping only for very long official names (exceptions),
+        // otherwise keep a single-line display using available header space.
+        if (displayName && displayName.length > 32) {
+            headerEl.classList.add('allow-wrap');
+        } else {
+            headerEl.classList.remove('allow-wrap');
+        }
+        // Specific size tweak for Bosnia and Herzegovina to avoid overflow
+        if (/bosnia and herzegovina/i.test(displayName)) {
+            headerEl.classList.add('bosnia-small');
+        } else {
+            headerEl.classList.remove('bosnia-small');
+        }
+    }
     document.querySelector(".background-info").textContent =
         "Loading information about " + country.name + "...";
     

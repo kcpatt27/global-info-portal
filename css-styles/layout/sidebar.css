@@ -34,7 +34,7 @@
 
 .flag {
     color: var(--color-inactive-text);
-    width: 36px; /* Make flag width fixed */
+    width: 44px; /* Make flag width fixed (increased for better visibility) */
     display: flex;
     align-items: center;
     justify-content: flex-start;
@@ -43,9 +43,9 @@
 /* Size and align the flag icon nicely in header */
 .flag .flag-icon {
     display: inline-block;
-    width: 24px;
-    height: 18px;
-    margin-right: 6px;
+    width: 32px;
+    height: 22px;
+    margin-right: 8px;
     box-shadow: 0 0 0 1px rgba(0,0,0,0.2);
     border-radius: 2px;
 }
@@ -53,26 +53,45 @@
 /* API image-based flag style */
 .flag .country-flag {
     display: inline-block;
-    width: 24px;
-    height: 18px;
+    width: 32px;
+    height: 22px;
     object-fit: cover;
-    margin-right: 6px;
+    margin-right: 8px;
     box-shadow: 0 0 0 1px rgba(0,0,0,0.2);
     border-radius: 2px;
 }
 
 .country-info {
     font-weight: bold;
-    font-size: 1.1em;
+    /* increase header font size to be closer to the close button size while remaining responsive */
+    font-size: clamp(1.15rem, 2.6vw, 1.5rem);
     text-align: center;
-    flex: 1;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    flex: 1 1 auto;
+    min-width: 0; /* allow flex children to shrink properly */
+    /* Prefer single-line display by default (no ellipsis) */
+    overflow: visible;
+    text-overflow: unset;
     white-space: nowrap;
-    position: absolute; /* Position absolutely to center properly */
-    left: 0;
-    right: 0;
-    margin: 0 auto; /* Center horizontally */
+    /* center visually regardless of flag/close sizes */
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    line-height: 1.1;
+    /* Reduced horizontal padding so longer names fit side-by-side */
+    padding: 6px 12px;
+}
+
+.country-info.allow-wrap {
+    /* Exception: allow wrapping when enabled (for very long official names) */
+    white-space: normal;
+    word-break: break-word;
+    position: static;
+    transform: none;
+}
+
+.country-info.bosnia-small {
+    /* Slightly smaller for Bosnia & Herzegovina to avoid wrapping */
+    font-size: clamp(1.05rem, 1.9vw, 1.25rem);
 }
 
 .close-sidebar {
@@ -200,7 +219,8 @@
 .info-cycling-container {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  height: auto;
+  min-height: 100%;
   width: 100%;
   position: relative;
 }
@@ -217,13 +237,16 @@
   font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
   opacity: 0.9;
+  margin: 0 10px;
+  font-weight: 500;
 }
 
 .navigation-content-wrapper {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   width: 100%;
-  height: 100%;
+  height: auto;
+  min-height: 100%;
   position: relative;
   padding-right: 0;
 }
@@ -232,7 +255,7 @@
   flex: 1;
   overflow: visible;
   max-height: none;
-  padding: 0 5px;
+  padding: 5px;
   margin-right: 0;
 }
 
@@ -256,8 +279,8 @@
   background: rgba(0, 0, 0, 0.2);
   border: none;
   border-radius: 50%;
-  width: 30px;
-  height: 30px;
+  width: 24px;
+  height: 24px;
   flex-shrink: 0;
   display: flex;
   align-items: center;
@@ -267,6 +290,7 @@
   transition: all var(--transition-fast) var(--easing-standard);
   opacity: 0.5;
   z-index: 2;
+  font-size: 0.8rem;
 }
 
 .cycle-button.prev { margin-right: 0; }

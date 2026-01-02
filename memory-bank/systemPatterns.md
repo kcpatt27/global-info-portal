@@ -28,12 +28,17 @@
 - **Data Fetcher:** Dedicated module (`js/utils/dataFetcher.js`) likely handles API calls.
 - **Data Panels:** Standardized 2-tab system (Statistics, Rankings) for displaying country data.
 - **Caching:** Basic caching might exist; enhanced caching (IndexedDB) is planned (`mobile-css-implementation.md`, Section 2).
+- **Country Code Mapping:** Comprehensive FIPS 10-4 (CIA) to ISO 3166-1 alpha-2 mapping (`js/utils/countryCodeMap.js`) ensures correct flag display. Used in `normalizeIsoA2` function in `main.js`.
+- **Flag Display:** Multi-source flag loading (FlagCDN primary, RestCountries fallback) with URL caching. Flag size: 32x22px in header.
 
 ## Component Relationships
-- `main.js`: Entry point, likely initializes core components.
+- `main.js`: Entry point, initializes core components. Handles country selection, flag display, and country name formatting (with special cases for Bosnia, DR Congo).
 - `map.js`: Handles map rendering and interaction.
 - `events.js`: Manages global event listeners (clicks, map interactions).
 - `state.js`: Holds and manages application state (selected country, panel visibility, etc.).
-- Panel Components (`js/panels/`, `js/components/panels/`): Manage the display and interaction within the info/data panels.
+- `statCycling.js`: Manages quick stats display and cycling functionality. Handles population/GDP/area/region formatting with year estimates.
+- `infoTextCycling.js`: Manages background info text cycling with pagination.
+- `utils/countryCodeMap.js`: FIPS to ISO country code mapping for flag display.
+- Panel Components (`js/panels/`, `js/components/panels/`): Manage the display and interaction within the info/data panels. Note: Duplicate structures exist, intentionally preserved until refactor.
 - Tab Components (`js/statsTab.js`, `js/rankingsTab.js`): Handle logic within specific data tabs.
 - `charts.js`/`components/charts/`: Responsible for generating data visualizations. 

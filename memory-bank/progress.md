@@ -16,11 +16,17 @@
 - Desktop layout/styling generally stable.
 - Core data fetching.
 - Tab Consolidation (Trends/Global Context removed, Stats/Rankings exist).
+- **Tab Order:** Rankings is now the default/first tab.
+- **Flag Display:** Comprehensive country code mapping ensures correct flags for all countries (FIPS→ISO conversion).
+- **Header Display:** Clean country name display (no codes/continents), balanced spacing, responsive sizing.
+- **Info Section:** Background info text displays fully without cutoff, pagination indicators properly sized and positioned.
+- **Quick Stats:** Population formatting correct (million/billion), year estimates displayed, layout handles long values properly.
 - Quick Stats value formatting (e.g., $, B).
 - Sidebar button functionality (Info/Data toggles).
 - Several mobile CSS improvements implemented (`mobile-css-implementation.md` tasks marked DONE).
 - Data Panel Modularization.
 - State fixes (tab persistence, ranking filters, map nav reset, focused country sync - as per TODO).
+- **Mobile Navigation:** Nav bar visibility properly managed via JavaScript.
 
 ## What's Left / Ongoing (Key items from TODO/Finisher Tasks)
 - **Rankings Tab:**
@@ -48,8 +54,17 @@
 - **Misc:** Handle edge cases (Antarctica), news feed, right-click map enhancement.
 
 ## Known Issues (Verified or Suspected from Testing)
-- **Tab Order:** Rankings tab is NOT the first/default. Statistics (`data-tab="0"`) is still the active default. (Contradicts TODO).
-- **Mobile Panel Collapse/Nav Bar:** **Likely Broken.** Mobile nav bar (`.mobile-nav-container`) did not become visible/interactable after simulated swipe down on info panel. Suspected JS issue in `index.html` (`collapseSidebar` logic).
 - **Map Interaction (US):** Clicking 'United States' path failed consistently (potentially due to overlapping elements or specific path issues).
-- **Mobile Interactions (Need Verification):** Quick Stats cycling, Header wrapping, Map Pan (Mobile), Map Double Tap Reset (Mobile), Panel Default Position (Mobile), Info Panel Background Transparency (Mobile) require manual verification via screenshots.
+- **Mobile Interactions (Need Verification):** Quick Stats cycling, Map Pan (Mobile), Map Double Tap Reset (Mobile), Panel Default Position (Mobile), Info Panel Background Transparency (Mobile) require manual verification via screenshots.
 - **Mobile Touch/Zoom:** Pinch-to-zoom and pan have been unified under D3 zoom. Needs manual device verification for inertia/clamping boundaries.
+- **Code Duplication:** Duplicate file structures exist (`js/panels/` vs `js/components/panels/`) - intentionally deferred until all bugs are resolved.
+
+## Recently Fixed Issues
+- ✅ **Tab Order:** Rankings tab is now the first/default tab.
+- ✅ **Mobile Panel Collapse/Nav Bar:** Fixed visibility issue - removed conflicting CSS, now handled solely by JavaScript.
+- ✅ **Flag Display:** Fixed all country code mismatches (CIA FIPS vs ISO) using comprehensive mapping.
+- ✅ **Header Spacing:** Balanced flag and close button spacing for proper text centering.
+- ✅ **Country Name Display:** Removed truncation, implemented full name display with special cases.
+- ✅ **Info Section Text:** Fixed cutoff issues and pagination indicator duplication.
+- ✅ **Population Formatting:** Fixed billion/million parsing error and restored year estimates.
+- ✅ **Quick Stats Layout:** Fixed forced height matching that caused layout issues.

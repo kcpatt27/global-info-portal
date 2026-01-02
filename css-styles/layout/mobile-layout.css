@@ -423,13 +423,12 @@
   
   /* Ensure mobile nav is only visible when info container is collapsed */
   .mobile-nav-container {
-    transform: translateY(100%); /* Hidden by default */
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
   
-  /* Show mobile nav when sidebar is collapsed */
-  .info-container.collapsed ~ .mobile-nav-container {
-    transform: translateY(0);
+  /* Use the .hidden class managed by JS */
+  .mobile-nav-container.hidden {
+    transform: translateY(100%);
   }
   
   /* Hamburger menu should be on top of everything */

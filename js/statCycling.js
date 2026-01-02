@@ -476,15 +476,46 @@ function formatStatValue(value, statType) {
     const lcStatType = statType.toLowerCase();
     
     if (lcStatType.includes('population')) {
-      // Format large numbers with commas
-      const numValue = parseFloat(String(value).replace(/[^0-9.-]/g, ''));
-      if (!isNaN(numValue)) {
-        if (numValue >= 1000000000) {
-          return (numValue / 1000000000).toFixed(2) + ' billion';
-        } else if (numValue >= 1000000) {
-          return (numValue / 1000000).toFixed(2) + ' million';
-        } else {
-          return numValue.toLocaleString();
+      // Robust population parsing:
+      // - Preserve explicit units already present (million/billion/trillion)
+      // - Extract year/estimate parentheses and append them
+      // - Parse raw numbers with commas and format to million/billion
+      const raw = String(value || '');
+      const yearMatch = raw.match(/\(\s*(\d{4}[^)]*)\)/);
+      const yearStr = yearMatch ? ' (' + yearMatch[1].trim() + ')' : '';
+
+      // If the source already uses words like 'million'/'billion', keep and normalize
+      const explicitUnit = raw.match(/([0-9.,]+)\s*(million|billion|trillion)/i);
+      if (explicitUnit) {
+        const numStr = explicitUnit[1].replace(/,/g, '');
+        const num = parseFloat(numStr);
+        const unit = explicitUnit[2].toLowerCase();
+        if (!isNaN(num)) {
+          return num.toFixed(2) + ' ' + unit + yearStr;
+        }
+      }
+
+      // Otherwise extract the first numeric token (handles comma thousands)
+      const numToken = raw.match(/([0-9]{1,3}(?:[.,][0-9]{3})*(?:\.[0-9]+)?|[0-9]+(?:\.[0-9]+)?)/);
+      if (numToken) {
+        let numStr = numToken[1];
+        // Prefer removing commas (US-style thousands). If dots appear as thousands separators,
+        // fall back to interpreting dots as decimal if no commas present.
+        if (/,/.test(numStr)) {
+          numStr = numStr.replace(/,/g, '');
+        } else if (/\./g.test(numStr) && (numStr.match(/\./g) || []).length > 1) {
+          // multiple dots -> likely thousand separators -> remove them
+          numStr = numStr.replace(/\./g, '');
+        }
+        const numValue = parseFloat(numStr);
+        if (!isNaN(numValue)) {
+          if (numValue >= 1000000000) {
+            return (numValue / 1000000000).toFixed(2) + ' billion' + yearStr;
+          } else if (numValue >= 1000000) {
+            return (numValue / 1000000).toFixed(2) + ' million' + yearStr;
+          } else {
+            return numValue.toLocaleString() + yearStr;
+          }
         }
       }
     } else if (lcStatType.includes('gdp')) {
