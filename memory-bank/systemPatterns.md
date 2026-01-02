@@ -13,6 +13,9 @@
 - **CSS Variables:** Extensive use of variables (`css-styles/core/variables.css`) for theming and consistency.
 - **Responsive Design:** Primarily handled through media queries (`css-styles/layout/responsive.css`) and dedicated mobile stylesheets (`mobile.css`, potentially others in `devices/` or component-specific mobile files).
 - **BEM-like Naming:** Likely uses a BEM-inspired convention for CSS class names (observe in HTML/CSS).
+- **Known CSS Conflicts:**
+  - **`.background-info` Overflow Conflict:** Potential conflict between `overflow: visible` in `css-styles/layout/sidebar.css` (line 161) and `overflow-y: auto` in `css-styles/layout/containers.css` (line 43). The shorthand `overflow: visible` can override `overflow-y: auto` in some browsers. Currently not causing visible issues, but should be resolved by removing `overflow: visible` from `sidebar.css` or ensuring `overflow-y: auto` takes precedence. The min-height values across files (80px, 100px, 150px, 200px, 250px, 50vh) are intentional responsive breakpoints, not conflicts.
+  - **Mobile CSS Inclusion Risk:** `mobile.css` and `css-styles/layout/mobile-layout.css` are currently linked directly from `index.html`. These files include global (non-media-wrapped) rules (for example `.info-container { height: 40vh; overflow: hidden; }`) which can affect desktop layouts if loaded unconditionally. Prefer scoping these rules inside `@media (max-width: 768px)` or conditionally loading mobile styles at runtime to avoid unintended layout changes.
 
 ### JavaScript
 - **Vanilla JS:** No reliance on major frontend frameworks.
@@ -23,6 +26,7 @@
 - **Event Handling:** Centralized event listeners (`js/events.js`) and component-specific listeners. Ongoing optimization planned (`js-refactor-implementation.md`).
 - **Asynchronous Operations:** Data fetching (`js/utils/dataFetcher.js`) and potentially other operations handled using Promises or async/await.
 - **Refactoring Goals (from `js-refactor-implementation.md`):** Focus on standardizing module structure, improving code quality (smaller functions, error handling, types), optimizing performance (lazy loading, DOM batching, memoization), and modernizing syntax/patterns.
+ - **Entry Point / Duplication Risk:** There are duplicate implementations of core UI functions across `js/main.js` and `js/index.js` (e.g., `handleCountrySelect`, `openSidebar`, `setupUIEventHandlers`). `package.json` / webpack use `js/index.js` as the canonical build entry, while `index.html` currently loads `js/main.js` directly. This mismatch creates a risk of divergent behavior between direct dev loads and built bundles. Recommend consolidating on a single entry (prefer `js/index.js`) and exporting shared utilities rather than duplicating implementations.
 
 ### Data Handling
 - **Data Fetcher:** Dedicated module (`js/utils/dataFetcher.js`) likely handles API calls.
