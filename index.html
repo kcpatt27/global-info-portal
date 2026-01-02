@@ -37,6 +37,7 @@
     <noscript><link rel="stylesheet" href="css-styles/main.css"></noscript>
     <!-- Add Font Awesome for icons ; dev: "might not need to be inlined" -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/3.12.0/css/flag-icon.min.css">
     <link rel="stylesheet" href="css-styles/mobile.css">
     <!-- Add our new mobile layout CSS file -->
     <link rel="stylesheet" href="css-styles/layout/mobile-layout.css">
@@ -372,7 +373,7 @@
             // Calculate distance
             const swipeDistance = touchEndY - touchStartY;
             
-            // If swiping down and not scrolling an inner element
+            // If swiping down
             if (swipeDistance > 10) {
               // Add visual feedback during swipe
               infoContainer.classList.add('swiping');
@@ -381,14 +382,13 @@
               const moveDistance = Math.min(swipeDistance * 0.3, 30);
               infoContainer.style.transform = `translateY(${moveDistance}px)`;
               
-              // Prevent default only when we're at the top of the scrollable content
-              // to avoid interfering with normal scrolling
-              const scrollTop = e.target.closest('.content-panel')?.scrollTop || 0;
-              if (scrollTop <= 0) {
-                e.preventDefault();
-              }
+              // Removed preventDefault to avoid interfering with map gestures
+              // const scrollTop = e.target.closest('.content-panel')?.scrollTop || 0;
+              // if (scrollTop <= 0) {
+              //   e.preventDefault(); 
+              // }
             }
-          }, { passive: false });
+          }, { passive: true });
           
           infoContainer.addEventListener('touchend', (e) => {
             const swipeDistance = touchEndY - touchStartY;
@@ -408,6 +408,54 @@
             touchStartY = 0;
             touchEndY = 0;
           });
+          
+          // Pointer-based drag to expand/collapse (mouse/pen parity)
+          let pointerStartY = 0;
+          let isPointerDragging = false;
+          infoContainer.addEventListener('pointerdown', (e) => {
+            // Only act on primary button
+            if (e.button !== undefined && e.button !== 0) return;
+            const isTopArea = e.target === infoContainer ||
+                              e.target.closest('.info-header') ||
+                              e.clientY < (infoContainer.getBoundingClientRect().top + 40);
+            if (!isTopArea) return;
+            isPointerDragging = true;
+            pointerStartY = e.clientY;
+            infoContainer.style.transition = 'none';
+            infoContainer.setPointerCapture && infoContainer.setPointerCapture(e.pointerId);
+          });
+          infoContainer.addEventListener('pointermove', (e) => {
+            if (!isPointerDragging) return;
+            const diffY = pointerStartY - e.clientY; // positive when dragging up
+            // Visual feedback
+            const maxMove = window.innerHeight * 0.4;
+            const translate = Math.max(-maxMove, Math.min(0, -diffY * 0.3));
+            infoContainer.style.transform = `translateY(${translate}px)`;
+            infoContainer.classList.add('swiping');
+            // Snap when threshold exceeded
+            if (diffY > 50 && !infoContainer.classList.contains('expanded')) {
+              infoContainer.classList.remove('swiping');
+              infoContainer.style.transform = '';
+              infoContainer.classList.add('expanded');
+              infoContainer.style.transition = '';
+              isPointerDragging = false;
+            } else if (diffY < -50 && infoContainer.classList.contains('expanded')) {
+              infoContainer.classList.remove('swiping');
+              infoContainer.style.transform = '';
+              infoContainer.classList.remove('expanded');
+              infoContainer.style.transition = '';
+              isPointerDragging = false;
+            }
+          });
+          const endPointerDrag = () => {
+            if (!isPointerDragging) return;
+            infoContainer.classList.remove('swiping');
+            infoContainer.style.transform = '';
+            infoContainer.style.transition = '';
+            isPointerDragging = false;
+          };
+          infoContainer.addEventListener('pointerup', endPointerDrag);
+          infoContainer.addEventListener('pointercancel', endPointerDrag);
           
           // Also remove swiping class when touch is canceled
           infoContainer.addEventListener('touchcancel', () => {

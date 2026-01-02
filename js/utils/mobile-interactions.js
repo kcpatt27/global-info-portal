@@ -203,10 +203,15 @@ function setupDragHandles() {
   
   // Reset any existing expanded state on page load
   infoContainer.classList.remove('expanded');
+  // Ensure vertical gestures are allowed here and don't conflict with map
+  infoContainer.style.touchAction = 'pan-y';
   
   let startY = 0;
   let currentY = 0;
   let startHeight = 0;
+  let isPointerDragging = false;
+  let pointerStartY = 0;
+  let pointerCurrentY = 0;
   
   // Handle touch on the container or pull handle
   infoContainer.addEventListener('touchstart', e => {
@@ -230,17 +235,27 @@ function setupDragHandles() {
       currentY = e.touches[0].clientY;
       const diffY = startY - currentY;
       
+      // Visual feedback: move panel with finger (limited range)
+      const maxMove = window.innerHeight * 0.4; // match 40vh expanded delta
+      const translate = Math.max(-maxMove, Math.min(0, -diffY * 0.3));
+      infoContainer.style.transform = `translateY(${translate}px)`;
+      infoContainer.classList.add('swiping');
+      
       // If swiping up significantly, expand the panel
       if (diffY > 50 && !infoContainer.classList.contains('expanded')) {
         infoContainer.classList.add('expanded');
         infoContainer.style.transition = '';
         startY = 0; // Reset to prevent further handling
+        infoContainer.classList.remove('swiping');
+        infoContainer.style.transform = '';
       } 
       // If swiping down significantly and expanded, collapse
       else if (diffY < -50 && infoContainer.classList.contains('expanded')) {
         infoContainer.classList.remove('expanded');
         infoContainer.style.transition = '';
         startY = 0; // Reset to prevent further handling
+        infoContainer.classList.remove('swiping');
+        infoContainer.style.transform = '';
       }
     }
   }, { passive: true });
@@ -249,8 +264,62 @@ function setupDragHandles() {
   infoContainer.addEventListener('touchend', () => {
     if (startY > 0) {
       infoContainer.style.transition = '';
+      infoContainer.classList.remove('swiping');
+      infoContainer.style.transform = '';
       startY = 0;
     }
+  });
+
+  // Pointer-based dragging (mouse/pen) for parity with touch
+  infoContainer.addEventListener('pointerdown', (e) => {
+    // Only act on primary button or touch/pen
+    if (e.button !== undefined && e.button !== 0) return;
+    const isTopArea = e.target === infoContainer || 
+                      e.target.closest('.info-header') || 
+                      e.clientY < (infoContainer.getBoundingClientRect().top + 40);
+    if (!isTopArea) return;
+    isPointerDragging = true;
+    pointerStartY = e.clientY;
+    infoContainer.style.transition = 'none';
+    infoContainer.setPointerCapture?.(e.pointerId);
+  });
+  infoContainer.addEventListener('pointermove', (e) => {
+    if (!isPointerDragging) return;
+    pointerCurrentY = e.clientY;
+    const diffY = pointerStartY - pointerCurrentY;
+    // Visual feedback during drag
+    const maxMove = window.innerHeight * 0.4;
+    const translate = Math.max(-maxMove, Math.min(0, -diffY * 0.3));
+    infoContainer.style.transform = `translateY(${translate}px)`;
+    infoContainer.classList.add('swiping');
+    // Threshold-based snap
+    if (diffY > 50 && !infoContainer.classList.contains('expanded')) {
+      infoContainer.classList.remove('swiping');
+      infoContainer.style.transform = '';
+      infoContainer.classList.add('expanded');
+      infoContainer.style.transition = '';
+      isPointerDragging = false;
+    } else if (diffY < -50 && infoContainer.classList.contains('expanded')) {
+      infoContainer.classList.remove('swiping');
+      infoContainer.style.transform = '';
+      infoContainer.classList.remove('expanded');
+      infoContainer.style.transition = '';
+      isPointerDragging = false;
+    }
+  });
+  infoContainer.addEventListener('pointerup', () => {
+    if (!isPointerDragging) return;
+    infoContainer.classList.remove('swiping');
+    infoContainer.style.transform = '';
+    infoContainer.style.transition = '';
+    isPointerDragging = false;
+  });
+  infoContainer.addEventListener('pointercancel', () => {
+    if (!isPointerDragging) return;
+    infoContainer.classList.remove('swiping');
+    infoContainer.style.transform = '';
+    infoContainer.style.transition = '';
+    isPointerDragging = false;
   });
   
   // Double tap handler for quick expansion

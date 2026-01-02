@@ -51,56 +51,28 @@ export function initMapGestures(mapInstance, options = {}) {
     rotation: 0
   };
   
-  // Set up touch-friendly attributes on the map
-  svgElement.style.touchAction = 'none';  // Disable browser handling of touch gestures
+  // Set up touch-friendly attributes on the map (D3 zoom will handle gestures)
+  svgElement.style.touchAction = 'none';
   
   // Add pinch-to-zoom handling
   addPinchHandler(svgElement, (event) => {
     const { scale, center } = event;
-    
-    // Update scale, respecting the minimum and maximum zoom levels
-    const newScale = Math.max(
-      mapInstance.mapConfig.zoomMin, 
-      Math.min(mapInstance.mapConfig.zoomMax, currentTransform.scale * scale)
-    );
-    
-    // Apply the transformation with the pinch center as the origin
-    applyTransform(svgElement, {
-      ...currentTransform,
-      scale: newScale
-    }, center);
-    
-    // Update current transform
-    currentTransform.scale = newScale;
-    
-    // Prevent default browser pinch zoom
-    if (event.originalEvent) {
-      event.originalEvent.preventDefault();
+    if (mapInstance && typeof mapInstance.zoomBy === 'function') {
+      const rect = svgElement.getBoundingClientRect();
+      const point = [center.x - rect.left, center.y - rect.top];
+      mapInstance.zoomBy(scale, point);
+      if (event.originalEvent) event.originalEvent.preventDefault();
     }
   }, { preventDefault: true });
   
   // Add pan handling for dragging the map
   addPanHandler(svgElement, (event) => {
+    // Delegate panning to D3 zoom via map API
     const { deltaX, deltaY } = event;
-    
-    // Only handle pan if we've zoomed in
-    if (currentTransform.scale > 1) {
-      // Calculate new translation
-      const newTranslateX = currentTransform.translateX + deltaX;
-      const newTranslateY = currentTransform.translateY + deltaY;
-      
-      // Apply the transformation
-      applyTransform(svgElement, {
-        ...currentTransform,
-        translateX: newTranslateX,
-        translateY: newTranslateY
-      });
-      
-      // Update current transform
-      currentTransform.translateX = newTranslateX;
-      currentTransform.translateY = newTranslateY;
+    if (mapInstance && typeof mapInstance.panBy === 'function') {
+      mapInstance.panBy(deltaX, deltaY);
     }
-  }, { preventDefault: false });  // Don't prevent default to allow scrolling
+  }, { preventDefault: false });
   
   // Add double-tap to reset zoom
   let lastTapTime = 0;
@@ -109,10 +81,7 @@ export function initMapGestures(mapInstance, options = {}) {
     const timeDiff = now - lastTapTime;
     
     if (timeDiff < 300) {  // Double-tap detected
-      // Reset zoom and transform
-      resetMapTransform();
-      
-      // Call the existing resetZoom function
+      // Double-tap to reset zoom
       if (typeof resetZoom === 'function') {
         resetZoom();
       }

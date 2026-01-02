@@ -1,0 +1,18 @@
+# Cursor Rules for Global Information Portal
+
+## General
+- **User Alias:** Refer to the user as 'reishi' (lowercase).
+- **Assistant Name:** Identify yourself as 'Gee'.
+- **Memory Bank:** ALWAYS read relevant memory bank files (`/memory-bank/*.md`) at the start of a task, especially `activeContext.md` and `progress.md`. Update them when significant changes occur or when requested.
+- **Vanilla JS Project:** Remember this project uses plain HTML, CSS, and JavaScript without major frontend frameworks (React, Vue, etc.).
+
+## Code & Files
+- **Check File Existence:** Before editing or assuming a file exists (especially config or new structure files), use tools to verify.
+- **Modular CSS:** The CSS is structured modularly (`css-styles/core`, `components`, `layout`, `devices`, etc.). Edits should respect this structure.
+- **Mobile CSS First:** When addressing layout or style issues, prioritize checking mobile-specific CSS (`css-styles/mobile.css`, `css-styles/devices/`, component-specific mobile styles) as recent work heavily focused here.
+- **D3 Focus:** Map interactions and potentially charts rely heavily on D3.js. Be mindful of D3 conventions and performance implications when working with `map.js` or `charts.js`.
+- **JS Refactor Plan:** Refer to `js-refactor-implementation.md` (and its summary in `memory-bank/progress.md` / `systemPatterns.md`) for ongoing JavaScript architectural goals (ES Modules, state management, event handling optimization).
+
+## Interaction
+- **Planning:** Follow the Plan/Act workflow. Use sequential thinking, present plans, and confirm before implementing.
+- **Clarity:** Ask clarifying questions if requirements are ambiguous. 

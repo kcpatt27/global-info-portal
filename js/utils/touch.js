@@ -319,12 +319,11 @@ const enhanceMapTouchInteractions = () => {
   
   // Double tap to zoom in
   addDoubleTapHandler(mapElement, (detail) => {
-    const mapState = window.mapState;
-    if (mapState && mapState.zoom) {
-      const transform = d3.zoomTransform(mapElement);
-      const newScale = transform.k * 1.5;
-      
-      mapState.zoom.scaleTo(d3.select(mapElement), newScale);
+    const mapInstance = window.mapInstance;
+    if (mapInstance && typeof window.resetZoom === 'function') {
+      window.resetZoom();
+    } else if (mapInstance && typeof mapInstance.resetZoom === 'function') {
+      mapInstance.resetZoom();
     }
   });
 };

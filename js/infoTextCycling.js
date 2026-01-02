@@ -22,13 +22,16 @@ export function setupBackgroundInfoCycling(data) {
   
   backgroundInfo.innerHTML = `
     <div class="info-cycling-container">
-      <div class="navigation-content-wrapper">
+      <div class="info-cycling-header">
         <button class="cycle-button prev" aria-label="Previous section"><i class="fas fa-chevron-left"></i></button>
+        <div class="cycle-indicator-top"><span class="current-index">${currentIndex + 1}</span>/<span class="total-count">${textSections.length}</span></div>
+        <button class="cycle-button next" aria-label="Next section"><i class="fas fa-chevron-right"></i></button>
+      </div>
+      <div class="navigation-content-wrapper">
         <div class="info-text-container">
           <div class="info-text-content">${textSections[currentIndex].content}</div>
           <div class="info-text-source">${textSections[currentIndex].title}</div>
         </div>
-        <button class="cycle-button next" aria-label="Next section"><i class="fas fa-chevron-right"></i></button>
       </div>
     </div>
     <div class="cycle-indicator">
@@ -41,7 +44,7 @@ export function setupBackgroundInfoCycling(data) {
   const nextButton = backgroundInfo.querySelector('.cycle-button.next');
   const textContent = backgroundInfo.querySelector('.info-text-content');
   const textSource = backgroundInfo.querySelector('.info-text-source');
-  const currentIndexEl = backgroundInfo.querySelector('.current-index');
+  const currentIndexEl = backgroundInfo.querySelectorAll('.current-index');
   
   prevButton.addEventListener('click', () => {
     currentIndex = (currentIndex - 1 + textSections.length) % textSections.length;
@@ -61,7 +64,8 @@ export function setupBackgroundInfoCycling(data) {
     setTimeout(() => {
       textContent.innerHTML = textSections[currentIndex].content;
       textSource.textContent = textSections[currentIndex].title;
-      currentIndexEl.textContent = currentIndex + 1;
+      // Update both top and bottom indicators (if present)
+      currentIndexEl.forEach(el => el.textContent = currentIndex + 1);
       
       // Scroll back to top when changing content
       textContent.scrollTop = 0;

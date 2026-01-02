@@ -38,6 +38,7 @@
     /* Hardware acceleration for smoother interactions */
     transform: translateZ(0);
     will-change: transform;
+    touch-action: none; /* Allow D3 to handle touch events like pan/zoom */
   }
 
   /* Info container slides up from bottom */

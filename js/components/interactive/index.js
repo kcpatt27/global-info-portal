@@ -90,10 +90,10 @@ function setupGlobalGestures() {
   interactiveElements.forEach(el => {
     el.addEventListener('touchend', (e) => {
       // Prevent default only on elements that shouldn't trigger zoom
-      if (!el.classList.contains('allow-zoom')) {
+      if (!el.classList.contains('allow-zoom') && !el.closest('.map-container')) {
         e.preventDefault();
       }
-    }, false);
+    }, { passive: false });
   });
 }
 

@@ -15,6 +15,9 @@ import { initMobilePanels } from './components/panels/PanelMobileManager.js';
 import { initMobileInteractions } from './utils/mobile-interactions.js';
 import { initMobileTypography } from './utils/typography-enhancements.js';
 
+// Cache for resolved flag URLs by ISO A2 code
+const flagUrlCache = {};
+
 // Expose key functions to global scope for legacy compatibility
 window.initDataTabs = initDataTabs;
 window.updateDataPanels = updateDataPanels;
@@ -117,6 +120,178 @@ function initEnhancedTabs() {
 }
 
 /**
+ * Normalize ISO A2 code and fix common anomalies
+ * @param {string} a2Code
+ * @param {string} countryName
+ * @returns {string|null}
+ */
+function normalizeIsoA2(a2Code, countryName) {
+    const raw = (a2Code || '').toLowerCase();
+    if (raw && /^[a-z]{2}$/.test(raw)) {
+        // Map known anomalies
+        const map = {
+            'uk': 'gb', // UK -> GB
+            'el': 'gr', // Greece alternative
+            'tp': 'tl', // East Timor old -> Timor-Leste
+            'bu': 'mm', // Burma -> Myanmar
+            'zr': 'cd', // Zaire -> DR Congo
+            'fx': 'fr', // Metropolitan France -> France
+            'cs': 'rs', // Serbia and Montenegro -> Serbia
+        };
+        return map[raw] || raw;
+    }
+
+    // Try a few name-based fallbacks for common tricky cases
+    const name = (countryName || '').toLowerCase();
+    if (!name) return null;
+    const nameMap = [
+        { match: ['democratic republic of the congo', 'congo (kinshasa)'], code: 'cd' },
+        { match: ['republic of the congo', 'congo (brazzaville)'], code: 'cg' },
+        { match: ['ivory coast', "côte d'ivoire", 'cote d’ivoire', 'cote d ivoire'], code: 'ci' },
+        { match: ['cape verde', 'cabo verde'], code: 'cv' },
+        { match: ['south korea', 'korea, south', 'republic of korea'], code: 'kr' },
+        { match: ['north korea', 'korea, north', "democratic people's republic of korea"], code: 'kp' },
+        { match: ['eswatini', 'swaziland'], code: 'sz' },
+        { match: ['burma', 'myanmar'], code: 'mm' },
+        { match: ['laos', "lao people's"], code: 'la' },
+        { match: ['russia', 'russian federation'], code: 'ru' },
+        { match: ['syria', 'syrian arab republic'], code: 'sy' },
+        { match: ['moldova'], code: 'md' },
+        { match: ['tanzania'], code: 'tz' },
+        { match: ['taiwan'], code: 'tw' },
+        { match: ['palestine'], code: 'ps' },
+        { match: ['kosovo'], code: 'xk' },
+    ];
+    for (const entry of nameMap) {
+        if (entry.match.some(m => name.includes(m))) return entry.code;
+    }
+    return null;
+}
+
+/**
+ * Load and render a country's flag into the header flag container using external APIs
+ * Prefers FlagCDN (SVG->PNG), then RestCountries by code, then by name.
+ * @param {string} a2Code - ISO 3166-1 alpha-2 code
+ * @param {string} countryName - Country display name for accessibility
+ */
+async function setCountryFlag(a2Code, countryName) {
+    const flagContainer = document.querySelector('.flag');
+    if (!flagContainer) return;
+    if (!a2Code && !countryName) {
+        flagContainer.textContent = 'FLAG';
+        return;
+    }
+
+    const normalized = normalizeIsoA2(a2Code, countryName);
+    const code = (normalized || '').toLowerCase();
+
+    // Use cache if available
+    if (code && flagUrlCache[code]) {
+        renderFlag(flagContainer, flagUrlCache[code], countryName);
+        return;
+    }
+
+    // 1) Try FlagCDN (SVG -> PNG)
+    if (code) {
+        const cdnSvg = `https://flagcdn.com/${code}.svg`;
+        const cdnPng = `https://flagcdn.com/w40/${code}.png`;
+        const success = await tryLoadImage(flagContainer, cdnSvg, cdnPng, countryName, (finalUrl) => {
+            flagUrlCache[code] = finalUrl;
+        });
+        if (success) return;
+    }
+
+    // 2) RestCountries by code
+    if (code) {
+        try {
+            const resp = await fetch(`https://restcountries.com/v3.1/alpha/${code}`);
+            if (resp.ok) {
+                const json = await resp.json();
+                const url = json?.[0]?.flags?.svg || json?.[0]?.flags?.png;
+                if (url) {
+                    flagUrlCache[code] = url;
+                    renderFlag(flagContainer, url, countryName);
+                    return;
+                }
+            }
+        } catch (e) {}
+    }
+
+    // 3) RestCountries by name (fullText first, then fallback)
+    if (countryName) {
+        try {
+            let url = null;
+            for (const q of [
+                `https://restcountries.com/v3.1/name/${encodeURIComponent(countryName)}?fullText=true`,
+                `https://restcountries.com/v3.1/name/${encodeURIComponent(countryName)}`
+            ]) {
+                const r = await fetch(q);
+                if (r.ok) {
+                    const j = await r.json();
+                    const f = j?.[0]?.flags?.svg || j?.[0]?.flags?.png;
+                    if (f) { url = f; break; }
+                }
+            }
+            if (url) {
+                renderFlag(flagContainer, url, countryName);
+                return;
+            }
+        } catch (e) {}
+    }
+
+    // Final fallback
+    flagContainer.textContent = 'FLAG';
+}
+
+/**
+ * Helper to render a flag image element in the container
+ */
+function renderFlag(container, url, countryName) {
+    const img = new Image();
+    img.className = 'country-flag';
+    img.alt = `Flag of ${countryName}`;
+    img.width = 24;
+    img.height = 18;
+    img.referrerPolicy = 'no-referrer';
+    img.src = url;
+    container.innerHTML = '';
+    container.appendChild(img);
+}
+
+/**
+ * Try to load an image from primary URL, fall back to secondary on error
+ * @returns {Promise<boolean>} true if loaded successfully
+ */
+function tryLoadImage(container, primaryUrl, fallbackUrl, countryName, onSuccess) {
+    return new Promise((resolve) => {
+        const img = new Image();
+        img.className = 'country-flag';
+        img.alt = `Flag of ${countryName}`;
+        img.width = 24;
+        img.height = 18;
+        img.referrerPolicy = 'no-referrer';
+        img.onerror = () => {
+            if (!fallbackUrl) { resolve(false); return; }
+            img.onerror = () => resolve(false);
+            img.onload = () => {
+                onSuccess && onSuccess(img.src);
+                container.innerHTML = '';
+                container.appendChild(img);
+                resolve(true);
+            };
+            img.src = fallbackUrl;
+        };
+        img.onload = () => {
+            onSuccess && onSuccess(img.src);
+            container.innerHTML = '';
+            container.appendChild(img);
+            resolve(true);
+        };
+        img.src = primaryUrl;
+    });
+}
+
+/**
  * Handle country selection
  * @param {Object} country - The selected country data
  */
@@ -124,6 +299,7 @@ async function handleCountrySelect(country) {
     if (!country) return;
     
     // Update the UI
+    setCountryFlag(country.a2Code, country.name);
     document.querySelector(".country-info").textContent =
         country.name + " (" + country.a2Code + ") - " + country.continent;
     document.querySelector(".background-info").textContent =
@@ -168,6 +344,8 @@ async function handleCountrySelect(country) {
 function handleCountryDeselect() {
     // Reset UI elements
     document.querySelector('.country-info').textContent = 'COUNTRY INFO';
+    const flagContainer = document.querySelector('.flag');
+    if (flagContainer) flagContainer.textContent = 'FLAG';
     // Reset background-info with centered placeholder text
     document.querySelector('.background-info').innerHTML = '<div class="centered-text">INTRODUCTION / BACKGROUND</div>';
     

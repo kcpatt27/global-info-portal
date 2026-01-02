@@ -35,6 +35,30 @@
 .flag {
     color: var(--color-inactive-text);
     width: 36px; /* Make flag width fixed */
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+/* Size and align the flag icon nicely in header */
+.flag .flag-icon {
+    display: inline-block;
+    width: 24px;
+    height: 18px;
+    margin-right: 6px;
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.2);
+    border-radius: 2px;
+}
+
+/* API image-based flag style */
+.flag .country-flag {
+    display: inline-block;
+    width: 24px;
+    height: 18px;
+    object-fit: cover;
+    margin-right: 6px;
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.2);
+    border-radius: 2px;
 }
 
 .country-info {
@@ -115,7 +139,7 @@
 .background-info {
     max-height: none;
     flex: 1;
-    overflow-y: auto;
+    overflow: visible;
     margin-bottom: 20px;
     margin-top: 15px;
     border: 1px solid var(--color-surface-lighter);
@@ -181,28 +205,42 @@
   position: relative;
 }
 
+.info-cycling-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.cycle-indicator-top {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  opacity: 0.9;
+}
+
 .navigation-content-wrapper {
   display: flex;
   align-items: center;
   width: 100%;
   height: 100%;
   position: relative;
-  padding-right: 38px; /* Space for button + scrollbar */
+  padding-right: 0;
 }
 
 .info-text-container {
   flex: 1;
-  overflow-y: auto;
-  max-height: 100%;
+  overflow: visible;
+  max-height: none;
   padding: 0 5px;
-  margin-right: -30px; /* Pull content under button */
+  margin-right: 0;
 }
 
 .info-text-content {
   font-size: var(--font-size-md);
   line-height: 1.4;
-  max-height: calc(100% - 30px);
-  padding-right: 10px; /* Extra padding to prevent text from getting too close to scrollbar */
+  max-height: none;
+  padding-right: 10px;
 }
 
 .info-text-source {
@@ -211,7 +249,7 @@
   color: var(--color-text-secondary);
   margin-top: 8px;
   text-align: right;
-  padding-right: 10px; /* Match content padding */
+  padding-right: 10px;
 }
 
 .cycle-button {
@@ -231,17 +269,8 @@
   z-index: 2;
 }
 
-.cycle-button.prev {
-  margin-right: 5px;
-}
-
-.cycle-button.next {
-  margin-left: 0;
-  position: absolute;
-  right: 8px; /* Align with scrollbar track */
-  z-index: 2;
-  background: rgba(0, 0, 0, 0.3);
-}
+.cycle-button.prev { margin-right: 0; }
+.cycle-button.next { margin-left: 0; }
 
 .cycle-button:hover {
   background: rgba(0, 0, 0, 0.4);
