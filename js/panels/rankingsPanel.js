@@ -28,13 +28,6 @@ export function createRankingsPanel(data) {
   panelElement.innerHTML = `
     <div class="rankings-controls">
       <div class="rankings-control-row">
-        <div class="control-group" style="flex: 1;">
-          <select class="ranking-selector" id="ranking-selector">
-            <option value="">Choose a metric...</option>
-          </select>
-        </div>
-      </div>
-      <div class="rankings-control-row">
         <div class="control-group">
           <select class="ranking-sort" id="ranking-sort">
             <option value="desc">High to Low</option>
@@ -53,8 +46,13 @@ export function createRankingsPanel(data) {
         </div>
       </div>
     </div>
+    <div class="metrics-grid-container">
+      <div class="metrics-grid" id="metrics-grid">
+        <!-- Metric cards will be inserted here -->
+      </div>
+    </div>
     <div class="rankings-container">
-      <div class="rankings-placeholder">Select a metric to view rankings</div>
+      <div class="rankings-placeholder">Select a metric above to view rankings</div>
     </div>
   `;
 
@@ -69,14 +67,108 @@ export function createRankingsPanel(data) {
   // Sort metrics alphabetically
   numericMetrics.sort((a, b) => a.label.localeCompare(b.label));
   
-  // Populate select options
-  const metricSelector = panelElement.querySelector('#ranking-selector');
+  // Create metric cards grid
+  const metricsGrid = panelElement.querySelector('#metrics-grid');
+  
+  // Create cards first with placeholder rankings
+  const metricCards = [];
   numericMetrics.forEach(metric => {
-    const option = document.createElement('option');
-    option.value = metric.id;
-    option.textContent = metric.label;
-    metricSelector.appendChild(option);
+    const card = document.createElement('div');
+    card.className = 'metric-card';
+    card.dataset.metricId = metric.id;
+    const rankElement = document.createElement('div');
+    rankElement.className = 'metric-card-rank';
+    rankElement.textContent = '…'; // Loading indicator
+    card.appendChild(rankElement);
+    
+    const contentDiv = document.createElement('div');
+    contentDiv.className = 'metric-card-content';
+    contentDiv.innerHTML = `
+      <div class="metric-card-label">${metric.label.split(':').pop().trim()}</div>
+      <div class="metric-card-value">${formatValue(metric.text)}</div>
+    `;
+    card.appendChild(contentDiv);
+    
+    const arrowDiv = document.createElement('div');
+    arrowDiv.className = 'metric-card-arrow';
+    arrowDiv.innerHTML = '<i class="fas fa-chevron-right"></i>';
+    card.appendChild(arrowDiv);
+    
+    metricsGrid.appendChild(card);
+    metricCards.push({ card, rankElement, metric });
   });
+  
+  // Process all cached countries for all metrics to get accurate rankings
+  const processAllMetricsForRankings = async () => {
+    // First, add current country's metrics to the index
+    numericMetrics.forEach(metric => {
+      const metrics = {};
+      metrics[metric.id] = metric.value;
+      globalDataIndex.addCountryData(countryName, countryCode, metrics);
+    });
+    
+    // Get all cached country codes
+    const cachedCodes = Object.keys(countryDataCache);
+    const totalCountries = cachedCodes.length;
+    let processed = 0;
+    
+    // Process all cached countries for each metric
+    for (const code of cachedCodes) {
+      if (code === countryCode) {
+        processed++;
+        continue; // Skip current country (already added)
+      }
+      
+      const countryData = countryDataCache[code];
+      if (!countryData) {
+        processed++;
+        continue;
+      }
+      
+      const country = countriesList.find(c => c.code === code) || { name: code };
+      
+      // Extract all metrics for this country
+      numericMetrics.forEach(metric => {
+        const metricValue = extractMetricFromCountry(countryData, metric.path);
+        if (metricValue !== null) {
+          const metrics = {};
+          metrics[metric.id] = metricValue;
+          globalDataIndex.addCountryData(country.name, code, metrics);
+        }
+      });
+      
+      processed++;
+      
+      // Update rankings periodically (every 5 countries or at the end)
+      if (processed % 5 === 0 || processed === totalCountries) {
+        // Update all card rankings
+        metricCards.forEach(({ rankElement, metric }) => {
+          const ranking = globalDataIndex.getRanking(metric.id, countryCode, metric.value);
+          if (ranking && ranking.total > 0 && ranking.rank > 0) {
+            rankElement.textContent = `#${ranking.rank}`;
+          } else {
+            rankElement.textContent = '—';
+          }
+        });
+        
+        // Small delay to allow UI to update
+        await new Promise(resolve => setTimeout(resolve, 10));
+      }
+    }
+    
+    // Final update of all rankings
+    metricCards.forEach(({ rankElement, metric }) => {
+      const ranking = globalDataIndex.getRanking(metric.id, countryCode, metric.value);
+      if (ranking && ranking.total > 0 && ranking.rank > 0) {
+        rankElement.textContent = `#${ranking.rank}`;
+      } else {
+        rankElement.textContent = '—';
+      }
+    });
+  };
+  
+  // Process all metrics asynchronously
+  processAllMetricsForRankings();
   
   // Rankings container reference
   const rankingsContainer = panelElement.querySelector('.rankings-container');
@@ -120,42 +212,44 @@ export function createRankingsPanel(data) {
     }
   });
   
-  // Handle metric selection change
-  metricSelector.addEventListener('change', function() {
-    const selectedMetricId = this.value;
-    if (!selectedMetricId) {
-      rankingsContainer.innerHTML = `<div class="rankings-placeholder">Select a metric above to see how this country ranks globally</div>`;
-      appState.selectedRankingMetric = null;
-      return;
-    }
-    
-    // Store selection in app state
-    appState.selectedRankingMetric = selectedMetricId;
-    
-    // Find the selected metric details
-    const selectedMetric = numericMetrics.find(m => m.id === selectedMetricId);
-    if (!selectedMetric) return;
-    
-    // Show loading message
-    rankingsContainer.innerHTML = `
-      <div class="rankings-loading">
-        <div class="loading-spinner"></div>
-        <div>Analyzing global ranking data...</div>
-      </div>
-    `;
-    
-    // First add this country's metric to the index
-    const metrics = {};
-    metrics[selectedMetric.id] = selectedMetric.value;
-    globalDataIndex.addCountryData(countryName, countryCode, metrics);
-    
-    // Process all cached country data for this metric
-    processMetricForAllCountries(selectedMetric, countryCode, rankingsContainer, data);
+  // Handle metric card clicks
+  const allMetricCards = panelElement.querySelectorAll('.metric-card');
+  allMetricCards.forEach(card => {
+    card.addEventListener('click', function() {
+      const selectedMetricId = this.dataset.metricId;
+      
+      // Update active state
+      allMetricCards.forEach(c => c.classList.remove('active'));
+      this.classList.add('active');
+      
+      // Store selection in app state
+      appState.selectedRankingMetric = selectedMetricId;
+      
+      // Find the selected metric details
+      const selectedMetric = numericMetrics.find(m => m.id === selectedMetricId);
+      if (!selectedMetric) return;
+      
+      // Show loading message
+      rankingsContainer.innerHTML = `
+        <div class="rankings-loading">
+          <div class="loading-spinner"></div>
+          <div>Analyzing global ranking data...</div>
+        </div>
+      `;
+      
+      // First add this country's metric to the index
+      const metrics = {};
+      metrics[selectedMetric.id] = selectedMetric.value;
+      globalDataIndex.addCountryData(countryName, countryCode, metrics);
+      
+      // Process all cached country data for this metric
+      processMetricForAllCountries(selectedMetric, countryCode, rankingsContainer, data);
+    });
   });
   
   // If no metrics available, show a message
   if (numericMetrics.length === 0) {
-    metricSelector.innerHTML = '<option value="" disabled selected>No ranking metrics available</option>';
+    metricsGrid.innerHTML = '<div class="rankings-placeholder">No ranking metrics available</div>';
     rankingsContainer.innerHTML = `<div class="rankings-placeholder">No numeric data available for rankings</div>`;
     return;
   }
@@ -165,10 +259,12 @@ export function createRankingsPanel(data) {
     // Check if the previously selected metric is available for this country
     const previousMetric = numericMetrics.find(m => m.id === appState.selectedRankingMetric);
     if (previousMetric) {
-      metricSelector.value = appState.selectedRankingMetric;
-      // Trigger a change event to update the display
-      const event = new Event('change');
-      metricSelector.dispatchEvent(event);
+      const previousCard = panelElement.querySelector(`.metric-card[data-metric-id="${appState.selectedRankingMetric}"]`);
+      if (previousCard) {
+        previousCard.classList.add('active');
+        // Trigger click to load the ranking
+        previousCard.click();
+      }
     } else {
       // Reset if the previously selected metric isn't available
       appState.selectedRankingMetric = null;
@@ -390,6 +486,23 @@ function displayRanking(container, metric, data, countryName) {
     scalePosition = Math.round(((countryValue - minValue) / (maxValue - minValue)) * 100);
   }
   
+  // Get top 5 countries for quick stats
+  const topCountries = countriesAfterFilter.slice(0, 5);
+  const quickStatsHTML = topCountries.length > 0 ? `
+    <div class="quick-rankings-stats">
+      <h4 class="quick-rankings-title">Top ${topCountries.length} Rankings</h4>
+      <div class="quick-rankings-grid">
+        ${topCountries.map((country, idx) => `
+          <div class="quick-ranking-card ${country.code === countryCode ? 'current-country' : ''}">
+            <div class="quick-ranking-rank">#${idx + 1}</div>
+            <div class="quick-ranking-name">${country.name}</div>
+            <div class="quick-ranking-value">${formatRankingValue(country.value, metric)}</div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  ` : '';
+  
   // Format the ranking information
   let rankHTML = '';
   if (rank !== 'N/A') {
@@ -444,6 +557,7 @@ function displayRanking(container, metric, data, countryName) {
     </div>
     <div class="ranking-description">${metric.text || ''}</div>
     ${rankHTML}
+    ${quickStatsHTML}
     <div class="data-coverage">
       <div class="coverage-indicator">
         <div class="coverage-bar" style="width: ${coveragePercent}%"></div>
@@ -465,9 +579,9 @@ function displayRanking(container, metric, data, countryName) {
           <tbody>
             ${countriesAfterFilter.map((country, index) => `
               <tr class="${country.code === countryCode ? 'highlighted-country' : ''}">
-                <td>${index + 1}</td>
-                <td>${country.name}</td>
-                <td>${formatRankingValue(country.value, metric)}</td>
+                <td class="rank-cell">${index + 1}</td>
+                <td class="country-cell">${country.name}</td>
+                <td class="value-cell">${formatRankingValue(country.value, metric)}</td>
               </tr>
             `).join('')}
           </tbody>

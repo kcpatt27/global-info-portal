@@ -508,12 +508,12 @@ function formatStatValue(value, statType) {
           numStr = numStr.replace(/\./g, '');
         }
         const numValue = parseFloat(numStr);
-        if (!isNaN(numValue)) {
-          if (numValue >= 1000000000) {
+      if (!isNaN(numValue)) {
+        if (numValue >= 1000000000) {
             return (numValue / 1000000000).toFixed(2) + ' billion' + yearStr;
-          } else if (numValue >= 1000000) {
+        } else if (numValue >= 1000000) {
             return (numValue / 1000000).toFixed(2) + ' million' + yearStr;
-          } else {
+        } else {
             return numValue.toLocaleString() + yearStr;
           }
         }
