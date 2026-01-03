@@ -124,17 +124,20 @@ export function addStatSection(container, title, stats) {
     
     // Create a structure that keeps both the visual layout and maintains compatibility
     let iconHtml = stat.icon ? `<div class="stat-icon"><i class="${stat.icon}"></i></div>` : '';
-    
+
+    // Create stat ranking element if ranking data is available
+    let rankingHtml = '';
+    if (stat.ranking) {
+      rankingHtml = `<div class="stat-ranking">#${stat.ranking}</div>`;
+    }
+
+    // Render header (title + ranking) and data below
     statItem.innerHTML = `
       <div class="stat-header">
-        ${iconHtml}
-        <div class="stat-label">${stat.label}</div>
+        <div class="stat-title">${iconHtml}<span class="stat-title-text stat-label">${stat.label}</span></div>
+        ${rankingHtml}
       </div>
-      <div class="stat-content" style="display:none">
-        <div class="stat-label">${stat.label}</div>
-        <div class="stat-value">${stat.value}</div>
-      </div>
-      <div class="stat-value">${stat.value}</div>
+      <div class="stat-data">${stat.value}</div>
     `;
     
     statItemsContainer.appendChild(statItem);
@@ -149,7 +152,7 @@ export function addStatSection(container, title, stats) {
  */
 export function highlightText(element, searchTerm) {
   if (!element || !searchTerm) return;
-  if (element.classList.contains('stat-value') && !element.originalHTML) {
+  if (!element.originalHTML) {
     element.originalHTML = element.innerHTML;
   }
   const text = element.textContent;

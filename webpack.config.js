@@ -15,12 +15,11 @@ module.exports = (env = {}) => {
     entry: {
       // Main application bundle - complete experience
       main: './js/index.js',
-      
+
       // Critical path bundle - essential for initial rendering
       critical: './js/critical.js',
-      
+
       // CSS entry points
-      criticalStyles: './css-styles/critical.css',
       styles: './css-styles/main.css'
     },
     output: {

@@ -36,12 +36,11 @@
 }
 
 .stat-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  padding: 5px 0;
+  display: block; /* stack header and data vertically */
+  padding: 6px 0 12px 0;
   border-bottom: 1px dashed var(--color-surface-lighter);
   transition: background-color var(--transition-chart) var(--easing-standard);
+  position: relative;
 }
 
 .stat-item:hover {
@@ -59,11 +58,28 @@
   background-color: var(--color-primary-stat-hover-bg);
 }
 
-.stat-label {
-  font-size: var(--font-size-stat-label);
+.stat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+  min-height: 1rem;
+}
+
+.stat-title {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
   flex: 1;
-  padding-right: 10px;
+  min-width: 0;
+  font-size: var(--font-size-stat-label);
   color: var(--color-text-label);
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.stat-title .stat-title-text {
+  display: block;
 }
 
 .primary-stat .stat-label {
@@ -71,12 +87,52 @@
   font-weight: 500;
 }
 
-.stat-item > .stat-value {
+.primary-stat .stat-ranking {
+  background-color: var(--color-accent);
+  color: #000;
+}
+
+/* Ensure every ranking badge inside the stats panel uses black text */
+.stats-container .stat-ranking,
+.stat-section .stat-ranking,
+.stat-item .stat-ranking {
+  color: #000 !important;
+}
+
+.stat-data {
   font-size: var(--font-size-md);
   font-weight: bold;
-  text-align: right;
   color: var(--color-text-light);
-  max-width: 60%;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  width: 100%;
+  padding-left: 10px; /* slight indentation */
+  margin-top: 8px;
+  text-align: left; /* default left align for data */
+}
+
+.stat-ranking {
+  /* unified ranking badge style */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 30px;
+  height: 24px;
+  padding: 0 8px;
+  background: var(--color-accent);
+  color: var(--color-text-light);
+  border-radius: var(--radius-xs);
+  font-weight: 700;
+  font-size: 0.85rem;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  white-space: nowrap;
+  flex-shrink: 0;
+  align-self: flex-start;
+}
+
+.primary-stat .stat-ranking {
+  background-color: var(--color-accent);
+  color: #000;
 }
 
 .stat-value .highlight {
@@ -164,18 +220,20 @@
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .stat-item {
-    flex-direction: column;
-    gap: 4px;
+    display: block;
   }
-  
-  .stat-label, .stat-value {
+
+  .stat-title {
     width: 100%;
-    max-width: 100%;
+  }
+
+  .stat-data {
+    padding-left: 6px;
     text-align: left;
   }
-  
-  .stat-value {
-    padding-left: 10px;
+
+  .stat-ranking {
+    margin-top: 4px;
   }
 }
 

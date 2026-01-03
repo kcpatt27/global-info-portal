@@ -1,5 +1,9 @@
 // statCycling.js - Add cycling functionality to quick stat items
 
+import { globalDataIndex } from './state.js';
+import { getMetricRanking } from './utils/leaderboardScoring.js';
+import { getAllMetrics } from './utils/leaderboardMetrics.js';
+
 // Define sets of related statistics for each quick stat category with data paths for extraction
 const relatedStats = {
     // Population related stats
@@ -26,10 +30,10 @@ const relatedStats = {
     ],
     // Geography related stats
     region: [
+      { label: "Land Boundaries", dataPath: "Geography.Land boundaries.total.text", icon: "fas fa-border-all" },
       { label: "Region", dataPath: "Geography.Map references.text", icon: "fas fa-globe-europe" },
       { label: "Coordinates", dataPath: "Geography.Geographic coordinates.text", icon: "fas fa-globe" },
-      { label: "Time Zone", dataPath: "Government.Capital.time difference.text", icon: "fas fa-clock" },
-      { label: "Land Boundaries", dataPath: "Geography.Land boundaries.total.text", icon: "fas fa-border-all" }
+      { label: "Time Zone", dataPath: "Government.Capital.time difference.text", icon: "fas fa-clock" }
     ]
   };
 
@@ -322,9 +326,17 @@ function updateQuickStats(countryData, countryCode) {
         // Format the value appropriately
         const formattedValue = formatStatValue(value, currentLabel);
         valueElement.textContent = formattedValue;
+        
+        // Extract numeric value for ranking (value might be a string)
+        const numericValue = extractNumericValueForRanking(value, currentLabel, countryData);
+        
+        // Add ranking badge
+        updateStatRanking(statItem, currentLabel, numericValue, countryCode);
       } else {
         console.warn(`No value found for ${currentLabel}`);
         valueElement.textContent = 'Data unavailable';
+        // Remove ranking badge if value unavailable
+        removeStatRanking(statItem);
       }
       
       // Make sure the icon is correct
@@ -334,10 +346,160 @@ function updateQuickStats(countryData, countryCode) {
     } else {
       console.warn(`Could not find matching stat for ${currentLabel} in ${category}`);
       valueElement.textContent = 'Data unavailable';
+      removeStatRanking(statItem);
     }
   });
   
   console.log('Quick stats update completed');
+}
+
+/**
+ * Map stat labels to metric IDs for ranking lookup
+ */
+function getMetricIdFromLabel(label) {
+  const labelLower = label.toLowerCase();
+  const allMetrics = getAllMetrics();
+  
+  // Try to match by label
+  const metric = allMetrics.find(m => 
+    m.label.toLowerCase() === labelLower ||
+    m.label.toLowerCase().includes(labelLower) ||
+    labelLower.includes(m.label.toLowerCase())
+  );
+  
+  if (metric) return metric.id;
+  
+  // Fallback: direct mapping for common stats
+  const labelMap = {
+    'population': 'people_population',
+    'gdp': 'money_real_gdp_ppp',
+    'area': 'reach_area',
+    'land boundaries': 'reach_land_boundaries', // Add Land Boundaries metric
+    'region': null // Region doesn't have ranking
+  };
+  
+  for (const [key, metricId] of Object.entries(labelMap)) {
+    if (labelLower.includes(key)) return metricId;
+  }
+  
+  return null;
+}
+
+/**
+ * Extract numeric value for ranking from the stat value
+ * Handles cases where value is a formatted string or needs to be extracted from country data
+ */
+function extractNumericValueForRanking(value, label, countryData) {
+  const labelLower = label.toLowerCase();
+  
+  // For GDP: We need to use Real GDP (PPP) for ranking, not GDP (official exchange rate)
+  if (labelLower.includes('gdp') && countryData) {
+    // Try Real GDP (PPP) first (what leaderboard uses)
+    const pppPaths = [
+      'Economy.Real GDP (purchasing power parity).Real GDP (purchasing power parity) 2023.text',
+      'Economy.GDP (purchasing power parity).text',
+      'Economy.GDP - purchasing power parity.text'
+    ];
+    
+    for (const path of pppPaths) {
+      const pppValue = extractValueFromPath(countryData, path);
+      if (pppValue && typeof pppValue === 'string') {
+        const num = extractNumberWithScale(pppValue);
+        if (num !== null) return num;
+      }
+    }
+  }
+  
+  // For Area: Extract from country data directly
+  if (labelLower.includes('area') && countryData) {
+    const areaPath = 'Geography.Area.total.text';
+    const areaValue = extractValueFromPath(countryData, areaPath);
+    if (areaValue && typeof areaValue === 'string') {
+      const num = extractNumberWithScale(areaValue);
+      if (num !== null) return num;
+    }
+  }
+  
+  // For other stats, try to extract from the value string
+  if (typeof value === 'string') {
+    const num = extractNumberWithScale(value);
+    if (num !== null) return num;
+  }
+  
+  // If value is already a number, return it
+  if (typeof value === 'number' && !isNaN(value)) {
+    return value;
+  }
+  
+  return null;
+}
+
+/**
+ * Extract number from string and apply scale multipliers
+ */
+function extractNumberWithScale(str) {
+  if (!str || typeof str !== 'string') return null;
+  
+  // Try to extract number from formatted string like "$29.185 trillion" or "9,833,517 sq km"
+  const numericMatch = str.match(/(\d{1,3}(?:,\d{3})*(?:\.\d+)?)/);
+  if (!numericMatch) return null;
+  
+  let num = parseFloat(numericMatch[1].replace(/,/g, ''));
+  if (isNaN(num)) return null;
+  
+  // Check for scale multipliers (million, billion, trillion)
+  const scale = str.toLowerCase();
+  if (scale.includes('trillion')) {
+    return num * 1000000000000;
+  } else if (scale.includes('billion')) {
+    return num * 1000000000;
+  } else if (scale.includes('million')) {
+    return num * 1000000;
+  } else if (scale.includes('thousand')) {
+    return num * 1000;
+  }
+  
+  return num;
+}
+
+/**
+ * Update ranking badge for a stat item
+ */
+function updateStatRanking(statItem, label, value, countryCode) {
+  const metricId = getMetricIdFromLabel(label);
+  if (!metricId || !countryCode || value === null || value === undefined) {
+    removeStatRanking(statItem);
+    return;
+  }
+  
+  // Get ranking
+  const ranking = getMetricRanking(metricId, countryCode, value);
+  if (!ranking || ranking.rank === 0) {
+    removeStatRanking(statItem);
+    return;
+  }
+  
+  // Find or create ranking badge - attach to stat-item, not stat-value
+  let rankBadge = statItem.querySelector('.stat-rank-badge');
+  if (!rankBadge) {
+    rankBadge = document.createElement('div');
+    rankBadge.className = 'stat-rank-badge';
+    // Append directly to stat-item so it's positioned relative to the box
+    statItem.appendChild(rankBadge);
+  }
+  
+  rankBadge.textContent = `#${ranking.rank}`;
+  rankBadge.style.display = 'block';
+}
+
+/**
+ * Remove ranking badge from stat item
+ */
+function removeStatRanking(statItem) {
+  const rankBadge = statItem.querySelector('.stat-rank-badge');
+  if (rankBadge) {
+    rankBadge.style.display = 'none';
+  }
 }
 
 /**

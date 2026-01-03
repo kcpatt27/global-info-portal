@@ -6,18 +6,47 @@
 
 import { addStatSection, extractStats, highlightText, extractNumber, formatLabel, formatValue } from '../utils.js';
 import { detectTimeSeriesData, processText } from '../utils/dataFetcher.js';
-import { appState } from '../state.js';
+import { appState, globalDataIndex } from '../state.js';
+
+// Function to add a stat section with rankings
+function addStatSectionWithRankings(container, title, stats, countryCode) {
+  if (!stats || stats.length === 0) return;
+
+  // Add rankings to stats
+  const statsWithRankings = stats.map(stat => {
+    if (stat.numericValue !== null && stat.numericValue !== undefined) {
+      // Create a metric ID for this stat
+      const metricId = `${title.toLowerCase()}_${stat.label.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '')}`;
+
+      // Get ranking from global data index
+      const ranking = globalDataIndex.getRanking(metricId, countryCode, stat.numericValue);
+
+      return {
+        ...stat,
+        ranking: ranking && ranking.rank > 0 ? ranking.rank : null
+      };
+    }
+    return stat;
+  });
+
+  // Use the existing addStatSection function with enhanced stats
+  addStatSection(container, title, statsWithRankings);
+}
 
 // Main export - creates/updates the Stats panel with country data
 export function createStatsPanel(data) {
   const panelElement = document.querySelector('.data-panel[data-panel="0"]');
   if (!panelElement) return;
-  
+
   if (!data) {
     panelElement.innerHTML = '<div class="data-error">No country data available</div>';
     return;
   }
-  
+
+  // Get country code for rankings
+  const countryCode = data.Government?.['Country name']?.['Country name code']?.text ||
+                      data.Communications?.['Internet country code']?.text || '';
+
   // Create the basic panel structure
   panelElement.innerHTML = `
     <div class="stats-search-container">
@@ -27,29 +56,29 @@ export function createStatsPanel(data) {
     <div class="stats-container"></div>
     <div class="stats-no-results" style="display: none;">No statistics found matching your search</div>
   `;
-  
+
   const statsContainer = panelElement.querySelector('.stats-container');
   const searchInput = panelElement.querySelector('.stats-search');
   const clearButton = panelElement.querySelector('.stats-search-clear');
   const noResults = panelElement.querySelector('.stats-no-results');
 
-  // Add stats sections
-  addStatSection(statsContainer, 'People', extractStats(data['People and Society']));
-  addStatSection(statsContainer, 'Transportation', extractStats(data.Transportation));
-  addStatSection(statsContainer, 'Communications', extractStats(data.Communications));
-  addStatSection(statsContainer, 'Economy', extractStats(data.Economy));
-  addStatSection(statsContainer, 'Energy', extractStats(data.Energy));
-  addStatSection(statsContainer, 'Environment', extractStats(data.Environment));
-  addStatSection(statsContainer, 'Government', extractStats(data.Government));
-  addStatSection(statsContainer, 'Space', extractStats(data.Space));
-  addStatSection(statsContainer, 'Geography', extractStats(data.Geography));
-  addStatSection(statsContainer, 'Military and Security', extractStats(data['Military and Security']));
-  addStatSection(statsContainer, 'Terrorism', extractStats(data.Terrorism));
-  addStatSection(statsContainer, 'Transnational Issues', extractStats(data['Transnational Issues']));
+  // Add stats sections with rankings
+  addStatSectionWithRankings(statsContainer, 'People', extractStats(data['People and Society']), countryCode);
+  addStatSectionWithRankings(statsContainer, 'Transportation', extractStats(data.Transportation), countryCode);
+  addStatSectionWithRankings(statsContainer, 'Communications', extractStats(data.Communications), countryCode);
+  addStatSectionWithRankings(statsContainer, 'Economy', extractStats(data.Economy), countryCode);
+  addStatSectionWithRankings(statsContainer, 'Energy', extractStats(data.Energy), countryCode);
+  addStatSectionWithRankings(statsContainer, 'Environment', extractStats(data.Environment), countryCode);
+  addStatSectionWithRankings(statsContainer, 'Government', extractStats(data.Government), countryCode);
+  addStatSectionWithRankings(statsContainer, 'Space', extractStats(data.Space), countryCode);
+  addStatSectionWithRankings(statsContainer, 'Geography', extractStats(data.Geography), countryCode);
+  addStatSectionWithRankings(statsContainer, 'Military and Security', extractStats(data['Military and Security']), countryCode);
+  addStatSectionWithRankings(statsContainer, 'Terrorism', extractStats(data.Terrorism), countryCode);
+  addStatSectionWithRankings(statsContainer, 'Transnational Issues', extractStats(data['Transnational Issues']), countryCode);
 
   // Set up search functionality
   setupSearchFunctionality(searchInput, clearButton, noResults, statsContainer);
-  
+
   // Check if the Stats tab has been enhanced
   if (appState.statsTabEnhanced) {
     enhanceWithHistoricalView(statsContainer, data);
@@ -90,42 +119,47 @@ function setupSearchFunctionality(searchInput, clearButton, noResults, statsCont
 function filterStats(searchTerm, statsContainer, noResults) {
   let visibleItems = 0;
   const sections = statsContainer.querySelectorAll('.stat-section');
-  
+
   sections.forEach(section => {
     let sectionHasVisibleItems = false;
     const items = section.querySelectorAll('.stat-item');
-    
+
     items.forEach(item => {
-      const labelElement = item.querySelector('.stat-label');
-      const valueElement = item.querySelector('.stat-value');
-      
+    const labelElement = item.querySelector('.stat-title-text') || item.querySelector('.stat-label');
+    const valueElement = item.querySelector('.stat-data') || item.querySelector('.stat-value');
+    const rankingElement = item.querySelector('.stat-ranking');
+
       if (!labelElement || !valueElement) return;
-      
+
       const label = labelElement.textContent.toLowerCase();
       const value = valueElement.textContent.toLowerCase();
-      
-      if (searchTerm === '' || label.includes(searchTerm) || value.includes(searchTerm)) {
+      const ranking = rankingElement ? rankingElement.textContent.toLowerCase() : '';
+
+      if (searchTerm === '' || label.includes(searchTerm) || value.includes(searchTerm) || ranking.includes(searchTerm)) {
         item.style.display = '';
         sectionHasVisibleItems = true;
         visibleItems++;
-        
+
         if (searchTerm !== '') {
           highlightText(labelElement, searchTerm);
           highlightText(valueElement, searchTerm);
+          if (rankingElement) highlightText(rankingElement, searchTerm);
         } else {
           labelElement.innerHTML = labelElement.textContent;
           valueElement.innerHTML = valueElement.originalHTML || valueElement.innerHTML;
+          if (rankingElement) rankingElement.innerHTML = rankingElement.textContent;
         }
       } else {
         item.style.display = 'none';
         labelElement.innerHTML = labelElement.textContent;
         valueElement.innerHTML = valueElement.originalHTML || valueElement.innerHTML;
+        if (rankingElement) rankingElement.innerHTML = rankingElement.textContent;
       }
     });
-    
+
     section.style.display = sectionHasVisibleItems ? '' : 'none';
   });
-  
+
   noResults.style.display = visibleItems === 0 ? 'block' : 'none';
 }
 

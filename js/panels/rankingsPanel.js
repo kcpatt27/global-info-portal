@@ -300,15 +300,41 @@ function findRankingMetrics(data) {
       // If this is a leaf node with text
       if (value && typeof value === 'object' && value.text) {
         const numericValue = extractNumber(value.text);
-        if (!isNaN(numericValue)) {
-          metrics.push({
-            id: metricId,
-            label: `${sectionName}: ${formatLabel(key)}`,
-            value: numericValue,
-            text: value.text,
-            path: currentPath
-          });
-          processedKeys.add(metricId);
+        // Only include if it's a valid number AND not just text-only data
+        // Filter out things like "Agricultural Products" which are lists of items
+        if (!isNaN(numericValue) && numericValue !== null) {
+          // Additional check: skip if the text is primarily a list/description
+          const textLower = value.text.toLowerCase();
+          const keyLower = key.toLowerCase();
+          
+          // Skip text-only fields
+          const isTextOnly = 
+            textLower.includes('note:') || 
+            textLower.includes('top ten') ||
+            textLower.includes('includes') ||
+            textLower.includes('the following') ||
+            keyLower.includes('products') ||
+            keyLower.includes('commodities') ||
+            keyLower.includes('partners') ||
+            keyLower.includes('exchange rates') || // Exchange rates are descriptive
+            (textLower.split(',').length > 5 && !textLower.match(/\d/)) || // Many commas but no numbers = likely a list
+            (textLower.length > 200 && !textLower.match(/\d/)); // Very long text without numbers
+          
+          // Also check if the extracted number is just a year or small number that's likely not the main metric
+          // (e.g., "2024 est." would extract 2024, but that's not the metric value)
+          const isLikelyYear = numericValue >= 1900 && numericValue <= 2100 && 
+                              textLower.match(/\d{4}\s*(est\.?|$)/);
+          
+          if (!isTextOnly && !isLikelyYear) {
+            metrics.push({
+              id: metricId,
+              label: `${sectionName}: ${formatLabel(key)}`,
+              value: numericValue,
+              text: value.text,
+              path: currentPath
+            });
+            processedKeys.add(metricId);
+          }
         }
       } else if (value && typeof value === 'object') {
         // Continue recursively
@@ -567,25 +593,21 @@ function displayRanking(container, metric, data, countryName) {
     ${neighborsHTML}
     <div class="full-rankings-section">
       <h4 class="full-rankings-title">Full Rankings</h4>
-      <div class="rankings-table-container">
-        <table class="rankings-table">
-          <thead>
-            <tr>
-              <th>Rank</th>
-              <th>Country</th>
-              <th>Value</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${countriesAfterFilter.map((country, index) => `
-              <tr class="${country.code === countryCode ? 'highlighted-country' : ''}">
-                <td class="rank-cell">${index + 1}</td>
-                <td class="country-cell">${country.name}</td>
-                <td class="value-cell">${formatRankingValue(country.value, metric)}</td>
-              </tr>
-            `).join('')}
-          </tbody>
-        </table>
+      <div class="rankings-list-container">
+        ${countriesAfterFilter.map((country, index) => {
+          const formattedValue = formatRankingValue(country.value, metric);
+          // Determine if this is "long text" that should be left-aligned
+          const isLongText = formattedValue.length > 15 || formattedValue.includes(' ') || formattedValue.includes(',');
+          return `
+            <div class="ranking-item ${country.code === countryCode ? 'highlighted-country' : ''}">
+              <div class="ranking-item-header">
+                <div class="ranking-item-title">${country.name}</div>
+                <div class="ranking-item-rank">#${index + 1}</div>
+              </div>
+              <div class="ranking-item-data" data-long-text="${isLongText}">${formattedValue}</div>
+            </div>
+          `;
+        }).join('')}
       </div>
     </div>
   `;

@@ -7,7 +7,9 @@ import { updateDataPanels, clearDataPanels, showDataError, initPanels } from './
 import { initDataTabs } from './events.js';
 import { initStatCycling, updateQuickStats } from './statCycling.js';
 import { countryDataCache, globalDataIndex, countriesList, appState } from './state.js';
+import { processLeaderboardMetrics } from './utils/leaderboardScoring.js';
 import { setupBackgroundInfoCycling } from './infoTextCycling.js';
+import { preCacheG20Countries } from './utils/g20PreCache.js';
 import { initializeTouchInteractions, isTouchDevice } from './utils/touch.js';
 // import { initInteractiveComponents } from './components/interactive/index.js';
 import { initMobileNav } from './components/navigation/MobileNav.js';
@@ -105,6 +107,18 @@ document.addEventListener('DOMContentLoaded', () => {
     initDataTabs();
     initStatCycling();
     initPanels();
+    
+    // Pre-cache G20 countries in the background (non-blocking)
+    preCacheG20Countries((progress) => {
+      if (progress.cached) {
+        console.log(`G20 cache loaded: ${progress.total} countries`);
+      } else {
+        console.log(`G20 pre-caching: ${progress.processed}/${progress.total} - ${progress.current}`);
+      }
+    }).catch(error => {
+      console.warn('G20 pre-caching failed:', error);
+      // Don't block the app if pre-caching fails
+    });
     
     // Load non-critical components asynchronously
     // loadNonCriticalComponents();
@@ -365,6 +379,14 @@ async function handleCountrySelect(country) {
         
         // Update quick stats and data panels
         updateQuickStats(data, countryCode);
+        
+        // Process leaderboard metrics and add to global index
+        const countryName = data.Government?.['Country name']?.conventional_short_form?.text || 
+                           data.Government?.['Country name']?.text || 
+                           country.name || 
+                           'Unknown';
+        processLeaderboardMetrics(countryCode, data, countryName);
+        
         await updateDataPanels(data);
         
     } catch (error) {

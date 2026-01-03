@@ -31,7 +31,8 @@
 .quick-stats-grid .stat-item {
   background-color: var(--color-quick-stats-item-bg);
   border-radius: var(--radius-ranking);
-  padding: 12px 15px;
+  padding: 12px 18px; /* Increased horizontal padding for wider text box */
+  padding-bottom: 40px; /* Extra padding for ranking badge */
   transition: transform var(--transition-medium) var(--easing-standard),
               background-color var(--transition-medium) var(--easing-standard);
   border: 1px solid transparent;
@@ -41,6 +42,8 @@
   min-height: auto;
   height: auto;
   align-self: start;
+  position: relative; /* Required for absolute positioning of ranking badge */
+  overflow: visible; /* Ensure badge isn't cut off */
 }
 
 .quick-stats-grid .stat-item:hover {
@@ -74,13 +77,32 @@
 }
 
 .quick-stats-grid .stat-value {
-  font-size: 1.2rem;
+  font-size: 1.15rem;
   font-weight: 600;
   color: var(--color-text-light);
   text-align: left;
   width: 100%;
   word-wrap: break-word;
   word-break: break-word;
+  line-height: 1.3;
+  position: relative;
+  padding-bottom: 0;
+}
+
+.quick-stats-grid .stat-rank-badge {
+  position: absolute;
+  bottom: 8px;
+  right: 12px;
+  padding: 3px 6px;
+  background-color: var(--color-accent);
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #000000; /* Black text for better contrast on teal background */
+  display: inline-block;
+  z-index: 1;
+  white-space: nowrap;
+  pointer-events: none; /* Don't interfere with clicking */
   line-height: 1.2;
 }
 

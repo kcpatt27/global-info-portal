@@ -1,18 +1,20 @@
 okay so the project started as a solution to one of freecodecamp's certifications, the data visualization one. 
 
-i designed an initial UI and that was fine. 
+i designed an initial UI and that was fine. it was actually the 2nd thing i designed and implemented at the time, with the 1st being the pokedex that freecodecamp had me make. i designed other stuff up to then but nothing that really stretched my legs like those two. for both, i grabbed a whiteboard (i have several around my house, the fridge is even one now LOL), and drew out what i wanted the "main interaction screen" to be, both on pc and phone. then i went to v0 and played around with variations until i was happy with what had mutated.
 
-but my first real hurdle was that i didnt have any data.
+but ultimately, my first true hurdle was that i didnt have any data.
 
-i knew i could use an API but i didnt have any that stood out to me AND had the numbers i needed. i eventually settled on something as a back up, i think the pokemon one. i wouldve stopped there had freecodecamp not already had you make a pokedex using that API. i figured it would be lazy to use the same one again, and i was curious what else was out there, i love exploring, so why not?
+> "I'm definitely going to need an API...but which one? I can't use the Pokemon one again, that'd be lazy!"
 
-well i must have searched 100+ APIs, looking through docs, windows '98 style sites and a TON of lists on github about the best APIs, the most useful APIs, the silliest APIs (they have a bunch of lists lol), but again, i couldnt find one that was more appealing than my default.
+i knew i could use an API but i didnt know of any that stood out, besides what became my default, the Pokemon API (and potentially the Magic the Gathering API if i got bored of Pokemon). but i was curious what else was out there, and i love exploring, so why not do a deep dive? 🙄😐
 
-it was then that i thought about combining APIs, and i was watching some of the freecodecamp alumni videos on youtube with their solutions for their certs and idr if it was part of the cert or if he did it as an extra for fun but he basically had a map of the world drawn out with javascript by pulling a pair of free files (the topoJSON, which has JSON directions for drawing the borders of each country in a SVG format, and another JSON to link country codes to the drawn objects).
+well i must have searched through 100+ APIs, looking through docs, windows '98 style sites and a TON of lists on github/reddit about the best APIs, the most useful APIs, the silliest APIs (theres a bunch of lists lol), but again, i couldnt find one that was more appealing than my default.
 
-after that i was convicted on combining that with the freecodecamp cert and having you click the country and pull up the chart, cool right??!
+it was then that i thought about combining APIs, and i was watching some of the freecodecamp alumni videos on youtube with their solutions for their certs and idr if it was part of the cert or if it was done as an extra for fun, but the guy basically had a map of the world drawn out with javascript by pulling a pair of free files (the topoJSON, which has JSON directions for drawing the borders of each country in a SVG format, and another JSON to link country codes to the drawn objects).
 
-well i still had no data lolol but now im sold on the idea, so i do a bit of digging on country APIs, i used to be heavy into finance and global news and i knew there were free APIs to find international financial info, so i figured there had to be one for population and whatnot. 
+after that i was convicted on combining that with the data visualization cert project and having you click the country to pull up data with a separate page for GLOBAL charts, cool right??!
+
+well i still had no data at this point lolol but now im sold on the idea AND i have a lead, so i do a bit of digging on country APIs, (i used to be heavy into finance and global news and i knew there were free APIs to find international financial info, so i figured there had to be one for population and whatnot). 
 
 and once i set that intention, guess what i found next?
 
@@ -20,7 +22,7 @@ one of the coolest (not) APIs ive ever seen, complete with all the jank that com
 
 The CIA World Factbook!
 
-yes, THAT CIA, LOL! they have a whole website where you can search but the interactive features were lacking when i first found it. 
+yes, THAT CIA, LOL! they have a whole website where you can search, but the interactive features were lacking when i first found it. 
 
 but thats not the cool part. the cool part is that some random human (i love you, whoever you are), decided to make a github that auto-pulls the info from the website into JSON files BY COUNTRY CODE!! 
 
@@ -28,7 +30,9 @@ so everything was ready, i had the file to draw the map, the corresponding file 
 
 it was all coming together so swimmingly (pardon my finesse), and i couldnt help but be incredibly pleased with myself. for a bit of context, for every tutorial, i watched it maybe 3 times back to back and then maybe 4 more times as i followed along in the ensueing days. so by the time i found the factbook, i already had a working map prototype, an initial UI, a documented outline and was noodling on a 3D version of the map/globe using three.js (overlaying the SVG over the 3D globe turned out to be way harder than i thought and required a bit more troubleshooting than i felt was necessary at that stage, albeit after a week or two of failed attempts).
 
-so when i coded everything up, connected the APIs, and clicked on that first country, i was absolutely eccstatic when i saw data...
+the coding was wild though, the data visualization cert requires you to submit your site to an auto-grader and the data has to be there when it grades, so the site NEEDS pre-loaded data or at the very least, data that comes in on page load. trying to get that working in code was a nightmare, i didnt truly understand how much data there was in the files and having 240~ of them show up at once was just silly (comically so). 
+
+but i persisted and eventually overcame, and when the electricity was settling on the code, the APIs were connected, and clicked on that first country, i was absolutely eccstatic when i saw data...
 
 > "What the heck, I clicked on Canada, not Croatia..."
 
