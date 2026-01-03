@@ -45,9 +45,20 @@ export async function updateDataPanels(data) {
     const statsModule = await import('./statsPanel.js');
     const rankingsModule = await import('./rankingsPanel.js');
     
-    // Call panel creation functions
-    statsModule.createStatsPanel(data);
-    rankingsModule.createRankingsPanel(data);
+    // Call panel creation functions with error handling
+    try {
+      statsModule.createStatsPanel(data);
+    } catch (error) {
+      console.error('Error creating stats panel:', error);
+      showDataError('Error creating statistics panel: ' + error.message);
+    }
+    
+    try {
+      rankingsModule.createRankingsPanel(data);
+    } catch (error) {
+      console.error('Error creating rankings panel:', error);
+      showDataError('Error creating rankings panel: ' + error.message);
+    }
 
     // If there's an active country, try to refresh panels
     const countryCode = data?.countryCode;

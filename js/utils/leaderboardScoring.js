@@ -188,26 +188,64 @@ export function getMetricRanking(metricId, countryCode, value = null) {
 }
 
 /**
- * Calculate category score (sum of ranks for all metrics in category)
- * @param {string} category - 'people', 'money', or 'reach'
+ * Normalize a value to 0-1 scale using min-max normalization
+ * @param {number} value - The value to normalize
+ * @param {number} minValue - Minimum value in the dataset
+ * @param {number} maxValue - Maximum value in the dataset
+ * @returns {number} - Normalized value between 0 and 1
+ */
+function normalizeValue(value, minValue, maxValue) {
+  if (minValue === maxValue) return 0.5; // All values are the same
+  return (value - minValue) / (maxValue - minValue);
+}
+
+/**
+ * Calculate normalized score for a metric value
+ * @param {Object} metric - Metric definition
+ * @param {number} value - The raw metric value
+ * @param {number} minValue - Minimum value across all countries
+ * @param {number} maxValue - Maximum value across all countries
+ * @returns {number} - Normalized score (0-1, where 1 is best)
+ */
+function calculateMetricScore(metric, value, minValue, maxValue) {
+  if (value === null || value === undefined || isNaN(value)) return 0;
+  
+  if (metric.rankingType === 'optimal') {
+    // For optimal range: score based on distance from optimal
+    // Closer to optimal = higher score
+    const distance = calculateOptimalRangeDistance(value, metric.optimalValue);
+    const maxDistance = Math.max(
+      Math.abs(maxValue - metric.optimalValue),
+      Math.abs(minValue - metric.optimalValue)
+    );
+    if (maxDistance === 0) return 1; // All values are optimal
+    // Invert: distance 0 = score 1, max distance = score 0
+    return 1 - (distance / maxDistance);
+  } else if (metric.rankingType === 'lower') {
+    // Lower is better: invert the normalized value
+    const normalized = normalizeValue(value, minValue, maxValue);
+    return 1 - normalized;
+  } else {
+    // Higher is better: use normalized value directly
+    return normalizeValue(value, minValue, maxValue);
+  }
+}
+
+/**
+ * Calculate category score (sum of normalized values for all metrics in category)
+ * @param {string} category - 'people', 'money', 'reach', or 'resources'
  * @param {string} countryCode - The country code
  * @param {Object} countryData - The country data (optional, for extracting values)
- * @returns {Object} - Category score with totalRank, metricsCounted, averageRank
+ * @returns {Object} - Category score with totalScore, metricsCounted, averageScore, and averageRank (for display)
  */
 export function calculateCategoryScore(category, countryCode, countryData = null) {
   const metrics = getMetricsByCategory(category);
   
-  let totalRank = 0;
+  let totalScore = 0;
   let metricsCounted = 0;
   const metricScores = {};
 
   metrics.forEach(metric => {
-    // Skip optional metrics if data not available
-    if (metric.optional && !countryData) {
-      const value = extractMetricValue(countryData, metric);
-      if (value === null) return;
-    }
-
     // Get value from country data or global index
     let value = null;
     if (countryData) {
@@ -217,31 +255,79 @@ export function calculateCategoryScore(category, countryCode, countryData = null
       value = country?.metrics?.[metric.id];
     }
 
-    if (value === null || value === undefined) return;
+    if (value === null || value === undefined || isNaN(value)) {
+      // Skip optional metrics if data not available
+      if (metric.optional) return;
+      // For non-optional metrics, skip if no data
+      return;
+    }
 
-    // Get ranking
+    // Get all countries with this metric to find min/max for normalization
+    const allCountries = globalDataIndex.getCountriesWithMetric(metric.id);
+    
+    // Add current country if not in list
+    const exists = allCountries.find(c => c.code === countryCode);
+    if (!exists) {
+      allCountries.push({ code: countryCode, value: value });
+    }
+
+    if (allCountries.length === 0) return;
+
+    // Extract all values and find min/max
+    const values = allCountries.map(c => c.value).filter(v => v !== null && v !== undefined && !isNaN(v));
+    if (values.length === 0) return;
+
+    // For optimal metrics, we need to handle distance calculation
+    let minValue, maxValue;
+    if (metric.rankingType === 'optimal') {
+      // For optimal, use the actual min/max values for distance calculation
+      minValue = Math.min(...values);
+      maxValue = Math.max(...values);
+    } else {
+      minValue = Math.min(...values);
+      maxValue = Math.max(...values);
+    }
+
+    // Calculate normalized score
+    const normalizedScore = calculateMetricScore(metric, value, minValue, maxValue);
+    
+    totalScore += normalizedScore;
+    metricsCounted++;
+
+    // Also get ranking for display purposes
     const ranking = getMetricRanking(metric.id, countryCode, value);
-    if (ranking && ranking.rank > 0) {
-      totalRank += ranking.rank;
-      metricsCounted++;
-      metricScores[metric.id] = {
-        rank: ranking.rank,
-        value: value,
-        label: metric.label
-      };
+    
+    metricScores[metric.id] = {
+      score: normalizedScore,
+      rank: ranking?.rank || null,
+      value: value,
+      label: metric.label
+    };
+  });
+
+  // Calculate average rank for display (still useful for breakdown bars)
+  let totalRank = 0;
+  let ranksCounted = 0;
+  Object.values(metricScores).forEach(ms => {
+    if (ms.rank !== null) {
+      totalRank += ms.rank;
+      ranksCounted++;
     }
   });
 
   return {
-    totalRank: totalRank,
+    totalScore: totalScore, // Sum of normalized scores (0-1 per metric)
     metricsCounted: metricsCounted,
-    averageRank: metricsCounted > 0 ? totalRank / metricsCounted : null,
+    averageScore: metricsCounted > 0 ? totalScore / metricsCounted : null,
+    averageRank: ranksCounted > 0 ? totalRank / ranksCounted : null, // For display/breakdown bars
+    totalRank: totalRank, // Keep for backward compatibility if needed
     metricScores: metricScores
   };
 }
 
 /**
- * Calculate Influence Scale (sum of all three category scores)
+ * Calculate Influence Scale (sum of all category scores: People + Money + Reach + Resources)
+ * Uses normalized raw values instead of ranks
  * @param {string} countryCode - The country code
  * @param {Object} countryData - The country data (optional)
  * @returns {Object} - Influence scale with total score and category breakdowns
@@ -250,18 +336,31 @@ export function calculateInfluenceScale(countryCode, countryData = null) {
   const peopleScore = calculateCategoryScore('people', countryCode, countryData);
   const moneyScore = calculateCategoryScore('money', countryCode, countryData);
   const reachScore = calculateCategoryScore('reach', countryCode, countryData);
+  const resourcesScore = calculateCategoryScore('resources', countryCode, countryData);
+  const qualityScore = calculateCategoryScore('quality', countryCode, countryData);
 
-  const influenceScale = peopleScore.totalRank + moneyScore.totalRank + reachScore.totalRank;
+  // Sum normalized scores from all categories
+  // Each category score is the sum of normalized metric scores (0-1 per metric)
+  // Higher total = better influence
+  const influenceScale = (peopleScore.totalScore || 0) + 
+                         (moneyScore.totalScore || 0) + 
+                         (reachScore.totalScore || 0) + 
+                         (resourcesScore.totalScore || 0) +
+                         (qualityScore.totalScore || 0);
 
   return {
-    influenceScale: influenceScale, // Lower = better (like golf)
+    influenceScale: influenceScale, // Higher = better (sum of normalized scores)
     people: peopleScore,
     money: moneyScore,
     reach: reachScore,
+    resources: resourcesScore,
+    quality: qualityScore,
     breakdown: {
       peopleRank: peopleScore.averageRank,
       moneyRank: moneyScore.averageRank,
-      reachRank: reachScore.averageRank
+      reachRank: reachScore.averageRank,
+      resourcesRank: resourcesScore.averageRank,
+      qualityRank: qualityScore.averageRank
     }
   };
 }

@@ -15,7 +15,7 @@ import { initStatCycling, updateQuickStats } from './statCycling.js';
 import { countryDataCache, globalDataIndex, countriesList, appState } from './state.js';
 import { setupBackgroundInfoCycling } from './infoTextCycling.js';
 import { initContainerQueries } from './utils/container-queries.js';
-import { preCacheG20Countries } from './utils/g20PreCache.js';
+import { preCacheG20Countries } from './utils/globalPreCache.js';
 import { processLeaderboardMetrics } from './utils/leaderboardScoring.js';
 
 // Public API exports
@@ -74,10 +74,10 @@ const initApp = async () => {
   initStatCycling();
   initPanels();
   
-  // Pre-cache G20 countries in the background (non-blocking)
+  // Pre-cache priority countries in the background (non-blocking)
   preCacheG20Countries((progress) => {
     if (progress.cached) {
-      console.log(`G20 cache loaded: ${progress.total} countries`);
+      console.log(`Leaderboard cache loaded: ${progress.total} countries`);
     } else {
       console.log(`G20 pre-caching: ${progress.processed}/${progress.total} - ${progress.current}`);
     }

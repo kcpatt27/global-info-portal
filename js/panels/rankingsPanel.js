@@ -7,7 +7,9 @@
 import { extractNumber, formatLabel, formatValue, highlightText, escapeRegExp } from '../utils.js';
 import { appState, countryDataCache, globalDataIndex, countriesList, countryFolders } from '../state.js';
 import { fipsToIso } from '../utils/countryCodeMap.js';
-import { calculateInfluenceScale, calculateCategoryScore } from '../utils/leaderboardScoring.js';
+import { calculateInfluenceScale, calculateCategoryScore, getMetricRanking } from '../utils/leaderboardScoring.js';
+import { getMetricsByCategory } from '../utils/leaderboardMetrics.js';
+import { loadAllCountries, getCacheStats } from '../utils/globalPreCache.js';
 
 /**
  * Normalize country code from FIPS to ISO format
@@ -102,8 +104,11 @@ export function createRankingsPanel(data) {
     </div>
   `;
 
-  // Create and display Global Leaderboard
-  createGlobalLeaderboard(panelElement.querySelector('#global-leaderboard-container'), countryCode);
+  // Create and display Global Leaderboard (refresh it to update with new country)
+  // Use a small delay to ensure globalDataIndex is updated
+  setTimeout(() => {
+    createGlobalLeaderboard(panelElement.querySelector('#global-leaderboard-container'), countryCode);
+  }, 100);
 
   // Find all numeric metrics that could be used for ranking
   const rankingMetrics = findRankingMetrics(data);
@@ -235,11 +240,25 @@ export function createRankingsPanel(data) {
     // First, add current country's metrics to the index
     // Normalize country code to ensure consistency
     const normalizedCodeForInit = normalizeCountryCode(countryCode, countryName);
-    numericMetrics.forEach(metric => {
-      const metrics = {};
-      metrics[metric.id] = metric.value;
-      globalDataIndex.addCountryData(countryName, normalizedCodeForInit, metrics);
-    });
+    
+    // Ensure we have a valid country name (not "Unknown" or "Unknown Country")
+    let validCountryName = countryName;
+    if (!validCountryName || validCountryName === 'Unknown' || validCountryName === 'Unknown Country') {
+      const countryFromList = countriesList.find(c => c.code.toLowerCase() === normalizedCodeForInit.toLowerCase());
+      if (countryFromList) {
+        validCountryName = countryFromList.name;
+      }
+    }
+    
+    // Only add if we have a valid name
+    if (validCountryName && validCountryName !== 'Unknown' && validCountryName !== 'Unknown Country') {
+      const allMetricsToProcess = [...keyMetrics, ...otherMetrics];
+      allMetricsToProcess.forEach(metric => {
+        const metrics = {};
+        metrics[metric.id] = metric.value;
+        globalDataIndex.addCountryData(validCountryName, normalizedCodeForInit, metrics);
+      });
+    }
     
     // Get all cached country codes
     const cachedCodes = Object.keys(countryDataCache);
@@ -259,7 +278,19 @@ export function createRankingsPanel(data) {
         continue;
       }
       
-      const country = countriesList.find(c => c.code === code) || { name: code };
+      // Get country name from data or countriesList (case-insensitive lookup)
+      const countryNameFromData = countryData.Government?.['Country name']?.conventional_short_form?.text ||
+                                   countryData.Government?.['Country name']?.text ||
+                                   null;
+      const countryFromList = countriesList.find(c => c.code.toLowerCase() === code.toLowerCase());
+      const countryName = countryNameFromData || countryFromList?.name || null;
+
+      // Skip if name is still invalid or looks like a country code
+      const looksLikeCode = countryName && /^[a-z]{2,3}$/i.test(countryName);
+      if (!countryName || countryName === 'Unknown' || countryName === 'Unknown Country' || looksLikeCode) {
+        processed++;
+        continue;
+      }
       
       // Extract all metrics for this country
       const allMetricsToProcess = [...keyMetrics, ...otherMetrics];
@@ -268,7 +299,7 @@ export function createRankingsPanel(data) {
         if (metricValue !== null) {
           const metrics = {};
           metrics[metric.id] = metricValue;
-          globalDataIndex.addCountryData(country.name, code, metrics);
+          globalDataIndex.addCountryData(countryName, code, metrics);
         }
       });
       
@@ -1121,36 +1152,81 @@ function createGlobalLeaderboard(container, currentCountryCode) {
 
   // Calculate Influence Scale for all countries
   const leaderboardEntries = [];
+  const seenCodes = new Set(); // Track country codes to prevent duplicates
   
   allCountryCodes.forEach(code => {
     const country = globalDataIndex.countries[code];
     if (!country) return;
     
-    // Calculate Influence Scale
-    const influenceScale = calculateInfluenceScale(code);
+    // Normalize country code to lowercase for deduplication
+    const normalizedCode = code.toLowerCase();
     
-    // Only include countries with valid scores (have at least some metrics)
-    if (influenceScale.influenceScale > 0 && 
-        (influenceScale.people.metricsCounted > 0 || 
-         influenceScale.money.metricsCounted > 0 || 
-         influenceScale.reach.metricsCounted > 0)) {
-      leaderboardEntries.push({
-        code: code,
-        name: country.name,
-        influenceScale: influenceScale.influenceScale,
-        people: influenceScale.people,
-        money: influenceScale.money,
-        reach: influenceScale.reach,
-        breakdown: influenceScale.breakdown
-      });
+    // Skip if we've already processed this country code
+    if (seenCodes.has(normalizedCode)) {
+      return;
+    }
+    
+    // Skip entries with "Unknown" or empty names
+    if (!country.name || country.name === 'Unknown' || country.name === 'Unknown Country') {
+      return;
+    }
+    
+    try {
+      // Calculate Influence Scale
+      const influenceScale = calculateInfluenceScale(code);
+      
+      // Ensure all category objects exist with default values
+      const people = influenceScale.people || { totalRank: 0, metricsCounted: 0, averageRank: null, metricScores: {} };
+      const money = influenceScale.money || { totalRank: 0, metricsCounted: 0, averageRank: null, metricScores: {} };
+      const reach = influenceScale.reach || { totalRank: 0, metricsCounted: 0, averageRank: null, metricScores: {} };
+      const resources = influenceScale.resources || { totalRank: 0, metricsCounted: 0, averageRank: null, metricScores: {} };
+      const quality = influenceScale.quality || { totalRank: 0, metricsCounted: 0, averageRank: null, metricScores: {} };
+      
+      // Only include countries with valid scores (have at least some metrics)
+      if (influenceScale.influenceScale > 0 && 
+          (people.metricsCounted > 0 || 
+           money.metricsCounted > 0 || 
+           reach.metricsCounted > 0 ||
+           resources.metricsCounted > 0 ||
+           quality.metricsCounted > 0)) {
+        leaderboardEntries.push({
+          code: normalizedCode, // Use normalized code
+          name: country.name,
+          influenceScale: influenceScale.influenceScale,
+          people: people,
+          money: money,
+          reach: reach,
+          resources: resources,
+          quality: quality,
+          breakdown: influenceScale.breakdown || {}
+        });
+        
+        // Mark this code as seen
+        seenCodes.add(normalizedCode);
+      }
+    } catch (error) {
+      console.warn(`Error calculating influence scale for ${code}:`, error);
+      // Skip this country if there's an error
     }
   });
 
-  // Sort by Influence Scale (lower is better, like golf)
-  leaderboardEntries.sort((a, b) => a.influenceScale - b.influenceScale);
+  // Sort by Influence Scale (higher is better - scores are already inverted)
+  // Since influenceScale is inverted (maxPossibleSum - rawSum), higher = better
+  leaderboardEntries.sort((a, b) => b.influenceScale - a.influenceScale);
+
+  // Additional deduplication: remove any remaining duplicates by code (case-insensitive)
+  const uniqueEntries = [];
+  const seenCodesFinal = new Set();
+  leaderboardEntries.forEach(entry => {
+    const normalizedCode = entry.code.toLowerCase();
+    if (!seenCodesFinal.has(normalizedCode)) {
+      seenCodesFinal.add(normalizedCode);
+      uniqueEntries.push(entry);
+    }
+  });
 
   // Take top 20
-  const topCountries = leaderboardEntries.slice(0, 20);
+  const topCountries = uniqueEntries.slice(0, 20);
 
   if (topCountries.length === 0) {
     container.innerHTML = `
@@ -1176,7 +1252,7 @@ function createGlobalLeaderboard(container, currentCountryCode) {
           Global Superpower Leaderboard
         </h2>
         <p class="leaderboard-description">
-          Composite ranking based on People, Money, and Reach metrics. Lower score = higher influence.
+          Composite ranking based on People, Money, Reach, and Resources metrics. Higher score = higher influence (better rank).
         </p>
       </div>
       
@@ -1192,15 +1268,19 @@ function createGlobalLeaderboard(container, currentCountryCode) {
             <div class="current-country-breakdown">
               <span class="breakdown-item">
                 <span class="breakdown-label">People:</span>
-                <span class="breakdown-value">${currentCountryEntry.people.averageRank ? Math.round(currentCountryEntry.people.averageRank) : 'N/A'}</span>
+                <span class="breakdown-value">${currentCountryEntry.people?.averageRank ? Math.round(currentCountryEntry.people.averageRank) : 'N/A'}</span>
               </span>
               <span class="breakdown-item">
                 <span class="breakdown-label">Money:</span>
-                <span class="breakdown-value">${currentCountryEntry.money.averageRank ? Math.round(currentCountryEntry.money.averageRank) : 'N/A'}</span>
+                <span class="breakdown-value">${currentCountryEntry.money?.averageRank ? Math.round(currentCountryEntry.money.averageRank) : 'N/A'}</span>
               </span>
               <span class="breakdown-item">
                 <span class="breakdown-label">Reach:</span>
-                <span class="breakdown-value">${currentCountryEntry.reach.averageRank ? Math.round(currentCountryEntry.reach.averageRank) : 'N/A'}</span>
+                <span class="breakdown-value">${currentCountryEntry.reach?.averageRank ? Math.round(currentCountryEntry.reach.averageRank) : 'N/A'}</span>
+              </span>
+              <span class="breakdown-item">
+                <span class="breakdown-label">Resources:</span>
+                <span class="breakdown-value">${currentCountryEntry.resources?.averageRank ? Math.round(currentCountryEntry.resources.averageRank) : 'N/A'}</span>
               </span>
             </div>
           </div>
@@ -1211,23 +1291,62 @@ function createGlobalLeaderboard(container, currentCountryCode) {
         ${topCountries.map((country, index) => {
           const isCurrent = country.code.toLowerCase() === currentCountryCode?.toLowerCase();
           return `
-            <div class="leaderboard-entry ${isCurrent ? 'current-country' : ''}" data-country-code="${country.code}">
-              <div class="leaderboard-rank">#${index + 1}</div>
-              <div class="leaderboard-country">
-                <div class="leaderboard-name">${country.name}</div>
-                <div class="leaderboard-score">Influence: ${Math.round(country.influenceScale)}</div>
+            <div class="leaderboard-entry-wrapper">
+              <div class="leaderboard-entry ${isCurrent ? 'current-country' : ''}" data-country-code="${country.code}">
+                <div class="leaderboard-rank">#${index + 1}</div>
+                <div class="leaderboard-country">
+                  <div class="leaderboard-name">${country.name}</div>
+                  <div class="leaderboard-score">Influence: ${Math.round(country.influenceScale)}</div>
+                </div>
+                <div class="leaderboard-breakdown">
+                  <div class="breakdown-bar">
+                    ${(() => {
+                      // Calculate normalized widths: better rank (lower number) = longer bar
+                      // Each segment represents one category and gets up to 20% of total width (5 categories)
+                      const maxRank = 200; // Assume max 200 countries
+                      const normalizeRank = (rank) => {
+                        if (!rank || rank <= 0 || rank > maxRank) return 0;
+                        // Invert: rank 1 = 100%, rank 200 = 0%
+                        // Formula: (maxRank - rank + 1) / maxRank gives 1.0 for rank 1, ~0.005 for rank 200
+                        return ((maxRank - rank + 1) / maxRank) * 100;
+                      };
+                      
+                      const peoplePercent = normalizeRank(country.people?.averageRank);
+                      const moneyPercent = normalizeRank(country.money?.averageRank);
+                      const reachPercent = normalizeRank(country.reach?.averageRank);
+                      const resourcesPercent = normalizeRank(country.resources?.averageRank);
+                      const qualityPercent = normalizeRank(country.quality?.averageRank);
+                      
+                      // Scale each to 20% max (since we have 5 categories, each can take up to 20% of the bar)
+                      const peopleWidth = Math.min(20, Math.max(0, (peoplePercent / 100) * 20));
+                      const moneyWidth = Math.min(20, Math.max(0, (moneyPercent / 100) * 20));
+                      const reachWidth = Math.min(20, Math.max(0, (reachPercent / 100) * 20));
+                      const resourcesWidth = Math.min(20, Math.max(0, (resourcesPercent / 100) * 20));
+                      const qualityWidth = Math.min(20, Math.max(0, (qualityPercent / 100) * 20));
+                      
+                      return `
+                        <div class="breakdown-segment people" style="width: ${peopleWidth.toFixed(2)}%"></div>
+                        <div class="breakdown-segment money" style="width: ${moneyWidth.toFixed(2)}%"></div>
+                        <div class="breakdown-segment reach" style="width: ${reachWidth.toFixed(2)}%"></div>
+                        <div class="breakdown-segment resources" style="width: ${resourcesWidth.toFixed(2)}%"></div>
+                        <div class="breakdown-segment quality" style="width: ${qualityWidth.toFixed(2)}%"></div>
+                      `;
+                    })()}
+                  </div>
+                  <div class="breakdown-labels">
+                    <span>P: ${country.people?.averageRank ? Math.round(country.people.averageRank) : 'N/A'}</span>
+                    <span>M: ${country.money?.averageRank ? Math.round(country.money.averageRank) : 'N/A'}</span>
+                    <span>R: ${country.reach?.averageRank ? Math.round(country.reach.averageRank) : 'N/A'}</span>
+                    <span>Rs: ${country.resources?.averageRank ? Math.round(country.resources.averageRank) : 'N/A'}</span>
+                    <span>Q: ${country.quality?.averageRank ? Math.round(country.quality.averageRank) : 'N/A'}</span>
+                  </div>
+                </div>
+                <div class="leaderboard-expand-icon">
+                  <i class="fas fa-chevron-down"></i>
+                </div>
               </div>
-              <div class="leaderboard-breakdown">
-                <div class="breakdown-bar">
-                  <div class="breakdown-segment people" style="width: ${country.people.averageRank ? (100 - (country.people.averageRank / 200) * 100) : 0}%"></div>
-                  <div class="breakdown-segment money" style="width: ${country.money.averageRank ? (100 - (country.money.averageRank / 200) * 100) : 0}%"></div>
-                  <div class="breakdown-segment reach" style="width: ${country.reach.averageRank ? (100 - (country.reach.averageRank / 200) * 100) : 0}%"></div>
-                </div>
-                <div class="breakdown-labels">
-                  <span>P: ${country.people.averageRank ? Math.round(country.people.averageRank) : 'N/A'}</span>
-                  <span>M: ${country.money.averageRank ? Math.round(country.money.averageRank) : 'N/A'}</span>
-                  <span>R: ${country.reach.averageRank ? Math.round(country.reach.averageRank) : 'N/A'}</span>
-                </div>
+              <div class="leaderboard-expanded-content" style="display: none;">
+                ${createExpandedCountryDetails(country, index + 1)}
               </div>
             </div>
           `;
@@ -1237,23 +1356,287 @@ function createGlobalLeaderboard(container, currentCountryCode) {
       <div class="leaderboard-footer">
         <p class="leaderboard-note">
           <i class="fas fa-info-circle"></i>
-          Rankings based on ${allCountryCodes.length} countries with available data. 
-          Scores combine People, Money, and Reach category rankings.
+          Rankings based on ${allCountryCodes.length} countries with available data.
+          Scores combine People, Money, Reach, Resources, and Quality category rankings.
         </p>
+        <div class="leaderboard-actions">
+          <button class="load-all-countries-btn" id="load-all-countries-btn">
+            <i class="fas fa-globe"></i>
+            Load All Countries
+          </button>
+          <span class="cache-status" id="cache-status"></span>
+        </div>
       </div>
     </div>
   `;
 
   container.innerHTML = html;
 
-  // Add click handlers to leaderboard entries
-  container.querySelectorAll('.leaderboard-entry').forEach(entry => {
-    entry.addEventListener('click', function() {
-      const code = this.dataset.countryCode;
-      // Could trigger country selection here if needed
-      // For now, just highlight
-      container.querySelectorAll('.leaderboard-entry').forEach(e => e.classList.remove('selected'));
-      this.classList.add('selected');
+  // Add click handlers to leaderboard entries for expand/collapse
+  container.querySelectorAll('.leaderboard-entry-wrapper').forEach(wrapper => {
+    const entry = wrapper.querySelector('.leaderboard-entry');
+    const expandedContent = wrapper.querySelector('.leaderboard-expanded-content');
+    const expandIcon = wrapper.querySelector('.leaderboard-expand-icon i');
+    
+    entry.addEventListener('click', function(e) {
+      // Toggle expanded state
+      const isExpanded = expandedContent.style.display !== 'none';
+      
+      if (isExpanded) {
+        expandedContent.style.display = 'none';
+        expandIcon.className = 'fas fa-chevron-down';
+        entry.classList.remove('expanded');
+      } else {
+        // Close other expanded entries
+        container.querySelectorAll('.leaderboard-expanded-content').forEach(content => {
+          content.style.display = 'none';
+        });
+        container.querySelectorAll('.leaderboard-entry').forEach(e => {
+          e.classList.remove('expanded');
+          const icon = e.closest('.leaderboard-entry-wrapper')?.querySelector('.leaderboard-expand-icon i');
+          if (icon) icon.className = 'fas fa-chevron-down';
+        });
+        
+        // Expand this one
+        expandedContent.style.display = 'block';
+        expandIcon.className = 'fas fa-chevron-up';
+        entry.classList.add('expanded');
+      }
     });
   });
+  
+  // Add "Load All Countries" button functionality
+  const loadAllBtn = container.querySelector('#load-all-countries-btn');
+  const cacheStatus = container.querySelector('#cache-status');
+  
+  // Update cache status display
+  const updateCacheStatus = () => {
+    try {
+      const stats = getCacheStats();
+      if (cacheStatus) {
+        cacheStatus.textContent = `${stats.countriesCached} / ${stats.allCountriesTotal} countries cached`;
+        if (stats.isComplete) {
+          loadAllBtn.style.display = 'none';
+          cacheStatus.innerHTML = '<i class="fas fa-check-circle"></i> All countries loaded';
+        }
+      }
+    } catch (e) {
+      console.warn('Could not get cache stats:', e);
+    }
+  };
+  
+  updateCacheStatus();
+  
+  if (loadAllBtn) {
+    loadAllBtn.addEventListener('click', async function() {
+      const btn = this;
+      const originalText = btn.innerHTML;
+      
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+      
+      try {
+        await loadAllCountries((progress) => {
+          if (progress.complete) {
+            btn.innerHTML = '<i class="fas fa-check"></i> Complete!';
+            updateCacheStatus();
+            
+            // Refresh the leaderboard after loading
+            setTimeout(() => {
+              createGlobalLeaderboard(container, null, null);
+            }, 500);
+          } else {
+            btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${progress.processed}/${progress.total}`;
+          }
+        });
+      } catch (error) {
+        console.error('Failed to load all countries:', error);
+        btn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error';
+        setTimeout(() => {
+          btn.disabled = false;
+          btn.innerHTML = originalText;
+        }, 2000);
+      }
+    });
+  }
+}
+
+/**
+ * Create expanded content for a country showing detailed category breakdowns
+ * @param {Object} country - Country data object
+ * @param {number} rank - Country's rank
+ * @returns {string} - HTML string for expanded content
+ */
+function createExpandedCountryDetails(country, rank) {
+  // Get all metrics for each category
+  const peopleMetrics = getMetricsByCategory('people');
+  const moneyMetrics = getMetricsByCategory('money');
+  const reachMetrics = getMetricsByCategory('reach');
+  const resourcesMetrics = getMetricsByCategory('resources');
+  const qualityMetrics = getMetricsByCategory('quality');
+  
+  // Get country data from global index
+  const countryData = globalDataIndex.countries[country.code];
+  const countryMetrics = countryData?.metrics || {};
+  
+  // Helper to check if a metric is a percentage
+  const isPercentageMetric = (metric) => {
+    if (!metric) return false;
+    const label = (metric.label || '').toLowerCase();
+    const id = (metric.id || '').toLowerCase();
+    const dataPath = (metric.dataPath || []).join(' ').toLowerCase();
+    
+    // Check for percentage indicators
+    return label.includes('%') || 
+           label.includes('percent') || 
+           label.includes('percentage') ||
+           id.includes('percent') ||
+           id.includes('ratio') ||
+           id.includes('unemployment') ||
+           id.includes('inflation') ||
+           id.includes('poverty') ||
+           id.includes('debt') ||
+           id.includes('internet') ||
+           id.includes('military') ||
+           id.includes('nuclear_percent') ||
+           id.includes('solar') ||
+           id.includes('wind') ||
+           id.includes('hydro') ||
+           id.includes('geothermal') ||
+           id.includes('biomass') ||
+           id.includes('agriculture') ||
+           id.includes('industry_gdp') ||
+           id.includes('urban') ||
+           id.includes('population_growth') ||
+           id.includes('gdp_growth') ||
+           id.includes('arable_land') ||
+           id.includes('agricultural_land') ||
+           id.includes('forest') ||
+           id.includes('permanent_crops') ||
+           id.includes('permanent_pasture') ||
+           // Quality category percentages
+           id.includes('literacy') ||
+           id.includes('drinking_water') ||
+           id.includes('sanitation') ||
+           id.includes('obesity') ||
+           id.includes('waste_recycled') ||
+           id.includes('education_expenditure') ||
+           dataPath.includes('percent') ||
+           dataPath.includes('percentage') ||
+           dataPath.includes('growth rate') ||
+           dataPath.includes('urban population') ||
+           dataPath.includes('urbanization') ||
+           dataPath.includes('land use');
+  };
+  
+  // Helper to format metric value
+  const formatMetricValue = (value, metric = null) => {
+    if (value === null || value === undefined || isNaN(value)) return 'N/A';
+    
+    const isPercentage = isPercentageMetric(metric);
+    const suffix = isPercentage ? '%' : '';
+    
+    // For percentages, don't use large number formatting (they're typically 0-100)
+    if (isPercentage) {
+      return value.toFixed(1) + suffix;
+    }
+    
+    // For large numbers, use K/M/B/T formatting
+    if (value >= 1000000000000) return (value / 1000000000000).toFixed(2) + 'T' + suffix;
+    if (value >= 1000000000) return (value / 1000000000).toFixed(2) + 'B' + suffix;
+    if (value >= 1000000) return (value / 1000000).toFixed(2) + 'M' + suffix;
+    if (value >= 1000) return (value / 1000).toFixed(1) + 'K' + suffix;
+    return value.toFixed(2) + suffix;
+  };
+  
+  // Helper to get metric value and rank
+  const getMetricInfo = (metric) => {
+    const value = countryMetrics[metric.id];
+    if (value === null || value === undefined || isNaN(value)) return null;
+    
+    // Use getMetricRanking from leaderboardScoring for proper ranking calculation
+    const ranking = getMetricRanking(metric.id, country.code, value);
+    return {
+      value: value,
+      rank: ranking ? ranking.rank : null,
+      total: ranking ? ranking.total : null
+    };
+  };
+  
+  // Build category breakdown HTML
+  const buildCategoryHTML = (categoryName, categoryMetrics, categoryScore, colorClass) => {
+    const metricsWithData = categoryMetrics
+      .map(metric => {
+        const info = getMetricInfo(metric);
+        if (!info) return null;
+        return { metric, ...info };
+      })
+      .filter(Boolean)
+      .sort((a, b) => (a.rank || 999) - (b.rank || 999)); // Sort by rank
+    
+    if (metricsWithData.length === 0) {
+      return `
+        <div class="category-breakdown ${colorClass}">
+          <h4 class="category-title">${categoryName}</h4>
+          <p class="category-no-data">No data available for this category</p>
+        </div>
+      `;
+    }
+    
+    return `
+      <div class="category-breakdown ${colorClass}">
+        <h4 class="category-title">
+          ${categoryName}
+          <span class="category-score">Avg Rank: ${categoryScore?.averageRank ? Math.round(categoryScore.averageRank) : 'N/A'}</span>
+        </h4>
+        <div class="category-metrics">
+          ${metricsWithData.map(({ metric, value, rank, total }) => `
+            <div class="category-metric-item">
+              <div class="metric-name">${metric.label}</div>
+              <div class="metric-details">
+                <span class="metric-value">${formatMetricValue(value, metric)}</span>
+                <span class="metric-rank">#${rank}${total ? ` / ${total}` : ''}</span>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  };
+  
+  // Category descriptions
+  const categoryDescriptions = {
+    people: 'Demographic strength including population size, growth, labor force, and social development indicators.',
+    money: 'Economic power measured by GDP, growth rates, financial stability, and economic health metrics.',
+    reach: 'Global influence through geographic size, infrastructure, military presence, and connectivity.',
+    resources: 'Natural resource wealth including energy production, reserves, and resource extraction capabilities.',
+    quality: 'Citizen wellbeing measured by health outcomes, education levels, and environmental sustainability.'
+  };
+  
+  return `
+    <div class="expanded-country-details">
+      <div class="expanded-header">
+        <h3>${country.name} - Detailed Breakdown</h3>
+        <p class="expanded-description">
+          Rank #${rank} with Influence Scale of ${Math.round(country.influenceScale)}. 
+          This composite score combines rankings across five categories: People, Money, Reach, Resources, and Quality.
+        </p>
+      </div>
+      
+      <div class="category-breakdowns">
+        ${buildCategoryHTML('People', peopleMetrics, country.people || {}, 'category-people')}
+        ${buildCategoryHTML('Money', moneyMetrics, country.money || {}, 'category-money')}
+        ${buildCategoryHTML('Reach', reachMetrics, country.reach || {}, 'category-reach')}
+        ${buildCategoryHTML('Resources', resourcesMetrics, country.resources || {}, 'category-resources')}
+        ${buildCategoryHTML('Quality', qualityMetrics, country.quality || {}, 'category-quality')}
+      </div>
+      
+      <div class="spider-chart-placeholder">
+        <p class="placeholder-note">
+          <i class="fas fa-chart-line"></i>
+          Spider chart visualization coming soon
+        </p>
+      </div>
+    </div>
+  `;
 } 

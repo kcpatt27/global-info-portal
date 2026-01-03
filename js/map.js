@@ -138,7 +138,8 @@ function createCountryInfoLookup(tsvData) {
             folder: d.folder
         };
         acc[keyOriginal] = record;
-        // acc[keyNumeric] = record;
+        // Also store numeric key without leading zeros so lookups by either form work
+        acc[keyNumeric] = record;
         return acc;
     }, {});
 }
@@ -158,7 +159,7 @@ function renderCountries(countries, pathGenerator, config) {
         .attr("class", "country")
         .attr("id", d => {
             const country = mapState.countryInfo[d.id];
-            return country ? `country-${country.a2Code.toLowerCase()}` : 'unknown';
+            return country ? `country-${country.a2Code.toLowerCase()}` : `country-unknown-${d.id}`;
         })
         .attr("d", pathGenerator)
         .style("fill", config.initialFill)

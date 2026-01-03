@@ -61,27 +61,135 @@ export const appState = {
 };
 
 // Countries list for global data loading
+// Comprehensive list including G20, NATO, BRICS, and major economies
 export const countriesList = [
+  // North America
   { code: "us", name: "United States", folder: "north-america" },
   { code: "ca", name: "Canada", folder: "north-america" },
   { code: "mx", name: "Mexico", folder: "north-america" },
+  
+  // South America
+  { code: "br", name: "Brazil", folder: "south-america" },
+  { code: "ar", name: "Argentina", folder: "south-america" },
+  { code: "ve", name: "Venezuela", folder: "south-america" },
+  { code: "co", name: "Colombia", folder: "south-america" },
+  { code: "cl", name: "Chile", folder: "south-america" },
+  { code: "pe", name: "Peru", folder: "south-america" },
+  
+  // Western Europe
   { code: "gb", name: "United Kingdom", folder: "europe" },
   { code: "fr", name: "France", folder: "europe" },
   { code: "de", name: "Germany", folder: "europe" },
   { code: "it", name: "Italy", folder: "europe" },
   { code: "es", name: "Spain", folder: "europe" },
   { code: "pt", name: "Portugal", folder: "europe" },
+  { code: "nl", name: "Netherlands", folder: "europe" },
+  { code: "be", name: "Belgium", folder: "europe" },
+  { code: "at", name: "Austria", folder: "europe" },
+  { code: "ch", name: "Switzerland", folder: "europe" },
+  { code: "ie", name: "Ireland", folder: "europe" },
+  { code: "dk", name: "Denmark", folder: "europe" },
+  { code: "no", name: "Norway", folder: "europe" },
+  { code: "se", name: "Sweden", folder: "europe" },
+  { code: "fi", name: "Finland", folder: "europe" },
+  { code: "gr", name: "Greece", folder: "europe" },
+  { code: "lu", name: "Luxembourg", folder: "europe" },
+  { code: "is", name: "Iceland", folder: "europe" },
+  
+  // Eastern Europe
+  { code: "pl", name: "Poland", folder: "europe" },
+  { code: "cz", name: "Czech Republic", folder: "europe" },
+  { code: "hu", name: "Hungary", folder: "europe" },
+  { code: "sk", name: "Slovakia", folder: "europe" },
+  { code: "ro", name: "Romania", folder: "europe" },
+  { code: "bg", name: "Bulgaria", folder: "europe" },
+  { code: "hr", name: "Croatia", folder: "europe" },
+  { code: "si", name: "Slovenia", folder: "europe" },
+  { code: "ee", name: "Estonia", folder: "europe" },
+  { code: "lv", name: "Latvia", folder: "europe" },
+  { code: "lt", name: "Lithuania", folder: "europe" },
+  { code: "al", name: "Albania", folder: "europe" },
+  { code: "me", name: "Montenegro", folder: "europe" },
+  { code: "mk", name: "North Macedonia", folder: "europe" },
+  { code: "ua", name: "Ukraine", folder: "europe" },
+  { code: "rs", name: "Serbia", folder: "europe" },
+  { code: "ba", name: "Bosnia and Herzegovina", folder: "europe" },
+  
+  // Russia & Central Asia
   { code: "ru", name: "Russia", folder: "central-asia" },
+  { code: "kz", name: "Kazakhstan", folder: "central-asia" },
+  { code: "uz", name: "Uzbekistan", folder: "central-asia" },
+  
+  // East Asia
   { code: "cn", name: "China", folder: "east-n-southeast-asia" },
   { code: "jp", name: "Japan", folder: "east-n-southeast-asia" },
+  { code: "kr", name: "South Korea", folder: "east-n-southeast-asia" },
+  { code: "tw", name: "Taiwan", folder: "east-n-southeast-asia" },
+  { code: "hk", name: "Hong Kong", folder: "east-n-southeast-asia" },
+  { code: "mn", name: "Mongolia", folder: "east-n-southeast-asia" },
+  { code: "kp", name: "North Korea", folder: "east-n-southeast-asia" },
+  
+  // Southeast Asia
+  { code: "id", name: "Indonesia", folder: "east-n-southeast-asia" },
+  { code: "th", name: "Thailand", folder: "east-n-southeast-asia" },
+  { code: "vn", name: "Vietnam", folder: "east-n-southeast-asia" },
+  { code: "ph", name: "Philippines", folder: "east-n-southeast-asia" },
+  { code: "my", name: "Malaysia", folder: "east-n-southeast-asia" },
+  { code: "sg", name: "Singapore", folder: "east-n-southeast-asia" },
+  { code: "mm", name: "Myanmar", folder: "east-n-southeast-asia" },
+  
+  // South Asia
   { code: "in", name: "India", folder: "south-asia" },
-  { code: "au", name: "Australia", folder: "australia-oceania" },
-  { code: "br", name: "Brazil", folder: "south-america" },
-  { code: "ar", name: "Argentina", folder: "south-america" },
+  { code: "pk", name: "Pakistan", folder: "south-asia" },
+  { code: "bd", name: "Bangladesh", folder: "south-asia" },
+  { code: "np", name: "Nepal", folder: "south-asia" },
+  { code: "lk", name: "Sri Lanka", folder: "south-asia" },
+  
+  // Middle East
+  { code: "sa", name: "Saudi Arabia", folder: "middle-east" },
+  { code: "ae", name: "United Arab Emirates", folder: "middle-east" },
+  { code: "il", name: "Israel", folder: "middle-east" },
+  { code: "ir", name: "Iran", folder: "middle-east" },
+  { code: "iq", name: "Iraq", folder: "middle-east" },
+  { code: "tr", name: "Turkey", folder: "middle-east" },
+  { code: "qa", name: "Qatar", folder: "middle-east" },
+  { code: "kw", name: "Kuwait", folder: "middle-east" },
+  { code: "om", name: "Oman", folder: "middle-east" },
+  { code: "jo", name: "Jordan", folder: "middle-east" },
+  { code: "lb", name: "Lebanon", folder: "middle-east" },
+  { code: "sy", name: "Syria", folder: "middle-east" },
+  { code: "ye", name: "Yemen", folder: "middle-east" },
+  { code: "bh", name: "Bahrain", folder: "middle-east" },
+  
+  // Africa
   { code: "za", name: "South Africa", folder: "africa" },
-  { code: "ng", name: "Nigeria", folder: "africa" },
   { code: "eg", name: "Egypt", folder: "africa" },
-  { code: "sa", name: "Saudi Arabia", folder: "middle-east" }
+  { code: "ng", name: "Nigeria", folder: "africa" },
+  { code: "ke", name: "Kenya", folder: "africa" },
+  { code: "et", name: "Ethiopia", folder: "africa" },
+  { code: "gh", name: "Ghana", folder: "africa" },
+  { code: "ma", name: "Morocco", folder: "africa" },
+  { code: "dz", name: "Algeria", folder: "africa" },
+  { code: "tz", name: "Tanzania", folder: "africa" },
+  { code: "ug", name: "Uganda", folder: "africa" },
+  { code: "ao", name: "Angola", folder: "africa" },
+  { code: "ly", name: "Libya", folder: "africa" },
+  { code: "tn", name: "Tunisia", folder: "africa" },
+  { code: "cd", name: "Democratic Republic of the Congo", folder: "africa" },
+  { code: "sd", name: "Sudan", folder: "africa" },
+  
+  // Oceania
+  { code: "au", name: "Australia", folder: "australia-oceania" },
+  { code: "nz", name: "New Zealand", folder: "australia-oceania" },
+  
+  // Caribbean & Central America
+  { code: "cu", name: "Cuba", folder: "central-america-n-caribbean" },
+  { code: "jm", name: "Jamaica", folder: "central-america-n-caribbean" },
+  { code: "pa", name: "Panama", folder: "central-america-n-caribbean" },
+  { code: "cr", name: "Costa Rica", folder: "central-america-n-caribbean" },
+  { code: "gt", name: "Guatemala", folder: "central-america-n-caribbean" },
+  { code: "do", name: "Dominican Republic", folder: "central-america-n-caribbean" },
+  { code: "pr", name: "Puerto Rico", folder: "central-america-n-caribbean" }
 ];
 
 // Map of folders by country code for quick lookup
@@ -101,9 +209,56 @@ export const globalDataIndex = {
   // Add or update a country's data
   addCountryData: function(countryName, countryCode, metrics) {
     if (!countryName || !metrics) return;
-    this.countries[countryCode] = this.countries[countryCode] || { name: countryName, metrics: {} };
-    this.countries[countryCode].metrics = {
-      ...this.countries[countryCode].metrics,
+
+    // Normalize incoming countryCode to a consistent lowercase ISO-like key.
+    // Many callers pass different formats (uppercase, numeric strings, FIPS), so
+    // we normalize here to avoid creating duplicate country entries.
+    let normalizedCode = String(countryCode || '').toLowerCase();
+
+    // If the incoming code is not a 2-letter ISO, try to resolve it via countriesList by exact name match.
+    // This helps map numeric or alternate codes (e.g. '036', '840') to the expected 2-letter key.
+    if (!/^[a-z]{2}$/.test(normalizedCode)) {
+      const matchByName = countriesList.find(c => c.name.toLowerCase() === (countryName || '').toLowerCase());
+      if (matchByName) {
+        normalizedCode = matchByName.code.toLowerCase();
+      }
+    }
+
+    // If an entry for this country already exists under a different key but with the same display name,
+    // prefer that existing key to avoid duplicate entries (e.g., 'US' vs 'us' or numeric vs alpha).
+    for (const existingKey of Object.keys(this.countries)) {
+      const existingName = this.countries[existingKey]?.name;
+      if (existingName && existingName.toLowerCase() === (countryName || '').toLowerCase()) {
+        normalizedCode = existingKey;
+        break;
+      }
+    }
+
+    // Don't add entries with "Unknown" names or names that look like country codes (2-3 letter strings)
+    const looksLikeCode = /^[a-z]{2,3}$/i.test(countryName);
+    if (countryName === 'Unknown' || countryName === 'Unknown Country' || looksLikeCode) {
+      const countryFromList = countriesList.find(c => c.code.toLowerCase() === normalizedCode.toLowerCase());
+      if (countryFromList) {
+        countryName = countryFromList.name;
+      } else {
+        // Skip adding if we can't find a proper name
+        console.warn(`Skipping country data for code ${countryCode} - no valid name found (got: ${countryName})`);
+        return;
+      }
+    }
+
+    // Preserve existing name if it's better than the new one
+    if (this.countries[normalizedCode] && this.countries[normalizedCode].name &&
+        this.countries[normalizedCode].name !== 'Unknown' &&
+        this.countries[normalizedCode].name !== 'Unknown Country') {
+      countryName = this.countries[normalizedCode].name;
+    }
+
+    // Ensure the key used in the index is normalized (lowercase)
+    this.countries[normalizedCode] = this.countries[normalizedCode] || { name: countryName, metrics: {} };
+    this.countries[normalizedCode].name = countryName; // Always update name to ensure it's correct
+    this.countries[normalizedCode].metrics = {
+      ...this.countries[normalizedCode].metrics,
       ...metrics
     };
   },
