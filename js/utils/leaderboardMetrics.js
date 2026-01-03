@@ -91,11 +91,14 @@ export const LEADERBOARD_METRICS = {
     {
       id: 'money_real_gdp_ppp',
       label: 'Real GDP (PPP)',
-      dataPath: ['Economy', 'GDP (purchasing power parity)', 'text'],
+      dataPath: ['Economy', 'Real GDP (purchasing power parity)', 'Real GDP (purchasing power parity) 2023', 'text'],
       category: 'money',
       rankingType: 'higher',
       fallbackPaths: [
-        ['Economy', 'GDP - purchasing power parity', 'text']
+        ['Economy', 'Real GDP (purchasing power parity)', 'Real GDP (purchasing power parity) 2022', 'text'],
+        ['Economy', 'Real GDP (purchasing power parity)', 'Real GDP (purchasing power parity) 2021', 'text'],
+        ['Economy', 'GDP (official exchange rate)', 'text'],
+        ['Economy', 'GDP (purchasing power parity)', 'text']
       ]
     },
     {
@@ -235,6 +238,30 @@ export const LEADERBOARD_METRICS = {
       category: 'reach',
       rankingType: 'higher',
       optional: true // Not part of core 23, but used for stats tab ranking
+    },
+    {
+      id: 'reach_land_area',
+      label: 'Land Area',
+      dataPath: ['Geography', 'Area', 'land', 'text'],
+      category: 'reach',
+      rankingType: 'higher',
+      optional: true // Used for stats tab ranking
+    },
+    {
+      id: 'reach_water_area',
+      label: 'Water Area',
+      dataPath: ['Geography', 'Area', 'water', 'text'],
+      category: 'reach',
+      rankingType: 'higher',
+      optional: true // Used for stats tab ranking
+    },
+    {
+      id: 'reach_coastline',
+      label: 'Coastline',
+      dataPath: ['Geography', 'Coastline', 'text'],
+      category: 'reach',
+      rankingType: 'higher',
+      optional: true // Used for stats tab ranking
     }
   ]
 };

@@ -33,6 +33,7 @@ export function extractMetricValue(countryData, metric) {
 
 /**
  * Extract value from country data using a path array
+ * Uses fallback matching for keys with whitespace differences or case mismatches
  */
 function extractValueByPath(countryData, path) {
   if (!path || path.length === 0) return null;
@@ -40,7 +41,40 @@ function extractValueByPath(countryData, path) {
   let current = countryData;
   for (const key of path) {
     if (!current || typeof current !== 'object') return null;
-    current = current[key];
+    
+    // Try exact match first
+    if (key in current) {
+      current = current[key];
+      continue;
+    }
+    
+    // Fallback: try trimmed key matching (handles keys with trailing/leading spaces)
+    const trimmedKey = key.trim();
+    const matchingKey = Object.keys(current).find(k => k.trim() === trimmedKey);
+    
+    if (matchingKey) {
+      current = current[matchingKey];
+      continue;
+    }
+    
+    // Fallback: try case-insensitive match
+    const lowerKey = key.toLowerCase();
+    const caseInsensitiveKey = Object.keys(current).find(k => 
+      k.toLowerCase() === lowerKey || k.trim().toLowerCase() === lowerKey
+    );
+    
+    if (caseInsensitiveKey) {
+      current = current[caseInsensitiveKey];
+      continue;
+    }
+    
+    // No match found
+    return null;
+  }
+
+  // Handle object with .text property (common in Factbook data structure)
+  if (current && typeof current === 'object' && current.text) {
+    current = current.text;
   }
 
   if (current && typeof current === 'string') {
@@ -55,6 +89,24 @@ function extractValueByPath(countryData, path) {
     if (current.includes('%')) {
       const match = current.match(/(\d+\.?\d*)%/);
       if (match) return parseFloat(match[1]);
+    }
+    
+    // Handle scale multipliers (trillion, billion, million) for monetary/large values
+    // This is critical for correct GDP/population rankings
+    const lowerText = current.toLowerCase();
+    if (lowerText.includes('trillion') || lowerText.includes('billion') || lowerText.includes('million')) {
+      const numMatch = current.match(/[\$]?\s*(\d+(?:,\d{3})*(?:\.\d+)?)/);
+      if (numMatch) {
+        let num = parseFloat(numMatch[1].replace(/,/g, ''));
+        if (lowerText.includes('trillion')) {
+          num *= 1000000000000;
+        } else if (lowerText.includes('billion')) {
+          num *= 1000000000;
+        } else if (lowerText.includes('million')) {
+          num *= 1000000;
+        }
+        return num;
+      }
     }
     
     // Standard number extraction

@@ -377,15 +377,16 @@ async function handleCountrySelect(country) {
             console.log(`Cached data for ${country.name} (${countryCode})`);
         }
         
-        // Update quick stats and data panels
-        updateQuickStats(data, countryCode);
-        
-        // Process leaderboard metrics and add to global index
+        // Process leaderboard metrics FIRST and add to global index
+        // This must happen before updateQuickStats so rankings can be calculated
         const countryName = data.Government?.['Country name']?.conventional_short_form?.text || 
                            data.Government?.['Country name']?.text || 
                            country.name || 
                            'Unknown';
         processLeaderboardMetrics(countryCode, data, countryName);
+        
+        // Update quick stats and data panels (after metrics are in index)
+        updateQuickStats(data, countryCode);
         
         await updateDataPanels(data);
         

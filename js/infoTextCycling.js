@@ -24,13 +24,12 @@ export function setupBackgroundInfoCycling(data) {
     <div class="info-cycling-container">
       <div class="info-cycling-header">
         <button class="cycle-button prev" aria-label="Previous section"><i class="fas fa-chevron-left"></i></button>
-        <div class="cycle-indicator-top"><span class="current-index">${currentIndex + 1}</span> / <span class="total-count">${textSections.length}</span></div>
+        <div class="cycle-indicator-top"><span class="section-name">${textSections[currentIndex].title}</span>       <span class="current-index">${currentIndex + 1}</span> / <span class="total-count">${textSections.length}</span></div>
         <button class="cycle-button next" aria-label="Next section"><i class="fas fa-chevron-right"></i></button>
       </div>
       <div class="navigation-content-wrapper">
         <div class="info-text-container">
           <div class="info-text-content">${textSections[currentIndex].content}</div>
-          <div class="info-text-source">${textSections[currentIndex].title}</div>
         </div>
       </div>
     </div>
@@ -40,8 +39,8 @@ export function setupBackgroundInfoCycling(data) {
   const prevButton = backgroundInfo.querySelector('.cycle-button.prev');
   const nextButton = backgroundInfo.querySelector('.cycle-button.next');
   const textContent = backgroundInfo.querySelector('.info-text-content');
-  const textSource = backgroundInfo.querySelector('.info-text-source');
   const currentIndexEl = backgroundInfo.querySelectorAll('.current-index');
+  const sectionNameEl = backgroundInfo.querySelector('.section-name');
   
   prevButton.addEventListener('click', () => {
     currentIndex = (currentIndex - 1 + textSections.length) % textSections.length;
@@ -60,9 +59,12 @@ export function setupBackgroundInfoCycling(data) {
     // After transition completes, update content and animate in
     setTimeout(() => {
       textContent.innerHTML = textSections[currentIndex].content;
-      textSource.textContent = textSections[currentIndex].title;
       // Update both top and bottom indicators (if present)
       currentIndexEl.forEach(el => el.textContent = currentIndex + 1);
+      // Update section name
+      if (sectionNameEl) {
+        sectionNameEl.textContent = textSections[currentIndex].title;
+      }
       
       // Scroll back to top when changing content
       textContent.scrollTop = 0;

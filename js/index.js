@@ -15,6 +15,8 @@ import { initStatCycling, updateQuickStats } from './statCycling.js';
 import { countryDataCache, globalDataIndex, countriesList, appState } from './state.js';
 import { setupBackgroundInfoCycling } from './infoTextCycling.js';
 import { initContainerQueries } from './utils/container-queries.js';
+import { preCacheG20Countries } from './utils/g20PreCache.js';
+import { processLeaderboardMetrics } from './utils/leaderboardScoring.js';
 
 // Public API exports
 export { 
@@ -72,6 +74,18 @@ const initApp = async () => {
   initStatCycling();
   initPanels();
   
+  // Pre-cache G20 countries in the background (non-blocking)
+  preCacheG20Countries((progress) => {
+    if (progress.cached) {
+      console.log(`G20 cache loaded: ${progress.total} countries`);
+    } else {
+      console.log(`G20 pre-caching: ${progress.processed}/${progress.total} - ${progress.current}`);
+    }
+  }).catch(error => {
+    console.warn('G20 pre-caching failed:', error);
+    // Don't block the app if pre-caching fails
+  });
+  
   // Load non-critical components dynamically
   loadDynamicComponents();
 };
@@ -120,7 +134,15 @@ async function handleCountrySelect(country) {
       console.log(`Cached data for ${country.name} (${countryCode})`);
     }
     
-    // Update quick stats and data panels
+    // Process leaderboard metrics FIRST and add to global index
+    // This must happen before updateQuickStats so rankings can be calculated
+    const countryName = data.Government?.['Country name']?.conventional_short_form?.text || 
+                        data.Government?.['Country name']?.text || 
+                        country.name || 
+                        'Unknown';
+    processLeaderboardMetrics(countryCode, data, countryName);
+    
+    // Update quick stats and data panels (after metrics are in index)
     updateQuickStats(data, countryCode);
     await updateDataPanels(data);
     

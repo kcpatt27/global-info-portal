@@ -38,6 +38,8 @@ const G20_COUNTRIES = [
 // Storage keys
 const STORAGE_KEY = 'g20_leaderboard_cache';
 const STORAGE_TIMESTAMP_KEY = 'g20_cache_timestamp';
+const STORAGE_VERSION_KEY = 'g20_cache_version';
+const CACHE_VERSION = 4; // Bump when extraction logic changes to invalidate old caches
 const CACHE_DURATION_MS = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
 
 /**
@@ -82,6 +84,7 @@ function saveToStorage(metricsData) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(metricsData));
     localStorage.setItem(STORAGE_TIMESTAMP_KEY, Date.now().toString());
+    localStorage.setItem(STORAGE_VERSION_KEY, CACHE_VERSION.toString());
     console.log('G20 metrics saved to storage');
   } catch (error) {
     console.warn('Failed to save G20 metrics to storage:', error);
@@ -90,10 +93,17 @@ function saveToStorage(metricsData) {
 
 /**
  * Load G20 metrics from localStorage
- * @returns {Object|null} - Cached metrics data or null if expired/not found
+ * @returns {Object|null} - Cached metrics data or null if expired/not found/version mismatch
  */
 function loadFromStorage() {
   try {
+    // Check cache version first - invalidate if extraction logic changed
+    const storedVersion = localStorage.getItem(STORAGE_VERSION_KEY);
+    if (!storedVersion || parseInt(storedVersion, 10) !== CACHE_VERSION) {
+      console.log('G20 cache version mismatch, will refresh');
+      return null;
+    }
+    
     const timestamp = localStorage.getItem(STORAGE_TIMESTAMP_KEY);
     if (!timestamp) return null;
     

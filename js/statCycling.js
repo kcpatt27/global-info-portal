@@ -1,8 +1,8 @@
 // statCycling.js - Add cycling functionality to quick stat items
 
-import { globalDataIndex } from './state.js';
-import { getMetricRanking } from './utils/leaderboardScoring.js';
-import { getAllMetrics } from './utils/leaderboardMetrics.js';
+import { globalDataIndex, countriesList } from './state.js';
+import { getMetricRanking, extractMetricValue, processLeaderboardMetrics } from './utils/leaderboardScoring.js';
+import { getAllMetrics, getMetricById } from './utils/leaderboardMetrics.js';
 
 // Define sets of related statistics for each quick stat category with data paths for extraction
 const relatedStats = {
@@ -68,7 +68,7 @@ function initStatCycling() {
     if (statLabel.includes('population')) category = 'population';
     else if (statLabel.includes('gdp')) category = 'gdp';
     else if (statLabel.includes('area')) category = 'area';
-    else if (statLabel.includes('region')) category = 'region';
+    else if (statLabel.includes('region') || statLabel.includes('land boundaries') || statLabel.includes('boundaries')) category = 'region';
     else return; // Skip if we can't identify the category
     
     // Remove existing click event listeners to prevent duplicates
@@ -233,6 +233,17 @@ function cycleStatData(statItem, category) {
     }
     valueElement.textContent = value;
     
+    // Update ranking for the new stat
+    if (currentCountryData && currentCountryCode && value !== "Data unavailable") {
+      // Extract numeric value for ranking
+      const numericValue = extractNumericValueForRanking(value, nextStat.label, currentCountryData);
+      // Update ranking badge
+      updateStatRanking(statItem, nextStat.label, numericValue, currentCountryCode);
+    } else {
+      // Remove ranking badge if value unavailable
+      removeStatRanking(statItem);
+    }
+    
     // Remove transition-out and add transition-in classes
     statItem.classList.remove('stat-transition-out');
     statItem.classList.add('stat-transition-in');
@@ -327,10 +338,11 @@ function updateQuickStats(countryData, countryCode) {
         const formattedValue = formatStatValue(value, currentLabel);
         valueElement.textContent = formattedValue;
         
-        // Extract numeric value for ranking (value might be a string)
-        const numericValue = extractNumericValueForRanking(value, currentLabel, countryData);
+        // Extract numeric value for ranking using leaderboard metrics system
+        // This ensures we use the same extraction method as the leaderboard
+        const numericValue = extractNumericValueForRanking(formattedValue, currentLabel, countryData);
         
-        // Add ranking badge
+        // Add ranking badge (will use value from index if metrics were processed)
         updateStatRanking(statItem, currentLabel, numericValue, countryCode);
       } else {
         console.warn(`No value found for ${currentLabel}`);
@@ -355,31 +367,51 @@ function updateQuickStats(countryData, countryCode) {
 
 /**
  * Map stat labels to metric IDs for ranking lookup
+ * Uses a direct mapping table for accuracy - avoids substring matching issues
  */
 function getMetricIdFromLabel(label) {
-  const labelLower = label.toLowerCase();
-  const allMetrics = getAllMetrics();
+  const labelLower = label.toLowerCase().trim();
   
-  // Try to match by label
-  const metric = allMetrics.find(m => 
-    m.label.toLowerCase() === labelLower ||
-    m.label.toLowerCase().includes(labelLower) ||
-    labelLower.includes(m.label.toLowerCase())
-  );
-  
-  if (metric) return metric.id;
-  
-  // Fallback: direct mapping for common stats
-  const labelMap = {
+  // Direct mapping table - explicit and accurate
+  // Each quick stat label maps to exactly one leaderboard metric (or null if no ranking)
+  const labelToMetricMap = {
+    // Population category
     'population': 'people_population',
+    'population growth': 'people_population_growth',
+    'urban population': 'people_urban_population',
+    'median age': 'people_median_age',
+    
+    // GDP/Economy category
     'gdp': 'money_real_gdp_ppp',
+    'gdp growth': 'money_gdp_growth',
+    'gdp per capita': 'money_gdp_per_capita',
+    'unemployment': 'money_unemployment',
+    'inflation': 'money_inflation',
+    
+    // Area category - each has its own ranking metric
     'area': 'reach_area',
-    'land boundaries': 'reach_land_boundaries', // Add Land Boundaries metric
-    'region': null // Region doesn't have ranking
+    'land area': 'reach_land_area',
+    'water area': 'reach_water_area',
+    'coastline': 'reach_coastline',
+    
+    // Region category
+    'land boundaries': 'reach_land_boundaries',
+    'region': null,         // No ranking for text data
+    'coordinates': null,    // No ranking for text data
+    'time zone': null       // No ranking for text data
   };
   
-  for (const [key, metricId] of Object.entries(labelMap)) {
-    if (labelLower.includes(key)) return metricId;
+  // Try exact match first (most common case)
+  if (labelToMetricMap.hasOwnProperty(labelLower)) {
+    return labelToMetricMap[labelLower];
+  }
+  
+  // Fallback: try matching against metric labels from the leaderboard system
+  // Only use exact matches here to avoid substring confusion
+  const allMetrics = getAllMetrics();
+  const exactMatch = allMetrics.find(m => m.label.toLowerCase() === labelLower);
+  if (exactMatch) {
+    return exactMatch.id;
   }
   
   return null;
@@ -387,40 +419,28 @@ function getMetricIdFromLabel(label) {
 
 /**
  * Extract numeric value for ranking from the stat value
- * Handles cases where value is a formatted string or needs to be extracted from country data
+ * Uses leaderboard metrics system for consistent extraction
+ * IMPORTANT: This must use the same extraction method as the leaderboard
+ * to ensure rankings are accurate
  */
 function extractNumericValueForRanking(value, label, countryData) {
-  const labelLower = label.toLowerCase();
+  if (!countryData) return null;
   
-  // For GDP: We need to use Real GDP (PPP) for ranking, not GDP (official exchange rate)
-  if (labelLower.includes('gdp') && countryData) {
-    // Try Real GDP (PPP) first (what leaderboard uses)
-    const pppPaths = [
-      'Economy.Real GDP (purchasing power parity).Real GDP (purchasing power parity) 2023.text',
-      'Economy.GDP (purchasing power parity).text',
-      'Economy.GDP - purchasing power parity.text'
-    ];
-    
-    for (const path of pppPaths) {
-      const pppValue = extractValueFromPath(countryData, path);
-      if (pppValue && typeof pppValue === 'string') {
-        const num = extractNumberWithScale(pppValue);
-        if (num !== null) return num;
+  // Always use the leaderboard metrics extraction system for consistency
+  // This ensures we use the same data paths and extraction logic as the leaderboard
+  const metricId = getMetricIdFromLabel(label);
+  if (metricId) {
+    const metric = getMetricById(metricId);
+    if (metric) {
+      const extractedValue = extractMetricValue(countryData, metric);
+      if (extractedValue !== null && extractedValue !== undefined && !isNaN(extractedValue)) {
+        return extractedValue;
       }
     }
   }
   
-  // For Area: Extract from country data directly
-  if (labelLower.includes('area') && countryData) {
-    const areaPath = 'Geography.Area.total.text';
-    const areaValue = extractValueFromPath(countryData, areaPath);
-    if (areaValue && typeof areaValue === 'string') {
-      const num = extractNumberWithScale(areaValue);
-      if (num !== null) return num;
-    }
-  }
-  
-  // For other stats, try to extract from the value string
+  // Fallback: try to extract from the formatted value string
+  // This should rarely be needed if metric extraction works
   if (typeof value === 'string') {
     const num = extractNumberWithScale(value);
     if (num !== null) return num;
@@ -467,13 +487,48 @@ function extractNumberWithScale(str) {
  */
 function updateStatRanking(statItem, label, value, countryCode) {
   const metricId = getMetricIdFromLabel(label);
-  if (!metricId || !countryCode || value === null || value === undefined) {
+  if (!metricId || !countryCode) {
     removeStatRanking(statItem);
     return;
   }
   
-  // Get ranking
-  const ranking = getMetricRanking(metricId, countryCode, value);
+  // First, try to get the value from the global index (most accurate)
+  // Metrics should have been processed before this is called
+  const countryInIndex = globalDataIndex.countries[countryCode];
+  let rankingValue = null;
+  
+  if (countryInIndex && countryInIndex.metrics && countryInIndex.metrics[metricId] !== undefined) {
+    // Use the value from the index (extracted using leaderboard system)
+    rankingValue = countryInIndex.metrics[metricId];
+  } else if (value !== null && value !== undefined) {
+    // Fallback to passed value if not in index yet
+    rankingValue = value;
+    
+    // If we have country data, process metrics to add to index
+    if (currentCountryData && currentCountryCode === countryCode) {
+      const country = countriesList.find(c => c.code === countryCode) || { name: countryCode };
+      const countryName = currentCountryData.Government?.['Country name']?.conventional_short_form?.text || 
+                          currentCountryData.Government?.['Country name']?.text ||
+                          country.name ||
+                          countryCode;
+      processLeaderboardMetrics(countryCode, currentCountryData, countryName);
+      
+      // Try again to get from index after processing
+      const countryAfterProcessing = globalDataIndex.countries[countryCode];
+      if (countryAfterProcessing && countryAfterProcessing.metrics && countryAfterProcessing.metrics[metricId] !== undefined) {
+        rankingValue = countryAfterProcessing.metrics[metricId];
+      }
+    }
+  }
+  
+  if (rankingValue === null || rankingValue === undefined) {
+    removeStatRanking(statItem);
+    return;
+  }
+  
+  // Get ranking using the value from index (or fallback value)
+  const ranking = getMetricRanking(metricId, countryCode, rankingValue);
+  
   if (!ranking || ranking.rank === 0) {
     removeStatRanking(statItem);
     return;
