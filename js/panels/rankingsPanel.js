@@ -6,6 +6,46 @@
 
 import { extractNumber, formatLabel, formatValue, highlightText, escapeRegExp } from '../utils.js';
 import { appState, countryDataCache, globalDataIndex, countriesList, countryFolders } from '../state.js';
+import { fipsToIso } from '../utils/countryCodeMap.js';
+
+/**
+ * Normalize country code from FIPS to ISO format
+ * This ensures rankings lookups work correctly
+ * @param {string} code - Country code (may be FIPS or ISO)
+ * @param {string} countryName - Country name for fallback matching
+ * @returns {string} - Normalized ISO code
+ */
+function normalizeCountryCode(code, countryName) {
+  if (!code) return '';
+  const lower = code.toLowerCase();
+  
+  // Check FIPS to ISO mapping first
+  if (fipsToIso[lower]) {
+    return fipsToIso[lower];
+  }
+  
+  // Handle known anomalies
+  const anomalies = {
+    'uk': 'gb',
+    'el': 'gr',
+    'tp': 'tl',
+    'bu': 'mm',
+    'zr': 'cd',
+    'fx': 'fr',
+    'cs': 'rs'
+  };
+  
+  if (anomalies[lower]) {
+    return anomalies[lower];
+  }
+  
+  // If it's already a valid 2-letter code, return it
+  if (/^[a-z]{2}$/.test(lower)) {
+    return lower;
+  }
+  
+  return lower;
+}
 
 // Main export - creates/updates the Rankings panel with country data
 export function createRankingsPanel(data) {
@@ -20,9 +60,11 @@ export function createRankingsPanel(data) {
                       data.Government?.['Country name']?.text ||
                       data.name ||
                       'Unknown Country';
-  const countryCode = data.Government?.['Country name']?.['Country name code']?.text ||
-                      data.Communications?.['Internet country code']?.text ||
-                      '';
+  const rawCountryCode = data.Government?.['Country name']?.['Country name code']?.text ||
+                         data.Communications?.['Internet country code']?.text ||
+                         '';
+  // Normalize country code to ensure it matches the format used in globalDataIndex
+  const countryCode = normalizeCountryCode(rawCountryCode, countryName);
 
   // Set up basic panel structure
   panelElement.innerHTML = `
@@ -101,10 +143,12 @@ export function createRankingsPanel(data) {
   // Process all cached countries for all metrics to get accurate rankings
   const processAllMetricsForRankings = async () => {
     // First, add current country's metrics to the index
+    // Normalize country code to ensure consistency
+    const normalizedCodeForInit = normalizeCountryCode(countryCode, countryName);
     numericMetrics.forEach(metric => {
       const metrics = {};
       metrics[metric.id] = metric.value;
-      globalDataIndex.addCountryData(countryName, countryCode, metrics);
+      globalDataIndex.addCountryData(countryName, normalizedCodeForInit, metrics);
     });
     
     // Get all cached country codes
@@ -143,7 +187,9 @@ export function createRankingsPanel(data) {
       if (processed % 5 === 0 || processed === totalCountries) {
         // Update all card rankings
         metricCards.forEach(({ rankElement, metric }) => {
-          const ranking = globalDataIndex.getRanking(metric.id, countryCode, metric.value);
+          // Use normalized country code for ranking lookup
+          const normalizedCode = normalizeCountryCode(countryCode, countryName);
+          const ranking = globalDataIndex.getRanking(metric.id, normalizedCode, metric.value);
           if (ranking && ranking.total > 0 && ranking.rank > 0) {
             rankElement.textContent = `#${ranking.rank}`;
           } else {
@@ -157,8 +203,9 @@ export function createRankingsPanel(data) {
     }
     
     // Final update of all rankings
+    const normalizedCode = normalizeCountryCode(countryCode, countryName);
     metricCards.forEach(({ rankElement, metric }) => {
-      const ranking = globalDataIndex.getRanking(metric.id, countryCode, metric.value);
+      const ranking = globalDataIndex.getRanking(metric.id, normalizedCode, metric.value);
       if (ranking && ranking.total > 0 && ranking.rank > 0) {
         rankElement.textContent = `#${ranking.rank}`;
       } else {
@@ -238,9 +285,11 @@ export function createRankingsPanel(data) {
       `;
       
       // First add this country's metric to the index
+      // Normalize country code to ensure consistency
+      const normalizedCode = normalizeCountryCode(countryCode, countryName);
       const metrics = {};
       metrics[selectedMetric.id] = selectedMetric.value;
-      globalDataIndex.addCountryData(countryName, countryCode, metrics);
+      globalDataIndex.addCountryData(countryName, normalizedCode, metrics);
       
       // Process all cached country data for this metric
       processMetricForAllCountries(selectedMetric, countryCode, rankingsContainer, data);
@@ -404,10 +453,12 @@ function processMetricForAllCountries(selectedMetric, currentCountryCode, contai
     const metricValue = extractMetricFromCountry(countryData, selectedMetric.path);
     
     if (metricValue !== null) {
+      // Normalize country code before adding to index to ensure consistency
+      const normalizedCode = normalizeCountryCode(code, country.name);
       // Add to global index
       const metrics = {};
       metrics[selectedMetric.id] = metricValue;
-      globalDataIndex.addCountryData(country.name, code, metrics);
+      globalDataIndex.addCountryData(country.name, normalizedCode, metrics);
       countriesWithData++;
     }
     
@@ -447,9 +498,11 @@ function extractMetricFromCountry(countryData, metricPath) {
 // Display ranking with collected data
 function displayRanking(container, metric, data, countryName) {
   // Use globalDataIndex to get the ranking for this metric
-  const countryCode = data.Government?.['Country name']?.['Country name code']?.text ||
-                      data.Communications?.['Internet country code']?.text ||
-                      '';
+  const rawCountryCode = data.Government?.['Country name']?.['Country name code']?.text ||
+                         data.Communications?.['Internet country code']?.text ||
+                         '';
+  // Normalize country code to ensure it matches the format used in globalDataIndex
+  const countryCode = normalizeCountryCode(rawCountryCode, countryName);
   
   // Get all countries with this metric and determine the ranking
   const countries = globalDataIndex.getCountriesWithMetric(metric.id);
@@ -477,25 +530,53 @@ function displayRanking(container, metric, data, countryName) {
   // Apply region filter if specified
   const regionFilter = appState.rankingFilterRegion || 'all';
   if (regionFilter !== 'all') {
-    // This is a simplified filter - in a real app, you'd map country codes to regions
-    // Here we're just demonstrating the filter UI functionality
+    // NOTE: This is a simplified filter implementation
+    // BUG: The current implementation only matches a few hardcoded countries
+    // TODO: Implement comprehensive region mapping using countriesList.folder or a dedicated region map
+    // For now, we'll use a slightly improved version that checks against countriesList
     countriesAfterFilter = countries.filter(country => {
       const code = country.code.toLowerCase();
-      // This is very simplified region mapping - would need to be much more comprehensive
-      if (regionFilter === 'europe' && 'gbdefriteseuptch'.includes(code)) return true;
-      if (regionFilter === 'americas' && 'usmxcabr'.includes(code)) return true;
-      if (regionFilter === 'asia' && 'injpcnkr'.includes(code)) return true;
-      if (regionFilter === 'africa' && 'zangegsn'.includes(code)) return true;
-      if (regionFilter === 'oceania' && 'aunz'.includes(code)) return true;
+      const countryInfo = countriesList.find(c => c.code.toLowerCase() === code);
+      
+      if (!countryInfo) {
+        // Fallback to simplified matching for countries not in countriesList
+        // This is a known limitation - see RANKINGS_IMPLEMENTATION_ANALYSIS.md
+        if (regionFilter === 'europe' && ['gb', 'de', 'fr', 'it', 'es', 'pt', 'ru'].includes(code)) return true;
+        if (regionFilter === 'americas' && ['us', 'ca', 'mx', 'br', 'ar'].includes(code)) return true;
+        if (regionFilter === 'asia' && ['in', 'jp', 'cn', 'kr'].includes(code)) return true;
+        if (regionFilter === 'africa' && ['za', 'ng', 'eg'].includes(code)) return true;
+        if (regionFilter === 'oceania' && ['au'].includes(code)) return true;
+        return false;
+      }
+      
+      // Use folder mapping from countriesList if available
+      const folder = countryInfo.folder?.toLowerCase() || '';
+      if (regionFilter === 'europe' && folder.includes('europe')) return true;
+      if (regionFilter === 'americas' && (folder.includes('north-america') || folder.includes('south-america'))) return true;
+      if (regionFilter === 'asia' && (folder.includes('asia') || folder.includes('south-asia') || folder.includes('middle-east'))) return true;
+      if (regionFilter === 'africa' && folder.includes('africa')) return true;
+      if (regionFilter === 'oceania' && folder.includes('oceania')) return true;
+      
       return false;
     });
   }
   
   total = countriesAfterFilter.length;
   
-  // Find the rank of the current country
-  rank = countriesAfterFilter.findIndex(c => c.code === countryCode) + 1;
-  if (rank === 0) rank = 'N/A';
+  // Find the rank of the current country, handling ties properly
+  // BUG FIX: Handle countries with identical values (ties) - they should share the same rank
+  const countryIndex = countriesAfterFilter.findIndex(c => c.code.toLowerCase() === countryCode.toLowerCase());
+  if (countryIndex === -1) {
+    rank = 'N/A';
+  } else {
+    // Find the first country with the same value (for tie handling)
+    const countryValue = countriesAfterFilter[countryIndex].value;
+    let tieStartIndex = countryIndex;
+    while (tieStartIndex > 0 && countriesAfterFilter[tieStartIndex - 1].value === countryValue) {
+      tieStartIndex--;
+    }
+    rank = tieStartIndex + 1; // Rank is 1-based
+  }
   
   // Calculate percentile (higher is better)
   const percentile = rank !== 'N/A' ? Math.round(((total - rank + 1) / total) * 100) : 'N/A';

@@ -3,6 +3,46 @@
 import { globalDataIndex, countriesList } from './state.js';
 import { getMetricRanking, extractMetricValue, processLeaderboardMetrics } from './utils/leaderboardScoring.js';
 import { getAllMetrics, getMetricById } from './utils/leaderboardMetrics.js';
+import { fipsToIso } from './utils/countryCodeMap.js';
+
+/**
+ * Normalize country code from FIPS to ISO format
+ * This ensures rankings lookups work correctly
+ * @param {string} code - Country code (may be FIPS or ISO)
+ * @param {string} countryName - Country name for fallback matching
+ * @returns {string} - Normalized ISO code
+ */
+function normalizeCountryCode(code, countryName) {
+  if (!code) return '';
+  const lower = code.toLowerCase();
+  
+  // Check FIPS to ISO mapping first
+  if (fipsToIso[lower]) {
+    return fipsToIso[lower];
+  }
+  
+  // Handle known anomalies
+  const anomalies = {
+    'uk': 'gb',
+    'el': 'gr',
+    'tp': 'tl',
+    'bu': 'mm',
+    'zr': 'cd',
+    'fx': 'fr',
+    'cs': 'rs'
+  };
+  
+  if (anomalies[lower]) {
+    return anomalies[lower];
+  }
+  
+  // If it's already a valid 2-letter code, return it
+  if (/^[a-z]{2}$/.test(lower)) {
+    return lower;
+  }
+  
+  return lower;
+}
 
 // Define sets of related statistics for each quick stat category with data paths for extraction
 const relatedStats = {
@@ -272,7 +312,11 @@ function updateQuickStats(countryData, countryCode) {
   
   // Store the country data for use in cycling
   currentCountryData = countryData;
-  currentCountryCode = countryCode?.toLowerCase() || '';
+  // Normalize country code to ensure consistency with globalDataIndex
+  const countryName = countryData?.Government?.['Country name']?.conventional_short_form?.text || 
+                      countryData?.Government?.['Country name']?.text ||
+                      '';
+  currentCountryCode = normalizeCountryCode(countryCode?.toLowerCase() || '', countryName);
   
   // Get the stat items
   const statItems = document.querySelectorAll('.quick-stats-grid .stat-item');
@@ -492,9 +536,11 @@ function updateStatRanking(statItem, label, value, countryCode) {
     return;
   }
   
+  // Normalize country code before lookup
+  const normalizedCode = normalizeCountryCode(countryCode, currentCountryData?.Government?.['Country name']?.conventional_short_form?.text || '');
   // First, try to get the value from the global index (most accurate)
   // Metrics should have been processed before this is called
-  const countryInIndex = globalDataIndex.countries[countryCode];
+  const countryInIndex = globalDataIndex.countries[normalizedCode];
   let rankingValue = null;
   
   if (countryInIndex && countryInIndex.metrics && countryInIndex.metrics[metricId] !== undefined) {
@@ -505,16 +551,18 @@ function updateStatRanking(statItem, label, value, countryCode) {
     rankingValue = value;
     
     // If we have country data, process metrics to add to index
-    if (currentCountryData && currentCountryCode === countryCode) {
-      const country = countriesList.find(c => c.code === countryCode) || { name: countryCode };
+    // Use normalized code for consistency
+    const normalizedCodeForProcessing = normalizeCountryCode(countryCode, currentCountryData?.Government?.['Country name']?.conventional_short_form?.text || '');
+    if (currentCountryData && currentCountryCode === normalizedCodeForProcessing) {
+      const country = countriesList.find(c => c.code === normalizedCodeForProcessing) || { name: normalizedCodeForProcessing };
       const countryName = currentCountryData.Government?.['Country name']?.conventional_short_form?.text || 
                           currentCountryData.Government?.['Country name']?.text ||
                           country.name ||
-                          countryCode;
-      processLeaderboardMetrics(countryCode, currentCountryData, countryName);
+                          normalizedCodeForProcessing;
+      processLeaderboardMetrics(normalizedCodeForProcessing, currentCountryData, countryName);
       
-      // Try again to get from index after processing
-      const countryAfterProcessing = globalDataIndex.countries[countryCode];
+      // Try again to get from index after processing (using normalized code)
+      const countryAfterProcessing = globalDataIndex.countries[normalizedCodeForProcessing];
       if (countryAfterProcessing && countryAfterProcessing.metrics && countryAfterProcessing.metrics[metricId] !== undefined) {
         rankingValue = countryAfterProcessing.metrics[metricId];
       }
@@ -526,8 +574,10 @@ function updateStatRanking(statItem, label, value, countryCode) {
     return;
   }
   
+  // Normalize country code before ranking lookup
+  const normalizedCodeForRanking = normalizeCountryCode(countryCode, currentCountryData?.Government?.['Country name']?.conventional_short_form?.text || '');
   // Get ranking using the value from index (or fallback value)
-  const ranking = getMetricRanking(metricId, countryCode, rankingValue);
+  const ranking = getMetricRanking(metricId, normalizedCodeForRanking, rankingValue);
   
   if (!ranking || ranking.rank === 0) {
     removeStatRanking(statItem);
