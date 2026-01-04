@@ -1565,18 +1565,40 @@ pre {
   font-size: 0.7rem;
   min-height: 100px;
 } 
-/* Search Bar Container within map area */
+/* Search Bar Container within map area - positioned at bottom */
 .search-bar-container {
     position: absolute;
-    top: 15px;
-    left: 15px;
-    right: 15px;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%;
+    max-width: 400px;
     z-index: 10;
-    pointer-events: none; /* Allow map interaction through search bar */
 }
 
-.search-bar-container > div {
-    pointer-events: auto; /* Re-enable for search input */
+.search-bar-container .search-input-wrapper {
+    background: rgba(18, 18, 18, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    border: 1px solid var(--color-border);
+}
+
+.search-bar-container .search-input {
+    width: 100%;
+    padding: 12px 16px;
+    background: transparent;
+    border: none;
+    color: var(--color-text-primary);
+    font-size: 14px;
+}
+
+.search-bar-container .search-input::placeholder {
+    color: var(--color-text-muted);
+}
+
+.search-bar-container .search-input:focus {
+    outline: none;
 }
 
 /* Search Input Styling */
@@ -1657,14 +1679,14 @@ pre {
 /* Mobile Search Adjustments */
 @media (max-width: 768px) {
     .search-bar-container {
-        top: 10px;
-        left: 10px;
-        right: 10px;
+        bottom: 15px;
+        width: 85%;
+        max-width: none;
     }
 
-    .search-input {
+    .search-bar-container .search-input {
         font-size: 16px; /* Prevents zoom on iOS */
-        padding: 12px 45px 12px 45px;
+        padding: 14px 16px;
     }
 
     .search-icon svg {
@@ -2829,6 +2851,33 @@ pre {
   font-weight: 600;
 }
 
+/* Spider Chart Container in Expanded View */
+.spider-chart-container {
+  padding: 16px;
+  background-color: var(--color-surface-lighter);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-small);
+  margin-top: 16px;
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.spider-chart-container .chart-title {
+  font-size: 13px;
+  font-weight: bold;
+  margin-bottom: 8px;
+  text-align: center;
+  color: var(--color-text-secondary);
+}
+
+.spider-chart-container svg {
+  max-width: 100%;
+  height: auto;
+}
+
 .spider-chart-placeholder {
   padding: 40px 20px;
   text-align: center;
@@ -2849,6 +2898,14 @@ pre {
 
 .placeholder-note i {
   color: var(--color-accent);
+}
+
+.chart-placeholder,
+.chart-error {
+  padding: 20px;
+  text-align: center;
+  color: var(--color-text-secondary);
+  font-size: 0.9rem;
 }
 
 /* Metrics Grid - New Card-Based Metric Selection */
@@ -3841,8 +3898,14 @@ pre {
     padding: 16px;
   }
 
+  .global-leaderboard-container {
+    overflow-x: hidden;
+    max-width: 100%;
+  }
+
   .leaderboard-title {
     font-size: 1.2rem;
+    flex-wrap: wrap;
   }
 
   .current-country-leaderboard {
@@ -3854,22 +3917,78 @@ pre {
     font-size: 1.5rem;
   }
 
+  .current-country-breakdown {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .leaderboard-entry-wrapper {
+    max-width: 100%;
+    overflow: hidden;
+  }
+
   .leaderboard-entry {
     flex-wrap: wrap;
     gap: 8px;
     align-items: flex-start;
+    padding: 10px;
+  }
+
+  .leaderboard-rank {
+    width: auto;
+    flex-shrink: 0;
   }
 
   .leaderboard-country {
-    min-width: 100%;
-    max-width: 100%;
-    flex: 1 1 100%;
+    min-width: 0;
+    max-width: none;
+    flex: 1 1 auto;
+    order: 2;
   }
 
   .leaderboard-breakdown {
     min-width: 100%;
     max-width: 100%;
     flex: 1 1 100%;
+    order: 3;
+  }
+
+  .leaderboard-expand-icon {
+    order: 1;
+    margin-left: auto;
+  }
+
+  .breakdown-labels {
+    gap: 6px;
+    font-size: 0.7rem;
+  }
+
+  .breakdown-labels span {
+    flex-shrink: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .leaderboard-expanded-content {
+    padding: 12px;
+  }
+
+  .expanded-header h3 {
+    font-size: 1.1rem;
+  }
+
+  .category-breakdowns {
+    grid-template-columns: 1fr;
+  }
+
+  .category-breakdown {
+    padding: 12px;
+  }
+
+  .spider-chart-container {
+    padding: 12px;
+    min-height: 180px;
   }
 
   .key-metrics-grid,
@@ -3912,11 +4031,21 @@ pre {
   }
 
   .global-leaderboard {
-    padding: 12px;
+    padding: 10px;
+    border-radius: var(--radius-small);
   }
 
   .leaderboard-title {
     font-size: 1rem;
+    gap: 8px;
+  }
+
+  .leaderboard-description {
+    font-size: 0.8rem;
+  }
+
+  .current-country-leaderboard {
+    padding: 12px;
   }
 
   .current-country-name {
@@ -3929,11 +4058,99 @@ pre {
 
   .leaderboard-entry {
     padding: 8px;
+    gap: 6px;
   }
 
   .leaderboard-rank {
+    font-size: 0.9rem;
+    width: auto;
+    min-width: 28px;
+  }
+
+  .leaderboard-name {
+    font-size: 0.9rem;
+  }
+
+  .leaderboard-score {
+    font-size: 0.75rem;
+  }
+
+  .breakdown-bar {
+    height: 5px;
+  }
+
+  .breakdown-labels {
+    gap: 4px;
+    font-size: 0.65rem;
+    justify-content: space-between;
+  }
+
+  .breakdown-labels span {
+    flex: 0 1 auto;
+  }
+
+  .leaderboard-expand-icon {
+    width: 20px;
+    height: 20px;
+  }
+
+  .leaderboard-expanded-content {
+    padding: 10px;
+  }
+
+  .expanded-header h3 {
     font-size: 1rem;
-    width: 30px;
+  }
+
+  .expanded-description {
+    font-size: 0.8rem;
+  }
+
+  .category-title {
+    font-size: 1rem;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .category-metric-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .metric-details {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .spider-chart-container {
+    padding: 10px;
+    min-height: 160px;
+  }
+
+  .leaderboard-footer {
+    padding-top: 12px;
+  }
+
+  .leaderboard-note {
+    font-size: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  .leaderboard-actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .load-all-countries-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .cache-status {
+    text-align: center;
   }
 
   .key-metrics-grid,

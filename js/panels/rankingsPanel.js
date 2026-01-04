@@ -1374,10 +1374,14 @@ function createGlobalLeaderboard(container, currentCountryCode) {
   container.innerHTML = html;
 
   // Add click handlers to leaderboard entries for expand/collapse
-  container.querySelectorAll('.leaderboard-entry-wrapper').forEach(wrapper => {
+  container.querySelectorAll('.leaderboard-entry-wrapper').forEach((wrapper, index) => {
     const entry = wrapper.querySelector('.leaderboard-entry');
     const expandedContent = wrapper.querySelector('.leaderboard-expanded-content');
     const expandIcon = wrapper.querySelector('.leaderboard-expand-icon i');
+    const countryCode = entry.getAttribute('data-country-code');
+    
+    // Find the country data for this entry
+    const countryData = topCountries.find(c => c.code.toLowerCase() === countryCode?.toLowerCase());
     
     entry.addEventListener('click', function(e) {
       // Toggle expanded state
@@ -1404,14 +1408,15 @@ function createGlobalLeaderboard(container, currentCountryCode) {
         entry.classList.add('expanded');
 
         // Create spider chart for the expanded country
-        const countryData = topCountries[index]; // index is the rank - 1
-        const rank = index + 1;
-        const chartContainer = expandedContent.querySelector(`#spider-chart-${rank}-${countryData.code}`);
-        if (chartContainer && !chartContainer.hasChildNodes()) {
-          // Create spider chart with a small delay to ensure DOM is ready
-          setTimeout(() => {
-            createCountrySpiderChart(chartContainer, countryData, countryData.code);
-          }, 50);
+        if (countryData) {
+          const rank = index + 1;
+          const chartContainer = expandedContent.querySelector('.spider-chart-container');
+          if (chartContainer && !chartContainer.hasChildNodes()) {
+            // Create spider chart with a small delay to ensure DOM is ready
+            setTimeout(() => {
+              createCountrySpiderChart(chartContainer, countryData, countryCode);
+            }, 50);
+          }
         }
       }
     });
@@ -1643,8 +1648,8 @@ function createExpandedCountryDetails(country, rank) {
         ${buildCategoryHTML('Quality', qualityMetrics, country.quality || {}, 'category-quality')}
       </div>
       
-      <div class="spider-chart-container" id="spider-chart-${rank}-${country.code}">
-        <!-- Spider chart will be rendered here -->
+      <div class="spider-chart-container">
+        <!-- Spider chart will be rendered here on expand -->
       </div>
     </div>
   `;
@@ -1673,29 +1678,32 @@ function createCountrySpiderChart(container, countryData, countryCode) {
     const title = document.createElement('div');
     title.className = 'chart-title';
     title.textContent = 'Influence Profile';
-    title.style.fontSize = '14px';
-    title.style.fontWeight = 'bold';
-    title.style.marginBottom = '10px';
-    title.style.textAlign = 'center';
+    title.style.cssText = 'font-size: 13px; font-weight: bold; margin-bottom: 8px; text-align: center; color: #ccc;';
     container.appendChild(title);
 
     // Create chart container
     const chartDiv = document.createElement('div');
     const chartId = `spider-chart-${countryCode}-${Date.now()}`; // Unique ID
     chartDiv.id = chartId;
-    chartDiv.style.width = '100%';
-    chartDiv.style.height = '200px';
-    chartDiv.style.maxWidth = '300px';
-    chartDiv.style.margin = '0 auto';
+    chartDiv.style.cssText = 'width: 100%; height: 180px; max-width: 280px; margin: 0 auto;';
     container.appendChild(chartDiv);
 
-    // Prepare data for spider chart using the calculated scores
+    // Convert rank to score (lower rank = higher score)
+    // Use inverse ranking where rank 1 = 100, rank 200 = ~0
+    const rankToScore = (avgRank) => {
+      if (!avgRank || avgRank <= 0) return 0;
+      // Max rank assumed to be 200
+      const maxRank = 200;
+      return Math.max(0, Math.round(((maxRank - avgRank) / maxRank) * 100));
+    };
+
+    // Prepare data for spider chart using average ranks converted to scores
     const chartData = {
-      People: countryData.people.totalScore || 0,
-      Money: countryData.money.totalScore || 0,
-      Reach: countryData.reach.totalScore || 0,
-      Resources: countryData.resources.totalScore || 0,
-      Quality: countryData.quality.totalScore || 0
+      People: rankToScore(countryData.people?.averageRank),
+      Money: rankToScore(countryData.money?.averageRank),
+      Reach: rankToScore(countryData.reach?.averageRank),
+      Resources: rankToScore(countryData.resources?.averageRank),
+      Quality: rankToScore(countryData.quality?.averageRank)
     };
 
     // Create spider chart

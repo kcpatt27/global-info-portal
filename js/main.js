@@ -702,25 +702,27 @@ function findMatchingCountries(searchTerm) {
  * Select a country found through search
  */
 function selectCountryBySearch(country) {
-    // Use the existing country selection mechanism
-    if (window.mapInstance && window.mapInstance.selectCountry) {
-        // Try to find the country path by title or data attributes
-        const countryPaths = document.querySelectorAll('path[data-country], path:has(title)');
+    // Try to find the country path by title
+    // Title format is "Country Name (XX)" where XX is the 2-letter code
+    const countryPaths = document.querySelectorAll('svg path');
 
-        for (const path of countryPaths) {
-            const title = path.querySelector('title');
-            const titleText = title ? title.textContent : '';
-            const dataCountry = path.getAttribute('data-country');
+    for (const path of countryPaths) {
+        const title = path.querySelector('title');
+        if (!title) continue;
 
-            if (titleText.toLowerCase() === country.name.toLowerCase() ||
-                dataCountry === country.code ||
-                dataCountry === country.name) {
+        const titleText = title.textContent || '';
+        // Title format: "France (FR)" - extract just the country name
+        const countryNameFromTitle = titleText.replace(/\s*\([^)]*\)\s*$/, '').trim().toLowerCase();
+        const codeMatch = titleText.match(/\(([^)]+)\)/);
+        const codeFromTitle = codeMatch ? codeMatch[1].toLowerCase() : '';
 
-                // Simulate click on the path
-                path.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-                clearSearchHighlights();
-                return;
-            }
+        if (countryNameFromTitle === country.name.toLowerCase() ||
+            codeFromTitle === country.code.toLowerCase()) {
+
+            // Simulate click on the path
+            path.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+            clearSearchHighlights();
+            return;
         }
     }
 
@@ -734,16 +736,22 @@ function highlightMatchingCountries(countries) {
     clearSearchHighlights();
 
     countries.forEach(country => {
-        const paths = document.querySelectorAll('path[data-country], path:has(title)');
+        const paths = document.querySelectorAll('svg path');
 
         for (const path of paths) {
             const title = path.querySelector('title');
-            const titleText = title ? title.textContent : '';
-            const dataCountry = path.getAttribute('data-country');
+            if (!title) continue;
 
-            if (titleText.toLowerCase() === country.name.toLowerCase() ||
-                dataCountry === country.code ||
-                dataCountry === country.name) {
+            const titleText = title.textContent || '';
+            // Title format: "France (FR)" - extract just the country name
+            const countryNameFromTitle = titleText.replace(/\s*\([^)]*\)\s*$/, '').trim().toLowerCase();
+            const codeMatch = titleText.match(/\(([^)]+)\)/);
+            const codeFromTitle = codeMatch ? codeMatch[1].toLowerCase() : '';
+
+            if (countryNameFromTitle === country.name.toLowerCase() ||
+                codeFromTitle === country.code.toLowerCase() ||
+                countryNameFromTitle.includes(country.name.toLowerCase()) ||
+                country.name.toLowerCase().includes(countryNameFromTitle)) {
 
                 path.classList.add('search-highlight');
                 break;
