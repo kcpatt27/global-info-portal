@@ -32,7 +32,7 @@ export class SpiderChart {
     this.container = config.container || '#spider-chart';
     this.width = config.width || 400;
     this.height = config.height || 400;
-    this.data = config.data || [];
+    this.data = (config.data || []).map(d => Number(d) || 0);
     this.axes = config.axes || [];
     this.options = {
       margin: { top: 50, right: 50, bottom: 50, left: 50 },
@@ -44,6 +44,15 @@ export class SpiderChart {
       dotRadius: config.options?.dotRadius || 4,
       ...config.options
     };
+    // Per-axis colors (accept array in options.colors)
+    this.colors = config.options?.colors || [
+      '#4A90E2', // People
+      '#F5A623', // Money
+      '#7ED321', // Reach
+      '#9B59B6', // Resources
+      '#E74C3C'  // Quality
+    ];
+    this.colorScale = this.d3.scaleOrdinal().range(this.colors);
 
     this.svg = null;
     this.tooltip = null;
@@ -193,8 +202,8 @@ export class SpiderChart {
         .attr('text-anchor', this.getTextAnchor(angle))
         .attr('dominant-baseline', this.getDominantBaseline(angle))
         .style('font-size', '12px')
-        .style('fill', '#666')
-        .style('font-weight', '500')
+        .style('fill', () => this.colorScale(i))
+        .style('font-weight', '600')
         .text(axis);
     });
   }
@@ -236,17 +245,22 @@ export class SpiderChart {
     }).join(' ');
 
     // Draw background fill
+    // background fill (use neutral translucent fill)
     this.chartGroup.append('polygon')
       .attr('points', points)
       .style('fill', this.options.backgroundColor)
-      .style('stroke', 'none');
+      .style('stroke', 'none')
+      .style('opacity', 0.9);
 
-    // Draw border
+    // Draw border (use a darker neutral stroke)
     this.chartGroup.append('polygon')
       .attr('points', points)
       .style('fill', 'none')
-      .style('stroke', this.options.color)
+      .style('stroke', '#333')
       .style('stroke-width', this.options.strokeWidth);
+
+    // Optionally draw small colored markers along polygon connecting segments
+    // (we already color individual data points; polygon remains neutral)
   }
 
   /**
@@ -266,8 +280,8 @@ export class SpiderChart {
         .attr('cx', x)
         .attr('cy', y)
         .attr('r', this.options.dotRadius)
-        .style('fill', this.options.color)
-        .style('stroke', '#fff')
+        .style('fill', () => this.colorScale(i))
+        .style('stroke', '#0f0f0f')
         .style('stroke-width', '2px')
         .style('cursor', 'pointer');
 
