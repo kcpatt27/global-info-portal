@@ -1,9 +1,9 @@
 {
-  "main.js": "/dist/main.js",
-  "styles.css": "/dist/styles.css",
-  "styles.js": "/dist/styles.js",
-  "runtime.js": "/dist/runtime.js",
-  "144.chunk.js": "/dist/144.chunk.js",
-  "320.chunk.js": "/dist/320.chunk.js",
-  "vendors.js": "/dist/vendors.js"
+  "main.js": "/global-info-portal/dist/main.js",
+  "styles.css": "/global-info-portal/dist/styles.css",
+  "styles.js": "/global-info-portal/dist/styles.js",
+  "runtime.js": "/global-info-portal/dist/runtime.js",
+  "144.chunk.js": "/global-info-portal/dist/144.chunk.js",
+  "320.chunk.js": "/global-info-portal/dist/320.chunk.js",
+  "vendors.js": "/global-info-portal/dist/vendors.js"
 }
