@@ -9,3 +9,7 @@ build/
 # Keep dist/ for GitHub Pages deployment
 # dist/
 *.log
+
+# Documentation
+memory-bank/
+docs/
