@@ -9,6 +9,8 @@ import { Panel } from './Panel.js';
 import { formatNumber, formatDate } from '../../utils/formatters.js';
 import { createSearchInput } from '../../utils/search.js';
 import { createTable } from '../../utils/table.js';
+import { createInfluenceSpiderChart } from '../charts/SpiderChart.js';
+import { calculateInfluenceScale } from '../../utils/leaderboardScoring.js';
 
 /**
  * RankingsPanel class for displaying ranking data
@@ -48,6 +50,8 @@ export class RankingsPanel extends Panel {
     this.selectedItems = new Set();
     this.tableContainer = null;
     this.tableInstance = null;
+    this.spiderChart = null;
+    this.currentCountryData = null;
     
     // Bind additional methods
     this._bindRankingsMethods();
@@ -134,10 +138,17 @@ export class RankingsPanel extends Panel {
     this.tableContainer = document.createElement('div');
     this.tableContainer.className = 'rankings-table-container';
     this.tableContainer.style.display = 'none';
-    
+
+    // Create spider chart container
+    this.spiderChartContainer = document.createElement('div');
+    this.spiderChartContainer.className = 'spider-chart-container';
+    this.spiderChartContainer.id = `spider-chart-${this.id}`;
+    this.spiderChartContainer.style.display = 'none';
+
     // Append containers
     this.contentContainer.appendChild(this.comparisonContainer);
     this.contentContainer.appendChild(this.tableContainer);
+    this.contentContainer.appendChild(this.spiderChartContainer);
   }
   
   /**
@@ -673,13 +684,97 @@ export class RankingsPanel extends Panel {
       
       // Filter and render rankings
       this._filterAndRenderRankings();
-      
+
+      // Render spider chart if we have country data
+      this._renderSpiderChart(data);
+
     } catch (error) {
       console.error('Error rendering rankings panel:', error);
       this.setError('Error rendering rankings: ' + error.message);
     }
   }
-  
+
+  /**
+   * Render spider chart for influence scores
+   * @param {Object} data - The country data
+   * @private
+   */
+  _renderSpiderChart(data) {
+    try {
+      // Calculate influence data for the current country
+      if (!data || !data.countryCode) {
+        this.spiderChartContainer.style.display = 'none';
+        return;
+      }
+
+      const influenceData = calculateInfluenceScale(data.countryCode, data);
+
+      // Check if we have valid influence data
+      if (!influenceData || !influenceData.people || !influenceData.money) {
+        this.spiderChartContainer.style.display = 'none';
+        return;
+      }
+
+      // Show spider chart container
+      this.spiderChartContainer.style.display = 'block';
+
+      // Prepare data for spider chart
+      const chartData = {
+        people: influenceData.people.totalScore || 0,
+        money: influenceData.money.totalScore || 0,
+        reach: influenceData.reach.totalScore || 0,
+        resources: influenceData.resources.totalScore || 0,
+        quality: influenceData.quality.totalScore || 0
+      };
+
+      const axes = ['People', 'Money', 'Reach', 'Resources', 'Quality'];
+
+      // Create or update spider chart
+      if (!this.spiderChart) {
+        this.spiderChart = createInfluenceSpiderChart(
+          `#${this.spiderChartContainer.id}`,
+          chartData
+        );
+      } else {
+        this.spiderChart.updateData(
+          Object.values(chartData),
+          axes
+        );
+      }
+
+      // Add chart title
+      if (!this.spiderChartContainer.querySelector('.chart-title')) {
+        const title = document.createElement('div');
+        title.className = 'chart-title';
+        title.textContent = 'Global Influence Scores';
+        title.style.textAlign = 'center';
+        title.style.marginBottom = '15px';
+        title.style.fontSize = '16px';
+        title.style.fontWeight = 'bold';
+        this.spiderChartContainer.insertBefore(title, this.spiderChartContainer.firstChild);
+      }
+
+    } catch (error) {
+      console.error('Error rendering spider chart:', error);
+      this.spiderChartContainer.style.display = 'none';
+    }
+  }
+
+  /**
+   * Destroy the panel and clean up resources
+   * @override
+   */
+  destroy() {
+    // Clean up spider chart
+    if (this.spiderChart) {
+      this.spiderChart.destroy();
+      this.spiderChart = null;
+    }
+
+    // Call parent destroy
+    super.destroy();
+  }
+
   /**
    * Reset the panel to its initial state
    * @override

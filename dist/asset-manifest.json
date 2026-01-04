@@ -5,5 +5,6 @@
   "runtime.js": "/global-info-portal/dist/runtime.js",
   "144.chunk.js": "/global-info-portal/dist/144.chunk.js",
   "320.chunk.js": "/global-info-portal/dist/320.chunk.js",
+  "charts.js": "/global-info-portal/dist/charts.chunk.js",
   "vendors.js": "/global-info-portal/dist/vendors.js"
 }

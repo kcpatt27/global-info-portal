@@ -1565,6 +1565,105 @@ pre {
   font-size: 0.7rem;
   min-height: 100px;
 } 
+/* Search Bar Container */
+.search-bar-container {
+    padding: 10px 15px;
+    border-bottom: 1px solid var(--color-border);
+    background-color: var(--color-panel-bg);
+}
+
+/* Search Input Styling */
+.search-container {
+    position: relative;
+    width: 100%;
+    max-width: 300px;
+}
+
+.search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--color-text-secondary);
+    z-index: 2;
+    pointer-events: none;
+}
+
+.search-input {
+    width: 100%;
+    padding: 10px 40px 10px 40px;
+    border: 2px solid var(--color-border);
+    border-radius: 25px;
+    background-color: var(--color-input-bg);
+    color: var(--color-text);
+    font-size: 14px;
+    transition: border-color var(--transition-fast) var(--easing-standard);
+    box-sizing: border-box;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+}
+
+.search-input::placeholder {
+    color: var(--color-text-secondary);
+}
+
+.search-clear-btn {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color var(--transition-fast) var(--easing-standard),
+                background-color var(--transition-fast) var(--easing-standard);
+}
+
+.search-clear-btn:hover {
+    color: var(--color-text);
+    background-color: var(--color-hover-bg);
+}
+
+/* Country Search Specific Styling */
+.country-search-input {
+    margin: 0 auto;
+}
+
+/* Search Highlights on Map */
+.search-highlight {
+    fill: var(--color-accent) !important;
+    stroke: var(--color-accent-dark) !important;
+    stroke-width: 2px !important;
+    filter: drop-shadow(0 0 6px rgba(76, 175, 80, 0.4));
+}
+
+/* Mobile Search Adjustments */
+@media (max-width: 768px) {
+    .search-bar-container {
+        padding: 8px 12px;
+    }
+
+    .search-input {
+        font-size: 16px; /* Prevents zoom on iOS */
+        padding: 12px 45px 12px 45px;
+    }
+
+    .search-icon svg {
+        width: 20px;
+        height: 20px;
+    }
+}
+
 /* Navigation sidebar - positioned on the right side */
 .nav-sidebar {
     position: fixed;
@@ -4085,6 +4184,83 @@ svg .tick text {
     }
     
     .chart .axis text {
+        font-size: 10px;
+    }
+}
+
+/* Spider/Radar Chart Styling */
+.spider-chart-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    background-color: var(--color-panel-bg);
+    border-radius: 8px;
+    margin: 10px 0;
+    border: 1px solid var(--color-border);
+}
+
+.spider-chart-container svg {
+    max-width: 100%;
+    height: auto;
+    background-color: var(--color-bg);
+    border-radius: 6px;
+}
+
+.spider-chart-container text {
+    font-family: var(--font-family);
+    fill: var(--color-text);
+    font-size: 12px;
+    font-weight: 500;
+}
+
+/* Spider Chart Tooltip */
+.spider-tooltip {
+    font-family: var(--font-family);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    pointer-events: none;
+    z-index: 1000;
+}
+
+/* Spider Chart Data Points */
+.spider-chart-container circle {
+    cursor: pointer;
+    transition: r 0.2s ease;
+}
+
+.spider-chart-container circle:hover {
+    r: 6px;
+}
+
+/* Responsive Spider Chart */
+@media (max-width: 768px) {
+    .spider-chart-container {
+        padding: 15px;
+    }
+
+    .spider-chart-container svg {
+        width: 280px;
+        height: 280px;
+    }
+
+    .spider-chart-container text {
+        font-size: 11px;
+    }
+}
+
+@media (max-width: 480px) {
+    .spider-chart-container {
+        padding: 10px;
+    }
+
+    .spider-chart-container svg {
+        width: 250px;
+        height: 250px;
+    }
+
+    .spider-chart-container text {
         font-size: 10px;
     }
 }
