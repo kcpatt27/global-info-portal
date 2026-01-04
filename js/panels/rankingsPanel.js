@@ -1409,13 +1409,13 @@ function createGlobalLeaderboard(container, currentCountryCode) {
 
         // Create spider chart for the expanded country
         if (countryData) {
-          const rank = index + 1;
           const chartContainer = expandedContent.querySelector('.spider-chart-container');
-          if (chartContainer && !chartContainer.hasChildNodes()) {
+          // Check if chart already exists (look for SVG element, not just any child)
+          if (chartContainer && !chartContainer.querySelector('svg')) {
             // Create spider chart with a small delay to ensure DOM is ready
             setTimeout(() => {
               createCountrySpiderChart(chartContainer, countryData, countryCode);
-            }, 50);
+            }, 100);
           }
         }
       }
@@ -1662,11 +1662,17 @@ function createExpandedCountryDetails(country, rank) {
  * @param {string} countryCode - Country code
  */
 function createCountrySpiderChart(container, countryData, countryCode) {
-  if (!container) return;
+  if (!container) {
+    console.warn('Spider chart container not found');
+    return;
+  }
+
+  console.log('Creating spider chart for:', countryCode, countryData);
 
   try {
     // Use the influence data that's already calculated in the leaderboard data
     if (!countryData || !countryData.people || !countryData.money) {
+      console.warn('Missing country data for spider chart:', countryCode);
       container.innerHTML = '<div class="chart-placeholder"><p>No influence data available</p></div>';
       return;
     }
@@ -1685,7 +1691,7 @@ function createCountrySpiderChart(container, countryData, countryCode) {
     const chartDiv = document.createElement('div');
     const chartId = `spider-chart-${countryCode}-${Date.now()}`; // Unique ID
     chartDiv.id = chartId;
-    chartDiv.style.cssText = 'width: 100%; height: 180px; max-width: 280px; margin: 0 auto;';
+    chartDiv.style.cssText = 'width: 250px; height: 250px; margin: 0 auto;';
     container.appendChild(chartDiv);
 
     // Convert rank to score (lower rank = higher score)
@@ -1706,11 +1712,19 @@ function createCountrySpiderChart(container, countryData, countryCode) {
       Quality: rankToScore(countryData.quality?.averageRank)
     };
 
+    console.log('Spider chart data:', chartData);
+
     // Create spider chart
     const spiderChart = createInfluenceSpiderChart(`#${chartId}`, chartData);
 
-    // Store reference for cleanup
-    container.spiderChart = spiderChart;
+    if (spiderChart) {
+      console.log('Spider chart created successfully');
+      // Store reference for cleanup
+      container.spiderChart = spiderChart;
+    } else {
+      console.error('Spider chart creation returned null');
+      container.innerHTML = '<div class="chart-error"><p>Chart library not available</p></div>';
+    }
 
   } catch (error) {
     console.error('Error creating spider chart:', error);

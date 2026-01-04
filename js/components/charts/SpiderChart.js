@@ -333,23 +333,32 @@ export class SpiderChart {
  * @returns {SpiderChart} Spider chart instance
  */
 export function createInfluenceSpiderChart(container, influenceData) {
+  // Check if D3 is available
+  if (!window.d3) {
+    console.error('D3.js not available for spider chart');
+    return null;
+  }
+
   // Extract influence metrics and values
   const axes = Object.keys(influenceData);
   const values = Object.values(influenceData);
 
+  console.log('Creating spider chart with data:', { axes, values });
+
   return new SpiderChart({
     container,
-    width: 350,
-    height: 350,
+    width: 250,
+    height: 250,
     data: values,
     axes: axes,
     options: {
       maxValue: 100,
       levels: 5,
-      color: '#4CAF50',
-      backgroundColor: 'rgba(76, 175, 80, 0.2)',
-      strokeWidth: 3,
-      dotRadius: 5
+      color: '#69b3a2',
+      backgroundColor: 'rgba(105, 179, 162, 0.25)',
+      strokeWidth: 2,
+      dotRadius: 4,
+      margin: { top: 40, right: 40, bottom: 40, left: 40 }
     }
   });
 }
