@@ -1,0 +1,9 @@
+{
+  "main.js": "/dist/main.js",
+  "styles.css": "/dist/styles.css",
+  "styles.js": "/dist/styles.js",
+  "runtime.js": "/dist/runtime.js",
+  "144.chunk.js": "/dist/144.chunk.js",
+  "320.chunk.js": "/dist/320.chunk.js",
+  "vendors.js": "/dist/vendors.js"
+}

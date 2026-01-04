@@ -92,9 +92,22 @@ The application fetches country data from:
 
 ## 🔧 Installation & Setup
 
+### Development
 1. Clone the repository
-2. No build process required - this is a vanilla JavaScript application
+2. Install dependencies: `npm install`
+3. Start development server: `npm start`
+4. Open `http://localhost:8080` in your browser
+
+### Production Build
+1. Build the project: `npm run build`
+2. The built files will be in the `dist/` directory
 3. Open `index.html` in a web browser or serve using a local server
+
+### GitHub Pages Deployment
+1. Build the project: `npm run build`
+2. Commit and push the `dist/` directory to your GitHub repository
+3. Enable GitHub Pages in your repository settings, pointing to the main branch
+4. Your site will be available at `https://yourusername.github.io/repository-name/`
 
 ## 🖥️ Usage
 

@@ -8,6 +8,8 @@
     "build": "webpack --mode production",
     "build:dev": "webpack --mode development",
     "build:analyze": "webpack --mode production --env analyze=true",
+    "predeploy": "npm run build",
+    "deploy": "echo 'Built files are ready in dist/ - commit and push to deploy to GitHub Pages'",
     "test": "jest"
   },
   "dependencies": {
