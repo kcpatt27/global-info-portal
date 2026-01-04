@@ -59,3 +59,10 @@ the second part im actually still working on as i type this up, but ill tell you
 theres specified groups across the globe, G20, NATO, 5 Eyes, etc., and i thought it might be easy to save like 10-20 points from maybe 20-40 countries and have them cached, that way theres atleast 20 different points of data on each chart but also it allows a rankings system and leaderboard to be an interesting addition.
 
 im literally trying this now and we'll see how effective it is.
+
+finished the superpower and rankings tab overhaul
+ironed out initial bugs
+fleshed out the caching of data and added a load all countries button
+updated the influence system
+
+next is charts and search
