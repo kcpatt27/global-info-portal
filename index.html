@@ -32,66 +32,11 @@
           .info-container{padding:15px;width:100%;position:relative;bottom:0;box-shadow:0 -5px 15px rgba(0,0,0,0.2);max-height:40vh}
         }
     </style>
-    <!-- Async load non-critical CSS -->
-    <link rel="preload" href="css-styles/main.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
-    <noscript><link rel="stylesheet" href="css-styles/main.css"></noscript>
-    <!-- Add Font Awesome for icons ; dev: "might not need to be inlined" -->
+    <!-- Load bundled CSS -->
+    <link rel="stylesheet" href="dist/styles.css">
+    <!-- Add Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/3.12.0/css/flag-icon.min.css">
-    <link rel="stylesheet" href="css-styles/mobile.css">
-    <!-- Add our new mobile layout CSS file -->
-    <link rel="stylesheet" href="css-styles/layout/mobile-layout.css">
-    <!-- Mobile navigation styles -->
-    <link rel="stylesheet" href="css-styles/navigation/mobile.css">
-    <!-- Settings panel styles -->
-    <link rel="stylesheet" href="css-styles/components/settings-panel.css">
-    <!-- Preload mobile interaction styles -->
-    <link rel="preload" href="css-styles/interaction/mobile-touch.css" as="style" media="(max-width: 768px)">
-    <!-- Preload enhanced mobile typography styles -->
-    <link rel="preload" href="css-styles/typography/mobile-refined.css" as="style" media="(max-width: 768px)">
-    
-    <!-- CSS Loader Script -->
-    <script>
-    // This function will load CSS files asynchronously
-    function loadCSS(href) {
-      const link = document.createElement('link');
-      link.rel = 'stylesheet';
-      link.href = href;
-      link.media = 'all';
-      document.head.appendChild(link);
-    }
-
-    // Load non-critical CSS files after page load
-    window.addEventListener('load', function() {
-      // Detect if we're on a mobile device
-      const isMobile = window.innerWidth <= 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-      
-      // Component styles that aren't needed immediately
-      const nonCriticalCSS = [
-        'css-styles/components/tabs.css',
-        'css-styles/components/stats.css',
-        'css-styles/components/rankings.css',
-        'css-styles/components/charts.css',
-        'css-styles/components/quick-stats.css',
-        'css-styles/components/navigation.css',
-        'css-styles/components/panels.css'
-      ];
-      
-      // Load mobile-specific styles if on mobile device
-      if (isMobile) {
-        nonCriticalCSS.push('css-styles/components/panels-mobile.css');
-        nonCriticalCSS.push('css-styles/interaction/mobile-touch.css');
-        nonCriticalCSS.push('css-styles/typography/mobile-refined.css');
-      }
-      
-      // Load each file with a small delay to prioritize interactivity
-      let delay = 100;
-      nonCriticalCSS.forEach(file => {
-        setTimeout(() => loadCSS(file), delay);
-        delay += 50; // Stagger the loading
-      });
-    });
-    </script>
     
     <!-- Device Detection Script - loads deferred to not block rendering -->
     <script src="css-styles/devices/device-detection.js" defer></script>

@@ -17,6 +17,24 @@
 @import 'layout/responsive.css';
 @import 'layout/containers.css'; /* Container queries styles */
 
+/* Component styles */
+@import 'components/navigation.css';
+@import 'components/panels.css';
+@import 'components/tabs.css';
+@import 'components/stats.css';
+@import 'components/rankings.css';
+@import 'components/charts.css';
+@import 'components/quick-stats.css';
+@import 'components/settings-panel.css';
+
+/* Mobile-specific styles */
+@import 'mobile.css';
+@import 'navigation/mobile.css';
+@import 'layout/mobile-layout.css';
+@import 'interaction/mobile-touch.css';
+@import 'typography/mobile-refined.css';
+@import 'components/panels-mobile.css';
+
 /* Mobile typography - loaded conditionally for mobile devices */
 @import 'typography/mobile.css';
 

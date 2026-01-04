@@ -1565,6 +1565,5695 @@ pre {
   font-size: 0.7rem;
   min-height: 100px;
 } 
+/* Navigation sidebar - positioned on the right side */
+.nav-sidebar {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--color-sidebar-bg);
+    border-radius: 8px;
+    padding: 10px;
+    z-index: 30;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    /* Hidden by default */
+    opacity: 0;
+    transform: translateX(50px);
+    transition: opacity var(--transition-medium) var(--easing-standard),
+                transform var(--transition-medium) var(--easing-standard);
+    will-change: transform, opacity;
+    pointer-events: none;
+}
+
+/* Show nav sidebar when it has the visible class */
+.nav-sidebar.visible {
+    opacity: 1;
+    pointer-events: all;
+    transform: translateX(0); /* Desktop transform */
+}
+
+.nav-button {
+    width: 40px;
+    height: 40px;
+    margin-bottom: 10px;
+    background-color: var(--color-nav-button-bg);
+    border: none;
+    border-radius: 6px;
+    color: var(--color-text-primary);
+    cursor: pointer;
+    transition: background-color var(--transition-fast) var(--easing-standard),
+                transform var(--transition-fast) var(--easing-standard);
+}
+
+.nav-button:hover {
+    transform: translateY(-2px);
+    background-color: var(--color-nav-button-hover);
+}
+
+/* Apply will-change only during hover to save resources */
+.nav-button:hover {
+    will-change: transform;
+}
+
+.nav-button:last-child {
+    margin-bottom: 0;
+}
+
+.nav-button i {
+    font-size: 20px;
+}
+
+/* Grouped media queries */
+@media (max-width: 768px) {
+    .nav-sidebar {
+        top: auto; /* Override desktop positioning */
+        right: auto; /* Override desktop positioning */
+        left: 50%; /* Center horizontally */
+        bottom: 10px; /* Position at bottom */
+        padding: 8px;
+        flex-direction: row; /* Horizontal layout on mobile */
+    }
+    
+    /* Override transform for mobile specifically */
+    .nav-sidebar.visible {
+        transform: translateX(-50%); /* Restore mobile-specific transform */
+    }
+    
+    .nav-button {
+        height: 28px;
+        width: 36px;
+        border-radius: 50%; /* Make buttons round on mobile */
+        margin: 0 4px; /* Horizontal margins for row layout */
+    }
+    
+    /* Override last-child margin for horizontal layout */
+    .nav-button:last-child {
+        margin-bottom: 0;
+        margin-right: 0;
+    }
+    
+    /* Override first-child margin for horizontal layout */
+    .nav-button:first-child {
+        margin-left: 0;
+    }
+    
+    .nav-button i {
+        font-size: 18px;
+    }
+}
+
+@media (max-width: 480px) {
+    .nav-button {
+        width: 36px;
+        height: 28px;
+    }
+    
+    /* Add a toggle button for mobile navigation */
+    .mobile-nav-toggle {
+        position: fixed;
+        top: 10px;
+        right: 10px;
+        width: 36px;
+        height: 36px;
+        background-color: var(--color-surface);
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 16;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        border: none;
+        color: var(--color-text-primary);
+    }
+}
+/* Data container */
+.data-panels {
+    flex: 1;
+    display: flex;
+    overflow-y: hidden;
+    padding-top: 0;
+    margin-top: -1px; /* Slightly overlap with tabs for seamless connection */
+    width: 100%;
+    max-width: 100%;
+    margin-bottom: 10px;
+    background-color: transparent;
+    position: relative;
+}
+
+.data-panels .data-panel {
+    display: none;
+    padding: var(--space-md);
+    transition: opacity var(--transition-chart) var(--easing-standard), 
+                transform var(--transition-chart) var(--easing-standard);
+    overflow: hidden;
+    background-color: var(--color-chart-bg);
+    border: 1px solid var(--color-border);
+    border-top: 1px solid transparent; /* Make top border invisible for seamless connection with active tab */
+    border-radius: 0 0 var(--radius-small) var(--radius-small);
+    opacity: 0;
+    width: 100%;
+    min-height: 150px;
+    font-size: var(--font-size-md);
+    margin-bottom: 0;
+    flex: 0 1 auto;
+    box-shadow: var(--shadow-md);
+    z-index: 1;
+    transform: translateY(5px);
+}
+
+.data-panels .data-panel.active {
+    display: block;
+    opacity: 1;
+    transform: translateY(0);
+    will-change: transform, opacity;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Data Content Specific Styles */
+.data-title {
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 10px;
+    text-align: center;
+    color: var(--color-text-light);
+}
+
+.data-info {
+    font-size: 12px;
+    margin-top: 5px;
+    color: var(--color-text-secondary);
+}
+
+.data-value {
+    font-size: 16px;
+    font-weight: bold;
+    text-align: center;
+    margin: 15px 0;
+    color: var(--color-text-light);
+}
+
+.data-error {
+    color: var(--color-error);
+    text-align: center;
+    margin-top: 20px;
+    font-weight: bold;
+}
+
+.data-panels .data-panel {
+    overflow-y: auto;
+}
+
+.stat-icon i {
+    color: var(--color-accent);
+}
+
+/* Make sure inactive panels are hidden */
+.content-panel:not(.active) {
+  display: none !important;
+}
+
+/* Make sure active panels are visible */
+.content-panel.active {
+  display: flex !important;
+  flex-direction: column;
+}
+/* Data Tabs styling */
+.data-tabs {
+    display: flex;
+    margin-bottom: 0;
+    margin-top: 15px;
+    padding-top: 0;
+    border-bottom: none;
+    width: 100%;
+    position: relative;
+    flex-shrink: 0;
+    z-index: 10;
+    height: 40px;
+    /* Prevent layout shifts during animations */
+    overflow: visible;
+}
+
+.data-tabs::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 0;
+    background-color: transparent;
+    z-index: 1;
+}
+
+.data-tab {
+    padding: 8px 15px;
+    cursor: pointer;
+    transition: background-color var(--transition-fast) var(--easing-standard),
+                transform var(--transition-fast) var(--easing-standard),
+                box-shadow var(--transition-fast) var(--easing-standard);
+    border: 1px solid var(--color-border);
+    border-bottom: 3px solid var(--color-border);
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    margin-right: -5px;
+    position: relative;
+    background-color: var(--color-surface-lighter);
+    flex: 1;
+    min-width: 0;
+    text-align: center;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transform-origin: bottom center;
+    box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.data-tab:last-child {
+    margin-right: 0;
+}
+
+.data-tab.active {
+    background-color: var(--color-border);
+    border-color: var(--color-inactive-text);
+    border-bottom: none !important;
+    font-weight: bold;
+    z-index: 10;
+    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.3);
+    transform: translateY(-2px);
+    height: 42px;
+    /* Add will-change only to active tab for better performance */
+    will-change: transform, box-shadow;
+}
+
+.data-tab:hover:not(.active) {
+    background-color: var(--color-border);
+    transform: translateY(-1px);
+    /* Add will-change only during hover */
+    will-change: transform, background-color;
+}
+
+.data-tab.active ~ .data-tab {
+    border-left-color: var(--color-surface-lighter);
+}
+
+.data-tab:not(.active):not(.active ~ .data-tab) {
+    border-right-color: var(--color-surface-lighter);
+}
+
+/* Z-index stacking for cascade effect - now only need for 2 tabs */
+.data-tab:nth-child(1) { z-index: 4; }
+.data-tab:nth-child(2) { z-index: 3; }
+/* Removed: .data-tab:nth-child(3) and .data-tab:nth-child(4) */
+
+/* When active, the tab should be on top of all others */
+.data-tab.active { z-index: 10; }
+
+/* Hover effect for inactive tabs */
+.data-tab:hover:not(.active) {
+    background-color: #444;
+}
+
+/* Tabs after the active one */
+.data-tab.active ~ .data-tab {
+    border-left-color: #333;
+}
+
+/* Tabs before the active one */
+.data-tab:not(.active):not(.active ~ .data-tab) {
+    border-right-color: #333;
+}
+
+/* Prefers-reduced-motion support */
+@media (prefers-reduced-motion: reduce) {
+    .data-tab {
+        transition-duration: 0.01ms !important;
+    }
+    
+    .data-tab.active {
+        transform: none;
+    }
+    
+    .data-tab:hover:not(.active) {
+        transform: none;
+    }
+}
+
+/* Mobile optimizations */
+@media (max-width: 500px) {
+    .data-tabs {
+        height: 36px;
+    }
+    
+    .data-tab {
+        padding: 6px 10px;
+        font-size: 0.8rem;
+    }
+    
+    .data-tab.active {
+        height: 38px;
+    }
+} 
+/* 
+ * Updated Stats Tab Styling for Global Information Portal
+ */
+
+/* Stats container */
+.stats-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  height: auto;
+  overflow-y: visible;
+  padding: 0 5px;
+  margin-bottom: 15px;
+}
+
+.stat-section {
+  background-color: var(--color-rankings-bg);
+  border-radius: var(--radius-small);
+  padding: 12px;
+  box-shadow: var(--shadow-md);
+}
+
+.stat-section-title {
+  font-size: var(--font-size-stat-title);
+  font-weight: bold;
+  margin-bottom: 10px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-accent);
+}
+
+.stat-items {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.stat-item {
+  display: block; /* stack header and data vertically */
+  padding: 6px 0 12px 0;
+  border-bottom: 1px dashed var(--color-surface-lighter);
+  transition: background-color var(--transition-chart) var(--easing-standard);
+  position: relative;
+}
+
+.stat-item:hover {
+  background-color: var(--color-stat-hover);
+}
+
+.stat-item.primary-stat {
+  background-color: var(--color-primary-stat-bg);
+  border-radius: var(--radius-xs);
+  padding: 8px 5px;
+  margin-bottom: 3px;
+}
+
+.stat-item.primary-stat:hover {
+  background-color: var(--color-primary-stat-hover-bg);
+}
+
+.stat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+  min-height: 1rem;
+}
+
+.stat-title {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+  font-size: var(--font-size-stat-label);
+  color: var(--color-text-label);
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.stat-title .stat-title-text {
+  display: block;
+}
+
+.primary-stat .stat-label {
+  color: var(--color-text-primary);
+  font-weight: 500;
+}
+
+.primary-stat .stat-ranking {
+  background-color: var(--color-accent);
+  color: #000;
+}
+
+/* Ensure every ranking badge inside the stats panel uses black text */
+.stats-container .stat-ranking,
+.stat-section .stat-ranking,
+.stat-item .stat-ranking {
+  color: #000 !important;
+}
+
+.stat-data {
+  font-size: var(--font-size-md);
+  font-weight: bold;
+  color: var(--color-text-light);
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  width: 100%;
+  padding-left: 10px; /* slight indentation */
+  margin-top: 8px;
+  text-align: left; /* default left align for data */
+}
+
+.stat-ranking {
+  /* unified ranking badge style */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 30px;
+  height: 24px;
+  padding: 0 8px;
+  background: var(--color-accent);
+  color: var(--color-text-light);
+  border-radius: var(--radius-xs);
+  font-weight: 700;
+  font-size: 0.85rem;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  white-space: nowrap;
+  flex-shrink: 0;
+  align-self: flex-start;
+}
+
+.primary-stat .stat-ranking {
+  background-color: var(--color-accent);
+  color: #000;
+}
+
+.stat-value .highlight {
+  color: var(--color-accent);
+  font-weight: 700;
+}
+
+.primary-stat .stat-value .highlight {
+  color: var(--color-primary-stat-highlight);
+}
+
+/* Stats Search Functionality */
+.stats-search-container {
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+  position: sticky;
+  top: 0;
+  z-index: 10; 
+}
+
+.stats-search {
+  flex: 1;
+  padding: 8px 12px;
+  border: 2px solid var(--color-surface-lighter);
+  border-radius: 20px;
+  background-color: var(--color-surface);
+  color: var(--color-text-primary);
+  font-size: 14px;
+  transition: all var(--transition-chart) var(--easing-standard);
+}
+
+.stats-search:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 2px rgba(105, 179, 162, 0.2);
+  will-change: border-color, box-shadow;
+}
+
+.stats-search-clear {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: var(--color-border);
+  color: var(--color-text-primary);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  transition: all var(--transition-chart) var(--easing-standard);
+}
+
+.stats-search-clear:hover {
+  background-color: var(--color-search-clear-hover);
+  transform: translateY(-50%) scale(1.1);
+  will-change: transform, background-color;
+}
+
+.stats-no-results {
+  text-align: center;
+  padding: 20px;
+  color: var(--color-inactive-text);
+  font-style: italic;
+  background-color: var(--color-rankings-bg);
+  border-radius: var(--radius-small);
+  margin-top: 15px;
+  animation: fadeIn var(--transition-medium) var(--easing-standard);
+}
+
+/* Highlight search matches */
+.stat-label mark,
+.stat-value mark {
+  background-color: rgba(105, 179, 162, 0.4);
+  color: #fff;
+  transition: background-color var(--transition-fast) var(--easing-standard);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .stat-item {
+    display: block;
+  }
+
+  .stat-title {
+    width: 100%;
+  }
+
+  .stat-data {
+    padding-left: 6px;
+    text-align: left;
+  }
+
+  .stat-ranking {
+    margin-top: 4px;
+  }
+}
+
+.data-panel.scrolled {
+  padding-top: 0 !important;
+}
+
+/* Optimize animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Prefers-reduced-motion support */
+@media (prefers-reduced-motion: reduce) {
+  .stats-search,
+  .stats-search-clear {
+    transition-duration: 0.01ms !important;
+  }
+  
+  .stats-search-clear:hover {
+    transform: translateY(-50%);
+  }
+  
+  .stats-no-results {
+    animation: none;
+  }
+} 
+/* 
+ * Updated Rankings Tab Styling for Global Information Portal
+ */
+
+/* Global Leaderboard Styles */
+.global-leaderboard-container {
+  margin-bottom: 32px;
+  padding-bottom: 24px;
+  border-bottom: 2px solid var(--color-border);
+}
+
+.global-leaderboard {
+  background: linear-gradient(135deg, rgba(105, 179, 162, 0.05) 0%, rgba(105, 179, 162, 0.02) 100%);
+  border-radius: var(--radius-medium);
+  padding: 24px;
+  border: 1px solid var(--color-border);
+}
+
+.leaderboard-header {
+  margin-bottom: 20px;
+}
+
+.leaderboard-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin: 0 0 8px 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.leaderboard-title i {
+  color: var(--color-accent);
+}
+
+.leaderboard-description {
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.current-country-leaderboard {
+  background: rgba(105, 179, 162, 0.1);
+  border: 2px solid var(--color-accent);
+  border-radius: var(--radius-small);
+  padding: 16px;
+  margin-bottom: 20px;
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.current-country-rank {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--color-accent);
+  font-family: 'Courier New', monospace;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.current-country-info {
+  flex: 1;
+}
+
+.current-country-name {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: 8px;
+}
+
+.current-country-score {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.score-label {
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+}
+
+.score-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-accent);
+  font-family: 'Courier New', monospace;
+}
+
+.current-country-breakdown {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.breakdown-item {
+  display: flex;
+  gap: 6px;
+  align-items: baseline;
+}
+
+.breakdown-label {
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+}
+
+.breakdown-value {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  font-family: 'Courier New', monospace;
+}
+
+.leaderboard-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.leaderboard-entry-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  width: 100%;
+  box-sizing: border-box;
+  position: relative;
+  align-items: stretch;
+}
+
+.leaderboard-entry {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background-color: var(--color-surface-lighter);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-small);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+  box-sizing: border-box;
+  position: relative;
+}
+
+.leaderboard-entry.expanded {
+  border-radius: var(--radius-small) var(--radius-small) 0 0;
+}
+
+.leaderboard-entry:hover {
+  background-color: rgba(105, 179, 162, 0.05);
+  border-color: var(--color-accent);
+  transform: translateX(4px);
+}
+
+.leaderboard-entry.expanded:hover {
+  transform: none;
+}
+
+.leaderboard-entry.current-country {
+  background-color: rgba(105, 179, 162, 0.1);
+  border-color: var(--color-accent);
+  border-width: 2px;
+}
+
+.leaderboard-entry.selected {
+  background-color: rgba(105, 179, 162, 0.15);
+  border-color: var(--color-accent);
+  box-shadow: 0 2px 8px rgba(105, 179, 162, 0.2);
+}
+
+.leaderboard-rank {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--color-accent);
+  font-family: 'Courier New', monospace;
+  flex-shrink: 0;
+  width: 40px;
+  text-align: center;
+}
+
+.leaderboard-country {
+  flex: 1 1 auto;
+  min-width: 120px;
+  max-width: 300px;
+  overflow: hidden;
+}
+
+.leaderboard-name {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: 4px;
+}
+
+.leaderboard-score {
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+  font-family: 'Courier New', monospace;
+}
+
+.leaderboard-breakdown {
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+.breakdown-bar {
+  height: 6px;
+  background-color: rgba(0, 0, 0, 0.1);
+  border-radius: 3px;
+  overflow: hidden;
+  display: flex;
+  margin-bottom: 4px;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  position: relative;
+  gap: 0;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  box-sizing: border-box;
+}
+
+.breakdown-segment {
+  height: 100%;
+  transition: width 0.3s ease;
+  flex-shrink: 1;
+  flex-grow: 0;
+  min-width: 0;
+  max-width: 25%;
+  box-sizing: border-box;
+  display: block;
+  overflow: hidden;
+}
+
+.breakdown-segment.people {
+  background-color: #4A90E2;
+  order: 1;
+}
+
+.breakdown-segment.money {
+  background-color: #F5A623;
+  order: 2;
+}
+
+.breakdown-segment.reach {
+  background-color: #7ED321;
+  order: 3;
+}
+
+.breakdown-segment.resources {
+  background-color: #9B59B6;
+  order: 4;
+}
+
+.breakdown-segment.quality {
+  background-color: #E74C3C;
+  order: 5;
+}
+
+/* Ensure breakdown segments don't overflow - removed conflicting rule */
+
+.breakdown-labels {
+  display: flex;
+  gap: 8px;
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  flex-wrap: wrap;
+  margin-top: 2px;
+}
+
+.breakdown-labels span {
+  font-family: 'Courier New', monospace;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.leaderboard-footer {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--color-border);
+}
+
+.leaderboard-note {
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.leaderboard-note i {
+  color: var(--color-accent);
+}
+
+.leaderboard-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 12px;
+}
+
+.load-all-countries-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: linear-gradient(135deg, var(--color-accent) 0%, #4a9a8a 100%);
+  color: white;
+  border: none;
+  border-radius: var(--radius-small);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.load-all-countries-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(105, 179, 162, 0.3);
+}
+
+.load-all-countries-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.load-all-countries-btn i {
+  font-size: 0.9rem;
+}
+
+.cache-status {
+  font-size: 0.8rem;
+  color: var(--color-text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cache-status i {
+  color: var(--color-accent);
+}
+
+.leaderboard-placeholder {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--color-text-secondary);
+}
+
+.leaderboard-placeholder p {
+  margin: 8px 0;
+}
+
+.leaderboard-hint {
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+  font-style: italic;
+}
+
+/* Leaderboard Expand/Collapse */
+.leaderboard-expand-icon {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-secondary);
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.leaderboard-entry.expanded .leaderboard-expand-icon {
+  color: var(--color-accent);
+}
+
+.leaderboard-entry.expanded .leaderboard-expand-icon i {
+  transform: rotate(180deg);
+}
+
+.leaderboard-expanded-content {
+  width: 100%;
+  padding: 20px;
+  background-color: var(--color-surface);
+  border-top: 1px solid var(--color-border);
+  margin: 0;
+  box-sizing: border-box;
+  animation: expandContent 0.3s ease;
+  position: relative;
+  left: 0;
+  right: 0;
+  align-self: stretch;
+  border-radius: 0 0 var(--radius-small) var(--radius-small);
+}
+
+@keyframes expandContent {
+  from {
+    opacity: 0;
+    max-height: 0;
+  }
+  to {
+    opacity: 1;
+    max-height: 2000px;
+  }
+}
+
+.expanded-country-details {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.expanded-header {
+  margin-bottom: 8px;
+}
+
+.expanded-header h3 {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin: 0 0 8px 0;
+}
+
+.expanded-description {
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.category-breakdowns {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.category-breakdown {
+  background-color: var(--color-surface-lighter);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-small);
+  padding: 16px;
+  border-left: 4px solid;
+}
+
+.category-breakdown.category-people {
+  border-left-color: #4A90E2;
+}
+
+.category-breakdown.category-money {
+  border-left-color: #F5A623;
+}
+
+.category-breakdown.category-reach {
+  border-left-color: #7ED321;
+}
+
+.category-breakdown.category-resources {
+  border-left-color: #9B59B6;
+}
+
+.category-breakdown.category-quality {
+  border-left-color: #E74C3C;
+}
+
+.category-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0 0 12px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.category-score {
+  font-size: 0.85rem;
+  font-weight: 400;
+  color: var(--color-text-secondary);
+  font-family: 'Courier New', monospace;
+}
+
+.category-no-data {
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+  font-style: italic;
+  margin: 0;
+}
+
+.category-metrics {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.category-metric-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.category-metric-item:last-child {
+  border-bottom: none;
+}
+
+.metric-name {
+  font-size: 0.9rem;
+  color: var(--color-text-primary);
+  flex: 1;
+}
+
+.metric-details {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.metric-value {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  font-family: 'Courier New', monospace;
+}
+
+.metric-rank {
+  font-size: 0.85rem;
+  color: var(--color-accent);
+  font-family: 'Courier New', monospace;
+  font-weight: 600;
+}
+
+.spider-chart-placeholder {
+  padding: 40px 20px;
+  text-align: center;
+  background-color: var(--color-surface-lighter);
+  border: 2px dashed var(--color-border);
+  border-radius: var(--radius-small);
+}
+
+.placeholder-note {
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.placeholder-note i {
+  color: var(--color-accent);
+}
+
+/* Metrics Grid - New Card-Based Metric Selection */
+.metrics-grid-container {
+  margin-bottom: 24px;
+}
+
+.metrics-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  margin-bottom: 20px;
+}
+
+/* Key Metrics Section */
+.key-metrics-section {
+  margin-bottom: 8px;
+}
+
+.metrics-section-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0 0 12px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.metrics-section-title::before {
+  content: '';
+  width: 4px;
+  height: 20px;
+  background-color: var(--color-accent);
+  border-radius: 2px;
+}
+
+.key-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+/* Other Metrics Section */
+.other-metrics-section {
+  margin-top: 8px;
+}
+
+.metrics-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.toggle-metrics-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background-color: var(--color-surface-lighter);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-small);
+  color: var(--color-text-secondary);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.toggle-metrics-btn:hover {
+  background-color: rgba(105, 179, 162, 0.1);
+  border-color: var(--color-accent);
+  color: var(--color-text-primary);
+}
+
+.toggle-metrics-btn i {
+  font-size: 0.8rem;
+  transition: transform 0.2s ease;
+}
+
+.other-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+  max-height: 2000px;
+  overflow: hidden;
+  transition: max-height 0.3s ease, opacity 0.3s ease;
+  opacity: 1;
+}
+
+.other-metrics-grid.collapsed {
+  max-height: 0;
+  opacity: 0;
+  margin: 0;
+  padding: 0;
+}
+
+.metric-card {
+  background-color: var(--color-surface-lighter);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-small);
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: relative;
+  overflow: hidden;
+}
+
+.metric-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background-color: var(--color-accent);
+  transform: scaleY(0);
+  transition: transform 0.25s ease;
+}
+
+.metric-card:hover {
+  background-color: rgba(105, 179, 162, 0.1);
+  border-color: var(--color-accent);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.metric-card.active {
+  background-color: rgba(105, 179, 162, 0.15);
+  border-color: var(--color-accent);
+  box-shadow: 0 4px 16px rgba(105, 179, 162, 0.3);
+}
+
+.metric-card.active::before {
+  transform: scaleY(1);
+}
+
+.metric-card-rank {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(105, 179, 162, 0.2);
+  border-radius: var(--radius-xs);
+  color: var(--color-accent);
+  font-size: 1rem;
+  font-weight: 700;
+  font-family: 'Courier New', monospace;
+}
+
+.metric-card.active .metric-card-rank {
+  background-color: var(--color-accent);
+  color: var(--color-text-light);
+}
+
+.metric-card-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.metric-card-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.metric-card-value {
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.metric-card-arrow {
+  flex-shrink: 0;
+  color: var(--color-text-secondary);
+  transition: transform 0.25s ease;
+}
+
+.metric-card:hover .metric-card-arrow,
+.metric-card.active .metric-card-arrow {
+  transform: translateX(4px);
+  color: var(--color-accent);
+}
+
+/* Rankings controls */
+.rankings-controls {
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rankings-controls label {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+}
+
+.ranking-selector {
+  padding: 8px 12px;
+  background-color: var(--color-surface-lighter);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-ranking);
+  color: var(--color-text-primary);
+  font-size: 14px;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml;utf8,<svg fill=%27gray%27 height=%2724%27 viewBox=%270 0 24 24%27 width=%2724%27 xmlns=%27http://www.w3.org/2000/svg%27><path d=%27M7 10l5 5 5-5z%27/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  transition: all var(--transition-chart) var(--easing-standard);
+  width: 100%;
+  max-width: -moz-available;
+  max-width: -webkit-fill-available;
+  box-sizing: border-box;
+}
+
+.ranking-selector:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 2px rgba(105, 179, 162, 0.2);
+}
+
+/* Rankings container */
+.rankings-container {
+  background-color: var(--color-rankings-bg);
+  border-radius: var(--radius-small);
+  padding: 16px;
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+}
+
+.rankings-placeholder {
+  color: var(--color-inactive-text);
+  text-align: center;
+  font-style: italic;
+  padding: 40px 20px;
+}
+
+.ranking-header {
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.ranking-header h3 {
+  font-size: var(--font-size-stat-title);
+  color: var(--color-accent);
+  margin: 0;
+}
+
+.ranking-value {
+  font-size: 16px;
+  font-weight: bold;
+  color: var(--color-text-light);
+  padding: 6px 12px;
+  background-color: var(--color-primary-stat-bg);
+  border-radius: var(--radius-xs);
+}
+
+.ranking-description {
+  margin-bottom: 15px;
+  color: var(--color-ranking-desc);
+  font-size: 14px;
+}
+
+/* Ranking position */
+.ranking-position {
+  margin-bottom: 25px;
+  text-align: center;
+}
+
+.ranking-number {
+  font-size: 32px;
+  font-weight: bold;
+  color: var(--color-accent);
+}
+
+.ranking-total {
+  font-size: 16px;
+  color: var(--color-text-secondary);
+}
+
+/* Ranking scale */
+.ranking-scale-container {
+  margin-bottom: 20px;
+}
+
+.ranking-scale {
+  position: relative;
+  height: 12px;
+  background: linear-gradient(to right, var(--ranking-scale-color-1), var(--ranking-scale-color-2), var(--ranking-scale-color-3));
+  border-radius: 6px;
+  margin-bottom: 10px;
+}
+
+.ranking-scale-marker {
+  position: absolute;
+  top: -10px;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 32px;
+  background-color: var(--color-text-light);
+}
+
+.ranking-marker-label {
+  position: absolute;
+  top: -25px;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-right: -1px;
+  box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.2);
+}
+
+/* Neighbors list */
+.neighbors-list li {
+  padding: 6px 0;
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px dashed var(--color-surface-lighter);
+}
+
+.neighbors-list li:last-child {
+  border-bottom: none;
+}
+
+.neighbor-name {
+  font-weight: 500;
+}
+
+.neighbor-value {
+  color: var(--color-accent);
+  font-weight: bold;
+}
+
+/* Loading indicators */
+.rankings-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 30px 20px;
+  text-align: center;
+  color: var(--color-text-secondary);
+  gap: 15px;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(105, 179, 162, 0.3);
+  border-radius: 50%;
+  border-top-color: var(--color-accent);
+  animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loading-progress {
+  width: 100%;
+  height: 8px;
+  background-color: var(--color-surface-lighter);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+.progress-bar {
+  height: 100%;
+  background-color: var(--color-accent);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+/* Data Coverage Indicator */
+.ranking-summary {
+  margin: 20px 0 15px;
+}
+
+.data-coverage {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.coverage-indicator {
+  height: 6px;
+  background-color: var(--color-surface-lighter);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.coverage-bar {
+  height: 100%;
+  background: linear-gradient(to right, var(--color-accent-light), var(--color-accent));
+  border-radius: 3px;
+}
+
+.coverage-label {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  text-align: center;
+}
+
+/* Enhanced Rankings Controls */
+.rankings-control-row {
+  display: flex;
+  flex-wrap: nowrap;
+  margin-bottom: 10px;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.rankings-control-row:last-child {
+  margin-bottom: 0;
+}
+
+.control-group {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  white-space: nowrap;
+  margin-right: 10px;
+}
+
+/* Select, sort and filter controls */
+.ranking-sort,
+.ranking-filter {
+  background-color: var(--color-surface-lighter);
+  color: var(--color-text-light);
+  border: 1px solid var(--color-axis-stroke);
+  border-radius: var(--radius-xs);
+  padding: 5px 10px;
+  font-size: 0.9rem;
+  margin-left: 5px;
+  cursor: pointer;
+  flex: 1;
+  min-width: 120px;
+  max-width: 150px;
+}
+
+.ranking-sort:focus,
+.ranking-filter:focus {
+  outline: none;
+  border-color: #777;
+}
+
+/* Ranking gradient meter */
+.ranking-gradient-container {
+  width: 100%;
+  max-width: 300px;
+  margin: 15px auto 0;
+}
+
+.ranking-gradient {
+  height: 8px;
+  background: linear-gradient(to right, var(--color-positive), var(--color-neutral), var(--color-negative));
+  border-radius: 4px;
+  position: relative;
+  margin-bottom: 5px;
+}
+
+.ranking-gradient-marker {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  background-color: var(--color-text-light);
+  border: 2px solid var(--color-gradient-marker-border);
+  border-radius: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+}
+
+.ranking-gradient-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  color: var(--color-text-secondary);
+}
+
+/* Full rankings list */
+.full-rankings-section {
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid var(--color-border);
+}
+
+.full-rankings-title {
+  font-size: var(--font-size-stat-title);
+  font-weight: bold;
+  margin-bottom: 15px;
+  color: var(--color-accent);
+}
+
+.rankings-list-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.ranking-item {
+  background-color: var(--color-rankings-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xs);
+  padding: 12px;
+  transition: all 0.2s ease;
+}
+
+.ranking-item:hover {
+  background-color: var(--color-primary-stat-bg);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.ranking-item.highlighted-country {
+  background-color: var(--color-ranking-highlight);
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 2px rgba(105, 179, 162, 0.2);
+}
+
+.ranking-item.highlighted-country:hover {
+  background-color: rgba(105, 179, 162, 0.3);
+}
+
+.ranking-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8px;
+  gap: 10px;
+}
+
+.ranking-item-title {
+  flex: 1;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  min-width: 0;
+}
+
+.ranking-item-rank {
+  font-weight: 700;
+  color: var(--color-accent);
+  background-color: rgba(105, 179, 162, 0.1);
+  padding: 4px 8px;
+  border-radius: var(--radius-xs);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.ranking-item-data {
+  padding-left: 12px;
+  padding-right: 4px;
+  font-family: 'Courier New', monospace;
+  color: var(--color-text-light);
+  font-weight: 500;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+/* Smart alignment for ranking data */
+.ranking-item-data {
+  text-align: right;
+}
+
+/* Left align for longer text content */
+.ranking-item-data[data-long-text="true"] {
+  text-align: left;
+}
+
+/* Legacy table styles (kept for backward compatibility) */
+.rankings-table-container {
+  overflow-x: auto;
+  margin-bottom: 20px;
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--color-border);
+  background-color: var(--color-rankings-bg);
+}
+
+.rankings-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.rankings-table th {
+  background-color: var(--color-surface-lighter);
+  color: var(--color-text-label);
+  font-weight: 600;
+  text-align: left;
+  padding: 10px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.rankings-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--color-surface-lighter);
+}
+
+.rankings-table tr:nth-child(even) {
+  background-color: rgba(255, 255, 255, 0.03);
+}
+
+.rankings-table tr:hover {
+  background-color: var(--color-primary-stat-bg);
+}
+
+.rankings-table tr.highlighted-country {
+  background-color: var(--color-ranking-highlight);
+  font-weight: 500;
+}
+
+.rankings-table tr.highlighted-country:hover {
+  background-color: rgba(105, 179, 162, 0.3);
+}
+
+.rankings-table .rank-cell {
+  font-weight: 600;
+  color: var(--color-accent);
+  text-align: center;
+  width: 60px;
+}
+
+.rankings-table .country-cell {
+  font-weight: 500;
+}
+
+.rankings-table .value-cell {
+  text-align: right;
+  font-family: 'Courier New', monospace;
+}
+
+/* Quick Rankings Stats */
+.quick-rankings-stats {
+  margin: 24px 0;
+  padding: 20px;
+  background-color: rgba(30, 30, 40, 0.3);
+  border-radius: var(--radius-small);
+  border: 1px solid var(--color-border);
+}
+
+.quick-rankings-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--color-accent);
+  margin: 0 0 16px 0;
+}
+
+.quick-rankings-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+}
+
+.quick-ranking-card {
+  background-color: var(--color-surface-lighter);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-xs);
+  padding: 12px;
+  text-align: center;
+  transition: all 0.2s ease;
+}
+
+.quick-ranking-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.quick-ranking-card.current-country {
+  background-color: rgba(105, 179, 162, 0.2);
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 2px rgba(105, 179, 162, 0.3);
+}
+
+.quick-ranking-rank {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-accent);
+  margin-bottom: 6px;
+}
+
+.quick-ranking-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.quick-ranking-value {
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+  font-family: 'Courier New', monospace;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .metrics-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 10px;
+  }
+  
+  .metric-card {
+    padding: 12px;
+    gap: 10px;
+  }
+  
+  .metric-card-rank {
+    width: 36px;
+    height: 36px;
+    font-size: 0.9rem;
+  }
+  
+  .metric-card-label {
+    font-size: 0.85rem;
+  }
+  
+  .metric-card-value {
+    font-size: 0.8rem;
+  }
+  
+  .rankings-control-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  
+  .control-group {
+    width: 100%;
+    margin-right: 0;
+  }
+  
+  .ranking-sort,
+  .ranking-filter,
+  .ranking-selector {
+    width: 100%;
+    max-width: none;
+  }
+
+  .ranking-item {
+    padding: 10px;
+  }
+
+  .ranking-item-header {
+    margin-bottom: 6px;
+    gap: 8px;
+  }
+
+  .ranking-item-title {
+    font-size: 0.9rem;
+  }
+
+  .ranking-item-rank {
+    font-size: 0.85rem;
+    padding: 3px 6px;
+  }
+
+  .ranking-item-data {
+    padding-left: 8px;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .metrics-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .metric-card {
+    padding: 14px;
+  }
+  
+  .quick-rankings-grid {
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 10px;
+  }
+  
+  .quick-ranking-card {
+    padding: 10px;
+  }
+  
+  .quick-ranking-rank {
+    font-size: 1.3rem;
+  }
+  
+  .quick-ranking-name {
+    font-size: 0.85rem;
+  }
+  
+  .quick-ranking-value {
+    font-size: 0.8rem;
+  }
+  
+  .rank-number {
+    font-size: 24px;
+  }
+  
+  .ranking-neighbors {
+    padding: 10px;
+  }
+  
+  .ranking-neighbors h4 {
+    font-size: 12px;
+  }
+  
+  .neighbors-list li {
+    font-size: 12px;
+  }
+  
+  .coverage-label {
+    font-size: 10px;
+  }
+  
+  .ranking-summary {
+    margin: 15px 0 10px;
+  }
+}
+
+/* Rankings pagination */
+.rankings-pagination {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+  padding: 10px;
+  background-color: rgba(30, 30, 40, 0.3);
+  border-radius: 20px;
+}
+
+.pagination-btn {
+  padding: 8px 15px;
+  margin: 0 5px;
+  background-color: rgba(40, 40, 50, 0.7);
+  color: var(--color-text-secondary);
+  border: none;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  transition: all 0.23s ease;
+  font-weight: 500;
+  outline: none;
+}
+
+.pagination-btn:first-child {
+  margin-left: 0;
+}
+
+.pagination-btn:hover:not(.active) {
+  background-color: var(--color-pagination-hover);
+}
+
+.pagination-btn.active {
+  background-color: var(--color-accent);
+  color: var(--color-text-light);
+  pointer-events: none;
+}
+
+/* Rankings pages */
+.rankings-page {
+  display: none;
+  transition: opacity 0.3s ease;
+}
+
+.rankings-page.active {
+  display: block;
+  animation: fadeIn 0.313s ease;
+}
+
+/* Rankings positions grid - repurposed from Global Context */
+.rankings-positions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 15px;
+}
+
+.ranking-position-card {
+  background-color: rgba(30, 30, 40, 0.5);
+  border-radius: var(--radius-small);
+  padding: 15px;
+  transition: transform 0.2s ease, background-color 0.2s ease;
+  display: flex;
+  align-items: center;
+  text-align: left;
+}
+
+.ranking-position-card:hover {
+  background-color: rgba(40, 40, 50, 0.6);
+  border-color: rgba(255, 255, 255, 0.1);
+  transform: translateY(-5px);
+}
+
+.ranking-position-icon {
+  font-size: 1.5rem;
+  color: var(--color-accent);
+  margin-right: 12px;
+  flex-shrink: 0;
+}
+
+.ranking-position-content {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.ranking-position-title {
+  font-size: 1rem;
+  color: var(--color-text-secondary);
+  margin-bottom: 5px;
+}
+
+.ranking-position-value {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--color-accent);
+  margin: 5px 0;
+}
+
+.ranking-position-context {
+  font-size: 0.8rem;
+  color: var(--color-inactive-text);
+}
+
+/* Responsive adjustments for pagination and position cards */
+@media (max-width: 768px) {
+  .rankings-pagination {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  .pagination-btn {
+    margin: 5px;
+    padding: 6px 12px;
+    font-size: 0.9rem;
+  }
+  
+  .rankings-positions-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 10px;
+  }
+  
+  .ranking-position-card {
+    padding: 12px;
+  }
+  
+  .ranking-position-icon {
+    font-size: 1.3rem;
+    margin-right: 8px;
+  }
+  
+  .ranking-position-title {
+    font-size: 0.9rem;
+  }
+  
+  .ranking-position-value {
+    font-size: 1.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .global-leaderboard {
+    padding: 16px;
+  }
+
+  .leaderboard-title {
+    font-size: 1.2rem;
+  }
+
+  .current-country-leaderboard {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .current-country-rank {
+    font-size: 1.5rem;
+  }
+
+  .leaderboard-entry {
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: flex-start;
+  }
+
+  .leaderboard-country {
+    min-width: 100%;
+    max-width: 100%;
+    flex: 1 1 100%;
+  }
+
+  .leaderboard-breakdown {
+    min-width: 100%;
+    max-width: 100%;
+    flex: 1 1 100%;
+  }
+
+  .key-metrics-grid,
+  .other-metrics-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .rankings-positions-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .pagination-btn {
+    padding: 5px 10px;
+    font-size: 0.8rem;
+  }
+
+  .ranking-item {
+    padding: 10px;
+  }
+
+  .ranking-item-header {
+    margin-bottom: 6px;
+  }
+
+  .ranking-item-title {
+    font-size: 0.9rem;
+  }
+
+  .ranking-item-rank {
+    font-size: 0.8rem;
+    padding: 3px 6px;
+  }
+
+  .ranking-item-data {
+    padding-left: 8px;
+    font-size: 0.85rem;
+  }
+
+  .global-leaderboard {
+    padding: 12px;
+  }
+
+  .leaderboard-title {
+    font-size: 1rem;
+  }
+
+  .current-country-name {
+    font-size: 1rem;
+  }
+
+  .score-value {
+    font-size: 1.2rem;
+  }
+
+  .leaderboard-entry {
+    padding: 8px;
+  }
+
+  .leaderboard-rank {
+    font-size: 1rem;
+    width: 30px;
+  }
+
+  .key-metrics-grid,
+  .other-metrics-grid {
+    grid-template-columns: 1fr;
+  }
+} 
+/* 
+ * Common Chart Styles for Global Information Portal
+ */
+
+/* Chart containers */
+.charts {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+  margin-top: 0;
+  flex: 1;
+  position: relative;
+  z-index: 5;
+}
+
+/* Individual chart */
+.chart {
+  display: none;
+  padding: var(--space-md);
+  transition: opacity var(--transition-chart) ease;
+  flex: 1;
+  background-color: var(--color-chart-bg);
+  border: 1px solid var(--color-border);
+  border-top: none;
+  border-radius: 0 0 var(--radius-small) var(--radius-small);
+  opacity: 0;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+  min-height: auto;
+  font-size: 0.9rem;
+  position: relative;
+  top: -1px;
+}
+
+.chart.active {
+  display: block;
+  opacity: 1;
+  animation: fadeIn var(--transition-chart) ease-in-out;
+}
+
+/* Chart content elements */
+.data-title {
+  font-size: var(--font-size-chart-title);
+  font-weight: bold;
+  margin-bottom: var(--space-md);
+  text-align: center;
+  color: var(--color-text-primary);
+}
+
+.data-info {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  margin: 10px 0;
+  text-align: center;
+}
+
+.data-value {
+  font-size: var(--font-size-chart-value);
+  font-weight: bold;
+  margin: var(--space-md) 0;
+  text-align: center;
+  color: var(--color-text-primary);
+}
+
+.data-error {
+  color: var(--color-error);
+  text-align: center;
+  padding: var(--space-chart-error);
+  font-weight: bold;
+}
+
+/* D3 Chart Elements */
+.bar {
+  fill: var(--color-accent);
+  transition: fill var(--transition-chart-fill);
+}
+
+.bar:hover {
+  fill: var(--color-accent-light);
+}
+
+/* Axis styling */
+svg text {
+  fill: var(--color-text-primary);
+  font-size: 11px;
+}
+
+svg .domain, svg .tick line {
+  stroke: var(--color-axis-stroke);
+}
+
+svg .tick text {
+  fill: var(--color-text-secondary);
+}
+
+.legend text {
+  font-size: 10px;
+}
+
+/* Responsive styles for charts */
+@media (max-width: 768px) {
+  .chart {
+    padding: var(--space-chart-padding);
+    min-height: 130px;
+  }
+  
+  .data-title {
+    font-size: var(--font-size-chart-title-sm);
+  }
+  
+  .data-value {
+    font-size: var(--font-size-chart-value-sm);
+  }
+}
+
+@media (max-width: 480px) {
+  .chart {
+    padding: 8px;
+    min-height: 120px;
+  }
+  
+  svg text {
+    font-size: 9px;
+  }
+} 
+
+/* Chart title */
+.chart-title {
+  font-size: var(--font-size-chart-title);
+  font-weight: bold;
+  margin-bottom: 15px;
+}
+
+/* Chart axis */
+.chart .axis path,
+.chart .axis line {
+  stroke: var(--color-axis-stroke);
+}
+
+.chart .axis text {
+  fill: var(--color-text-secondary);
+  font-size: 12px;
+}
+
+/* Chart container layout */
+.chart-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    overflow: hidden;
+    /* Hardware acceleration for chart container */
+    transform: translateZ(0);
+}
+
+.chart-container.hidden {
+    display: none;
+}
+
+.chart-title {
+    font-size: var(--font-size-md);
+    font-weight: bold;
+    margin-bottom: 10px;
+    text-align: center;
+    color: var(--color-text-light);
+}
+
+/* Chart loading animation */
+.chart-loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    width: 100%;
+}
+
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    border-top-color: var(--color-accent);
+    animation: spin 1s linear infinite;
+    /* Hardware accelerate the spinner */
+    transform: translateZ(0);
+    will-change: transform;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Chart transition effects */
+.chart-appear {
+    opacity: 0;
+    transform: translateY(10px);
+    animation: chartFadeIn var(--transition-medium) var(--easing-standard) forwards;
+    will-change: transform, opacity;
+}
+
+@keyframes chartFadeIn {
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* SVG chart styling */
+.chart svg {
+    overflow: visible;
+    width: 100%;
+    height: 100%;
+}
+
+.chart .axis path,
+.chart .axis line {
+    stroke: var(--color-axis-stroke);
+    stroke-width: 1px;
+    shape-rendering: crispEdges;
+}
+
+.chart .axis text {
+    fill: var(--color-text-secondary);
+    font-size: 12px;
+}
+
+/* Prefers-reduced-motion support */
+@media (prefers-reduced-motion: reduce) {
+    .loading-spinner {
+        animation-duration: 2s;
+    }
+    
+    .chart-appear {
+        animation: none;
+        opacity: 1;
+        transform: none;
+    }
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+    .chart-container {
+        padding: 5px;
+    }
+    
+    .chart-title {
+        font-size: var(--font-size-sm);
+        margin-bottom: 5px;
+    }
+    
+    .chart .axis text {
+        font-size: 10px;
+    }
+}
+/* 
+ * Updated quick-stats.css
+ * Styles for quick stats grid with icons and labels
+ */
+
+/* Quick stats card */
+.quick-stats-card {
+  background-color: var(--color-quick-stats-card-bg);
+  border-radius: var(--radius-small);
+  padding: 15px;
+  margin-bottom: 10px;
+}
+
+.quick-stats-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--color-text-light);
+  margin-bottom: 15px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.quick-stats-grid {
+  display: grid;
+  margin-top: 10px;
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(2, auto);
+  gap: 12px;
+}
+
+.quick-stats-grid .stat-item {
+  background-color: var(--color-quick-stats-item-bg);
+  border-radius: var(--radius-ranking);
+  padding: 12px 18px; /* Increased horizontal padding for wider text box */
+  padding-bottom: 40px; /* Extra padding for ranking badge */
+  transition: transform var(--transition-medium) var(--easing-standard),
+              background-color var(--transition-medium) var(--easing-standard);
+  border: 1px solid transparent;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-height: auto;
+  height: auto;
+  align-self: start;
+  position: relative; /* Required for absolute positioning of ranking badge */
+  overflow: visible; /* Ensure badge isn't cut off */
+}
+
+.quick-stats-grid .stat-item:hover {
+  background-color: rgba(40, 40, 50, 0.6);
+  border-color: var(--color-border-light);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-hover);
+  will-change: transform;
+}
+
+/* Header row with icon and label */
+.quick-stats-grid .stat-header {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.quick-stats-grid .stat-icon {
+  font-size: 1.5rem;
+  color: var(--color-accent);
+  margin-right: 12px;
+  flex-shrink: 0;
+}
+
+.quick-stats-grid .stat-label {
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+  margin-bottom: 0;
+  flex-grow: 1;
+}
+
+.quick-stats-grid .stat-value {
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--color-text-light);
+  text-align: left;
+  width: 100%;
+  word-wrap: break-word;
+  word-break: break-word;
+  line-height: 1.3;
+  position: relative;
+  padding-bottom: 0;
+}
+
+.quick-stats-grid .stat-rank-badge {
+  position: absolute;
+  bottom: 8px;
+  right: 12px;
+  padding: 3px 6px;
+  background-color: var(--color-accent);
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #000000; /* Black text for better contrast on teal background */
+  display: inline-block;
+  z-index: 1;
+  white-space: nowrap;
+  pointer-events: none; /* Don't interfere with clicking */
+  line-height: 1.2;
+}
+
+/* Hidden content div for statCycling.js compatibility */
+.quick-stats-grid .stat-content {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Stat item interactivity */
+.stat-item-interactive {
+  cursor: pointer;
+  position: relative;
+}
+
+.stat-cycle-indicator {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.5);
+  opacity: 0;
+  transition: opacity var(--transition-medium) var(--easing-standard);
+}
+
+.stat-item-interactive:hover .stat-cycle-indicator {
+  opacity: 1;
+}
+
+/* Optimize transition animations */
+@keyframes fadeOut {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(-10px); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.stat-transition-out {
+  animation: fadeOut var(--transition-slow) var(--easing-standard) forwards;
+  will-change: transform, opacity;
+}
+
+.stat-transition-in {
+  animation: fadeIn var(--transition-slow) var(--easing-standard) forwards;
+  will-change: transform, opacity;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .quick-stats-grid {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto;
+    gap: 10px;
+  }
+  
+  .quick-stats-grid .stat-item {
+    padding: 10px;
+  }
+  
+  .quick-stats-grid .stat-icon {
+    font-size: 1.2rem;
+  }
+  
+  .quick-stats-grid .stat-label {
+    font-size: 0.8rem;
+  }
+  
+  .quick-stats-grid .stat-value {
+    font-size: 1rem;
+  }
+} 
+/**
+ * settings-panel.css
+ * Styles for the settings panel and its components
+ */
+
+/* Settings Panel */
+#settings-panel {
+  display: none; /* Hidden by default */
+  flex-direction: column;
+  height: 100%;
+  position: absolute; /* Position over other content */
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 100; /* Ensure it's on top of other panels */
+  background-color: var(--color-sidebar-bg, #1c1c1c); /* Match background color */
+}
+
+/* Make the settings panel visible when active */
+#settings-panel.active {
+  display: flex;
+}
+
+/* Panel Header */
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 15px;
+  border-bottom: 1px solid var(--color-border-light, rgba(255, 255, 255, 0.1));
+  margin-bottom: 15px;
+}
+
+.panel-header h2 {
+  font-size: 1.2rem;
+  color: var(--color-text-light, #ffffff);
+  margin: 0;
+}
+
+.close-panel-button {
+  background: transparent;
+  border: none;
+  color: var(--color-text-secondary, #aaaaaa);
+  font-size: 1.5rem;
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.close-panel-button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--color-text-light, #ffffff);
+}
+
+/* Panel Content */
+.panel-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 15px 15px;
+}
+
+/* Settings Sections */
+.settings-section {
+  margin-bottom: 25px;
+}
+
+.settings-section h3 {
+  font-size: 1rem;
+  color: var(--color-text-light, #ffffff);
+  margin: 0 0 15px 0;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--color-border-light, rgba(255, 255, 255, 0.1));
+}
+
+/* Settings Items */
+.settings-item {
+  margin-bottom: 15px;
+  padding: 10px;
+  background-color: var(--color-quick-stats-item-bg, rgba(30, 30, 40, 0.5));
+  border-radius: 8px;
+}
+
+/* Toggle Container */
+.settings-toggle-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.settings-option-label {
+  font-size: 0.95rem;
+  color: var(--color-text-secondary, #aaaaaa);
+}
+
+/* Settings Toggle Buttons */
+.reading-mode-toggle {
+  background-color: var(--color-element-bg, #2a2a35);
+  color: var(--color-text-secondary, #aaaaaa);
+  border: 1px solid var(--color-border-dark, #3a3a45);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.reading-mode-toggle:hover {
+  background-color: var(--color-element-hover, #3a3a45);
+  color: var(--color-text-light, #ffffff);
+}
+
+.reading-mode-toggle.active {
+  background-color: var(--color-accent, #3498db);
+  color: white;
+  border-color: var(--color-accent, #3498db);
+}
+
+/* Icon Button in Header */
+.icon-button {
+  background: transparent;
+  border: none;
+  color: var(--color-text-secondary, #aaaaaa);
+  font-size: 1.1rem;
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.2s, color 0.2s;
+  margin-right: 5px;
+}
+
+.icon-button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--color-text-light, #ffffff);
+}
+
+/* Header Controls Container */
+.header-controls {
+  display: flex;
+  align-items: center;
+}
+
+/* Mobile Optimizations */
+@media (max-width: 768px) {
+  .panel-header {
+    padding: 8px 12px;
+    margin-bottom: 10px;
+  }
+  
+  .panel-content {
+    padding: 0 12px 12px;
+  }
+  
+  .settings-section h3 {
+    font-size: 0.95rem;
+    margin-bottom: 12px;
+  }
+  
+  .settings-item {
+    padding: 8px;
+    margin-bottom: 12px;
+  }
+  
+  .reading-mode-toggle {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .settings-option-label {
+    font-size: 0.9rem;
+  }
+} 
+/* 
+ * Mobile-specific styles for enhanced touch experience
+ * This file contains styles optimized for mobile devices
+ */
+
+/* Base Mobile Adjustments
+   ========================================================================== */
+
+@media (max-width: 768px) {
+  /* Hide elements on mobile */
+  .mobile-hidden {
+    display: none !important;
+  }
+  
+  /* Make buttons more compact on mobile */
+  .sidebar-button {
+    padding: 5px 8px;
+    font-size: 0.85rem;
+    min-width: 70px; /* Limit minimum width */
+  }
+  
+  /* Better spacing between sidebar buttons */
+  .sidebar-buttons {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 8px; /* Add spacing below buttons */
+  }
+  
+  body {
+    /* Prevent bounce scrolling on iOS */
+    overscroll-behavior: contain;
+    /* Touch-friendly scrolling */
+    -webkit-overflow-scrolling: touch;
+    /* Disable text selection for better touch experience */
+    user-select: none;
+  }
+  
+  /* Fix viewport issues on mobile devices */
+  html, body {
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+  }
+  
+  /* Remove hover states that cause sticky hover issues on mobile */
+  a:hover, button:hover, .button:hover, [role="button"]:hover {
+    transition: none !important;
+  }
+  
+  /* Apply active states for touch feedback instead */
+  .touch-active {
+    transform: scale(0.97);
+    opacity: 0.9;
+    transition: transform 0.1s ease, opacity 0.1s ease;
+  }
+  
+  /* Safari-specific fixes */
+  @supports (-webkit-touch-callout: none) {
+    .data-panel {
+      /* Fix momentum scrolling for Safari */
+      -webkit-overflow-scrolling: touch;
+    }
+  }
+}
+
+/* Optimized Tap Targets
+   ========================================================================== */
+
+@media (max-width: 768px) {
+  /* Increase touch target sizes to at least 44px (Apple's recommendation) */
+  button, .button, [role="button"], 
+  .data-tab, .sidebar-button,
+  input[type="checkbox"], input[type="radio"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Add spacing between tap targets */
+  .data-tabs {
+    gap: 8px;
+  }
+  
+  .data-tab {
+    margin-right: 4px;
+    padding: 10px 16px;
+  }
+  
+  /* Increase font size for better readability */
+  body {
+    font-size: 16px;
+  }
+  
+  /* Adjust inputs for touch */
+  input, select, textarea {
+    font-size: 16px; /* Prevents auto-zoom on iOS */
+    padding: 12px;
+  }
+  
+  /* Enlarge critical UI elements */
+  .sidebar-button {
+    padding: 12px;
+  }
+  
+  /* Make close buttons larger and more accessible */
+  .close-button {
+    padding: 10px;
+    margin: 5px;
+  }
+}
+
+/* Enhanced Mobile UI Improvements
+   ========================================================================== */
+
+@media (max-width: 768px) {
+  /* Improve the map interaction on small screens */
+  svg {
+    touch-action: pan-x pan-y; /* Enable native browser panning */
+  }
+  
+  /* Optimize data panels for mobile viewing */
+  .data-panel {
+    padding: 16px;
+    max-height: 65vh; /* Limit height to prevent panels from covering full screen */
+    border-radius: 20px 20px 0 0; /* Rounded corners at the top */
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Add pull-to-refresh indicator style */
+  .pull-to-refresh {
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #888;
+    font-size: 14px;
+  }
+  
+  /* Stats grid optimization for mobile - ensure 2x2 layout */
+  .quick-stats-grid {
+    grid-template-columns: 1fr 1fr; /* 2 columns on mobile */
+    grid-template-rows: auto auto; /* 2 rows explicitly defined */
+    gap: 12px;
+  }
+  
+  .stat-item {
+    padding: 12px;
+  }
+  
+  /* Progress indicators for mobile */
+  .loading-progress {
+    height: 4px; /* Thicker for better visibility */
+  }
+  
+  /* Loading indicator adjustments */
+  .loading-indicator {
+    height: 4px; /* Thicker for better visibility */
+  }
+  
+  /* Improve scrollbar appearance on mobile */
+  ::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+  }
+}
+
+/* Mobile-Specific Navigation
+   ========================================================================== */
+
+@media (max-width: 768px) {
+  /* Bottom navigation bar for mobile */
+  .mobile-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #fff;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    height: 60px;
+    align-items: center;
+    justify-content: space-around;
+  }
+  
+  .mobile-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    height: 100%;
+    padding: 8px 4px;
+    color: #666;
+    text-decoration: none;
+  }
+  
+  .mobile-nav-item i {
+    font-size: 20px;
+    margin-bottom: 4px;
+  }
+  
+  .mobile-nav-item span {
+    font-size: 12px;
+  }
+  
+  .mobile-nav-item.active {
+    color: #3498db;
+  }
+  
+  /* Hide desktop sidebar when mobile nav is active */
+  @media (max-width: 768px) {
+    .sidebar {
+      display: none;
+    }
+    
+    .main-content {
+      margin-left: 0;
+      padding-bottom: 60px; /* Add space for mobile nav */
+    }
+  }
+}
+
+/* Mobile Touch/Scroll Enhancements
+   ========================================================================== */
+
+@media (max-width: 768px) {
+  /* Enhance scrolling performance */
+  .data-panel, .stats-container, .info-cycling-container {
+    -webkit-overflow-scrolling: touch;
+    overflow-y: auto;
+    /* Improve scrolling performance */
+    will-change: transform;
+    /* Enable momentum scrolling */
+    scroll-behavior: smooth;
+  }
+  
+  /* Fix iOS scroll issues */
+  .panel-content-wrapper {
+    width: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Add iOS-style scroll indicators */
+  .scroll-indicator {
+    position: absolute;
+    right: 2px;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 2px;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  
+  .data-panel:hover .scroll-indicator,
+  .data-panel:active .scroll-indicator {
+    opacity: 1;
+  }
+  
+  /* Special handling for fixed elements */
+  .fixed-header, .fixed-tabs {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: #fff;
+  }
+}
+
+/* Safe Area Insets for Modern Mobile Devices
+   ========================================================================== */
+
+@supports (padding: max(0px)) {
+  @media (max-width: 768px) {
+    body {
+      --safe-area-inset-top: env(safe-area-inset-top, 0px);
+      --safe-area-inset-right: env(safe-area-inset-right, 0px);
+      --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+      --safe-area-inset-left: env(safe-area-inset-left, 0px);
+      
+      padding-top: var(--safe-area-inset-top);
+      padding-right: var(--safe-area-inset-right);
+      padding-bottom: var(--safe-area-inset-bottom);
+      padding-left: var(--safe-area-inset-left);
+    }
+    
+    .mobile-nav {
+      padding-bottom: max(10px, var(--safe-area-inset-bottom));
+      height: calc(60px + var(--safe-area-inset-bottom));
+    }
+    
+    .data-panel {
+      padding-bottom: max(16px, var(--safe-area-inset-bottom));
+    }
+  }
+}
+
+/* Gesture-based Interaction Styles
+   ========================================================================== */
+
+/* Styles for touch-specific interactions */
+.touch-device {
+  /* Subtle visual feedback for touch interactions */
+  --touch-feedback-color: rgba(255, 255, 255, 0.1);
+  --touch-active-scale: 0.97;
+  --touch-transition: transform 0.1s ease, opacity 0.1s ease;
+}
+
+/* Touch active state for interactive elements */
+.touch-device button:active,
+.touch-device .button:active,
+.touch-device [role="button"]:active,
+.touch-device .data-tab:active,
+.touch-device .sidebar-button:active,
+.touch-device .nav-button:active,
+.touch-device .touch-active {
+  transform: scale(var(--touch-active-scale));
+  opacity: 0.9;
+  background-color: var(--touch-feedback-color);
+  transition: var(--touch-transition);
+}
+
+/* Enhanced gesture support for map interactions */
+.touch-device .map-container svg {
+  touch-action: none; /* Disable browser handling to allow custom gestures */
+  -webkit-tap-highlight-color: transparent; /* Remove tap highlight on iOS */
+}
+
+/* Panel expansion styles for gesture-based interactions */
+.panel-expanded {
+  max-height: 90vh !important;
+  transition: max-height 0.3s ease;
+}
+
+.data-panels .data-panel.expanded {
+  max-height: 80vh;
+  transition: max-height 0.3s ease;
+}
+
+/* Visual feedback for swipeable elements */
+.swipeable {
+  position: relative;
+}
+
+.swipeable::after {
+  content: '';
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40px;
+  height: 4px;
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  transition: opacity 0.3s;
+}
+
+/* Stats detail modal styles */
+.stat-details-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stat-details-content {
+  background: #1c1c1c;
+  border-radius: 10px;
+  padding: 20px;
+  width: 80%;
+  max-width: 400px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.stat-value-large {
+  font-size: 32px;
+  font-weight: bold;
+  margin: 15px 0;
+  color: #90ee90;
+}
+
+/* Animation for pinch and zoom */
+@keyframes pulse {
+  0% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(1.1); opacity: 0.5; }
+  100% { transform: scale(1); opacity: 0.8; }
+}
+
+.zoom-indicator {
+  animation: pulse 1.5s infinite;
+  pointer-events: none;
+}
+
+/* Add smooth transitions for gesture-based UI changes */
+.info-container,
+.map-container,
+.data-panel,
+.sidebar-button,
+.nav-button {
+  transition: transform 0.3s ease, opacity 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Specific interaction states */
+.interaction-hint {
+  position: absolute;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.interaction-hint.visible {
+  opacity: 1;
+} 
+/* 
+ * Mobile Navigation Styles
+ * Implements mobile-optimized navigation patterns and transitions
+ */
+
+/* 
+ * Base Mobile Navigation Container
+ * ========================================================================== 
+ */
+
+/* Bottom Navigation Bar - Primary Navigation Pattern */
+.mobile-nav-container {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background-color: var(--color-sidebar-bg, #1c1c1c);
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.2);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  padding-bottom: env(safe-area-inset-bottom, 0);
+  height: 60px; /* Increased height for better touch targets */
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* Animate the navigation in and out */
+.mobile-nav-container.hidden {
+  transform: translateY(100%);
+}
+
+/* Bottom Navigation Bar Items Container */
+.mobile-nav-bar {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  height: 100%;
+  width: 100%;
+  max-width: 500px; /* Limit width for larger phones/tablets */
+  margin: 0 auto;
+}
+
+/* Individual Navigation Items */
+.mobile-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  flex: 1;
+  height: 100%;
+  color: var(--color-text-secondary, #a0a0a0);
+  text-decoration: none;
+  transition: color 0.2s ease;
+  padding: 8px 0;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  overflow: hidden; /* Contain ripple effect */
+}
+
+/* Navigation Item Icon */
+.mobile-nav-item .nav-icon {
+  font-size: 22px;
+  margin-bottom: 5px;
+  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* Navigation Item Text */
+.mobile-nav-item .nav-text {
+  font-size: 12px;
+  text-transform: capitalize;
+  letter-spacing: 0.02em;
+  transition: opacity 0.2s ease;
+  opacity: 0.9;
+  font-weight: 500;
+}
+
+/* Active Navigation Item */
+.mobile-nav-item.active {
+  color: var(--color-accent, #3498db);
+}
+
+.mobile-nav-item.active .nav-icon {
+  transform: translateY(-2px) scale(1.1);
+}
+
+.mobile-nav-item.active .nav-text {
+  font-weight: 600;
+  opacity: 1;
+}
+
+/* Navigation Item Hover/Focus States */
+.mobile-nav-item:hover,
+.mobile-nav-item:focus {
+  color: var(--color-accent-light, #5dade2);
+}
+
+/* Touch Feedback Animation */
+.mobile-nav-item:active {
+  transform: scale(0.95);
+}
+
+/* Navigation Ripple Effect */
+.nav-ripple {
+  position: absolute;
+  width: 100px;
+  height: 100px;
+  background-color: rgba(255, 255, 255, 0.15);
+  border-radius: 50%;
+  transform: scale(0);
+  pointer-events: none;
+}
+
+@keyframes nav-ripple {
+  to {
+    transform: scale(3);
+    opacity: 0;
+  }
+}
+
+/* Active Dot Indicator */
+.mobile-nav-item.active::after {
+  content: '';
+  position: absolute;
+  bottom: 6px;
+  width: 5px;
+  height: 5px;
+  background-color: var(--color-accent, #3498db);
+  border-radius: 50%;
+  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transform: translateY(-2px);
+}
+
+/* Navigation Badge */
+.nav-badge {
+  position: absolute;
+  top: 8px;
+  right: 50%;
+  transform: translateX(12px);
+  background-color: var(--color-notification, #e74c3c);
+  color: white;
+  font-size: 10px;
+  font-weight: bold;
+  min-width: 16px;
+  height: 16px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  opacity: 0;
+  transform-origin: center right;
+  transform: translateX(12px) scale(0);
+  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.2s ease;
+}
+
+.nav-badge.visible {
+  opacity: 1;
+  transform: translateX(12px) scale(1);
+}
+
+/* 
+ * Hamburger Menu - Secondary Navigation Pattern
+ * ========================================================================== 
+ */
+
+/* Hamburger Menu Toggle Button */
+.hamburger-menu-toggle {
+  position: fixed;
+  top: env(safe-area-inset-top, 16px);
+  right: 16px;
+  z-index: 1010;
+  width: 48px; /* Increased size for better touch target */
+  height: 48px; /* Increased size for better touch target */
+  background-color: var(--color-nav-button-bg, rgba(28, 28, 28, 0.8));
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  border: none;
+  outline: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease,
+              transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+}
+
+/* Hover and Active States */
+.hamburger-menu-toggle:hover {
+  background-color: var(--color-nav-button-hover-bg, rgba(40, 40, 40, 0.8));
+}
+
+.hamburger-menu-toggle:active {
+  transform: scale(0.95);
+}
+
+/* Hamburger Icon Styling */
+.hamburger-icon {
+  position: relative;
+  width: 22px; /* Increased size */
+  height: 16px; /* Increased size */
+}
+
+/* Hamburger Icon Lines */
+.hamburger-icon span {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: var(--color-text-primary, #e0e0e0);
+  border-radius: 1px;
+  transition: transform 0.3s ease,
+              opacity 0.3s ease;
+}
+
+/* Line Positioning */
+.hamburger-icon span:nth-child(1) {
+  top: 0;
+}
+
+.hamburger-icon span:nth-child(2),
+.hamburger-icon span:nth-child(3) {
+  top: 7px;
+}
+
+.hamburger-icon span:nth-child(4) {
+  top: 14px;
+}
+
+/* Animation to X when Menu is Open */
+.hamburger-menu-toggle.active .hamburger-icon span:nth-child(1),
+.hamburger-menu-toggle.active .hamburger-icon span:nth-child(4) {
+  opacity: 0;
+  transform: scale(0);
+}
+
+.hamburger-menu-toggle.active .hamburger-icon span:nth-child(2) {
+  transform: rotate(45deg);
+}
+
+.hamburger-menu-toggle.active .hamburger-icon span:nth-child(3) {
+  transform: rotate(-45deg);
+}
+
+/* Hamburger Menu Panel */
+.hamburger-menu-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100vh;
+  width: 85%;
+  max-width: 360px;
+  background-color: var(--color-sidebar-bg, #1c1c1c);
+  box-shadow: -5px 0 20px rgba(0, 0, 0, 0.3);
+  z-index: 1005;
+  transform: translateX(100%);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: env(safe-area-inset-top, 16px) env(safe-area-inset-right, 16px) env(safe-area-inset-bottom, 16px) 16px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Active state for hamburger menu panel */
+.hamburger-menu-panel.active {
+  transform: translateX(0);
+}
+
+/* Hamburger Menu Items Container */
+.hamburger-menu-items {
+  margin-top: 60px; /* Space for hamburger toggle */
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+/* Individual Menu Item Container */
+.hamburger-menu-item {
+  margin-bottom: 2px;
+  position: relative;
+}
+
+/* Menu Item Link */
+.hamburger-menu-link {
+  display: flex;
+  align-items: center;
+  padding: 16px;
+  color: var(--color-text-primary, #e0e0e0);
+  text-decoration: none;
+  border-radius: 8px;
+  transition: background-color 0.2s ease;
+  font-weight: 500;
+}
+
+/* Menu Item Icon */
+.hamburger-menu-link i {
+  margin-right: 16px;
+  font-size: 20px;
+  min-width: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-secondary, #a0a0a0);
+  transition: color 0.2s ease;
+}
+
+/* Active Menu Item */
+.hamburger-menu-link.active {
+  background-color: rgba(255, 255, 255, 0.1);
+  font-weight: 600;
+}
+
+.hamburger-menu-link.active i {
+  color: var(--color-accent, #3498db);
+}
+
+/* Hover State */
+.hamburger-menu-link:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+/* Active State */
+.hamburger-menu-link:active {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+/* Menu Divider */
+.hamburger-menu-divider {
+  height: 1px;
+  background-color: rgba(255, 255, 255, 0.1);
+  margin: 8px 0;
+  width: 100%;
+}
+
+/* Menu Section Header */
+.hamburger-menu-section {
+  padding: 16px 16px 8px;
+  color: var(--color-text-secondary, #a0a0a0);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 700;
+  margin-top: 8px;
+}
+
+/* Hamburger Menu Overlay */
+.hamburger-menu-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+}
+
+/* Active state for overlay */
+.hamburger-menu-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* 
+ * Animation Enhancements
+ * ========================================================================== 
+ */
+
+/* Staggered entrance animation for navigation items */
+@media (max-width: 768px) {
+  .mobile-nav-item {
+    opacity: 0;
+    transform: translateY(10px);
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+                opacity 0.3s ease,
+                color 0.2s ease;
+  }
+  
+  .mobile-nav-item.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  
+  /* Staggered delay for each item */
+  .mobile-nav-item:nth-child(1) { transition-delay: 0ms; }
+  .mobile-nav-item:nth-child(2) { transition-delay: 30ms; }
+  .mobile-nav-item:nth-child(3) { transition-delay: 60ms; }
+  .mobile-nav-item:nth-child(4) { transition-delay: 90ms; }
+  .mobile-nav-item:nth-child(5) { transition-delay: 120ms; }
+}
+
+/* 
+ * Responsive Adjustments
+ * ========================================================================== 
+ */
+
+/* Hide on desktop */
+@media (min-width: 769px) {
+  .mobile-nav-container,
+  .hamburger-menu-toggle,
+  .hamburger-menu-panel,
+  .hamburger-menu-overlay {
+    display: none !important; /* Hide all mobile navigation on desktop */
+    pointer-events: none;
+  }
+}
+
+/* Landscape orientation adjustments */
+@media (max-width: 768px) and (orientation: landscape) {
+  .mobile-nav-container {
+    height: 50px; /* Smaller height in landscape */
+  }
+  
+  .mobile-nav-item .nav-icon {
+    font-size: 18px;
+    margin-bottom: 2px;
+  }
+  
+  .mobile-nav-item .nav-text {
+    font-size: 10px;
+  }
+}
+
+/* Adjust for devices with home indicator */
+.has-home-indicator .mobile-nav-container {
+  padding-bottom: env(safe-area-inset-bottom, 24px);
+  height: calc(60px + env(safe-area-inset-bottom, 24px));
+}
+
+/* Reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .mobile-nav-container,
+  .mobile-nav-item,
+  .hamburger-menu-toggle,
+  .hamburger-menu-panel,
+  .hamburger-icon span,
+  .hamburger-menu-overlay,
+  .nav-badge {
+    transition-duration: 0.1s;
+    transition-timing-function: ease;
+  }
+  
+  .mobile-nav-item:active,
+  .hamburger-menu-toggle:active {
+    transform: none;
+  }
+}
+
+/* High contrast preferences */
+@media (prefers-contrast: more) {
+  .mobile-nav-item {
+    color: white;
+  }
+  
+  .mobile-nav-item.active {
+    color: white;
+  }
+  
+  .hamburger-menu-toggle {
+    background-color: black;
+    box-shadow: 0 0 0 2px white;
+  }
+}
+
+/* Small device optimizations */
+@media (max-width: 350px) {
+  .mobile-nav-item .nav-text {
+    font-size: 10px;
+  }
+  
+  .mobile-nav-container {
+    height: 50px;
+  }
+  
+  .hamburger-menu-link {
+    padding: 12px;
+  }
+  
+  .hamburger-menu-link i {
+    margin-right: 12px;
+    font-size: 18px;
+  }
+}
+
+/* Touch protection area for home indicator devices */
+.touch-protection-area {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: env(safe-area-inset-bottom, 0);
+  background-color: var(--color-sidebar-bg, #1c1c1c);
+  z-index: 999; /* Below the navbar but above content */
+} 
+/* 
+ * Mobile Container Architecture
+ * This file contains the mobile-optimized container structure for the Global Information Portal
+ * 
+ * Implementation goals:
+ * - Redesign container structure for optimal mobile display
+ * - Create proper content hierarchy for mobile view
+ * - Implement responsive container relationships across screen sizes
+ * - Ensure proper handling of portrait and landscape orientations
+ */
+
+/* 
+ * Mobile Container Base Structure
+ * ==========================================================================
+ */
+
+/* Reset container structure for mobile devices */
+@media (max-width: 768px) {
+  /* Primary container structure - stack map and info vertically in portrait mode */
+  .container {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: minmax(0, 60vh) minmax(0, 40vh);
+    height: 100vh; /* Force full viewport height */
+    overflow: hidden; /* Prevent scrolling on the container */
+    width: 100%;
+    position: relative;
+  }
+
+  /* Map container takes full width, fixed height in portrait */
+  .map-container {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    grid-row: 1;
+    position: relative;
+    z-index: 10;
+    /* Hardware acceleration for smoother interactions */
+    transform: translateZ(0);
+    will-change: transform;
+    touch-action: none; /* Allow D3 to handle touch events like pan/zoom */
+  }
+
+  /* Info container slides up from bottom */
+  .info-container {
+    width: 100%;
+    grid-row: 2;
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+    background-color: #1c1c1c;
+    border-radius: 16px 16px 0 0;
+    box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.3);
+    /* Add subtle indication that panel can be expanded */
+    position: relative;
+    padding: 15px;
+    overflow: hidden; /* Changed from overflow-y: auto to prevent double scrolling */
+    height: 40vh; /* Fixed height to match grid template */
+    max-height: 40vh;
+    /* Enable smooth inertial scrolling on iOS */
+    -webkit-overflow-scrolling: touch;
+    /* Smoother animations */
+    transition: height 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+                transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+                box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform, height;
+  }
+
+  /* Pull handle for expanding the info container */
+  .info-container::before {
+    content: '';
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 36px;
+    height: 4px;
+    background-color: rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+    /* Add animation to indicate swipeable */
+    transition: width 0.3s ease, opacity 0.3s ease;
+  }
+
+  /* Handle animation on touch */
+  .info-container.swiping::before {
+    width: 50px;
+    opacity: 0.8;
+    background-color: rgba(255, 255, 255, 0.5);
+  }
+
+  /* Additional visual feedback for swiping */
+  .info-container.swiping {
+    box-shadow: 0 -8px 20px rgba(0, 0, 0, 0.4);
+  }
+
+  /* Add extra spacing to account for pull handle */
+  .info-header {
+    margin-top: 10px;
+  }
+  
+  /* Fix for proper scrolling within content panels */
+  .content-panel {
+    overflow: hidden; /* Prevent scroll leaking */
+    display: flex;
+    flex-direction: column;
+    height: calc(40vh - 60px); /* Account for header and padding */
+  }
+  
+  .content-panel.active {
+    display: flex;
+    flex: 1;
+  }
+  
+  /* Ensure panels are fully contained */
+  .data-panels {
+    height: 100%;
+    overflow: hidden;
+  }
+  
+  /* Make individual panels scrollable */
+  .data-panel {
+    overflow-y: auto;
+    height: 100%;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Handle collapsed state */
+  .info-container.collapsed {
+    transform: translateY(100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  /* Make navigation sidebar visible when info container is collapsed */
+  .nav-sidebar.visible {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+
+/*
+ * Expanded State
+ * ==========================================================================
+ */
+
+/* Define expanded state for info panel */
+@media (max-width: 768px) {
+  .info-container.expanded {
+    /* Take over most of the screen when expanded */
+    transform: translateY(-40vh);
+    height: 80vh;
+    max-height: 80vh;
+    z-index: 30;
+    /* Add overlay to dim the map */
+    box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.4);
+  }
+  
+  /* Update content panel height when expanded */
+  .info-container.expanded .content-panel {
+    height: calc(80vh - 60px); /* Account for header and padding */
+  }
+
+  /* When info container is expanded, adjust the map container */
+  .info-container.expanded ~ .map-container {
+    filter: brightness(0.7);
+    transition: filter 0.3s ease;
+  }
+
+  /* Style changes for expanded mode */
+  .info-container.expanded .background-info {
+    max-height: none;
+    overflow-y: auto;
+  }
+  
+  /* Ensure scrollable content in expanded mode */
+  .info-container.expanded .content-panel {
+    overflow: hidden;
+  }
+  
+  /* When expanded, ensure panels occupy full space */
+  .info-container.expanded .data-panels {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+/*
+ * Landscape Orientation
+ * ==========================================================================
+ */
+
+/* Landscape specific layout for mobile devices */
+@media (max-width: 768px) and (orientation: landscape) {
+  /* Side by side layout in landscape */
+  .container {
+    grid-template-columns: minmax(0, 65%) minmax(0, 35%);
+    grid-template-rows: 100vh;
+  }
+
+  /* Map on the left */
+  .map-container {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  /* Info panel on the right */
+  .info-container {
+    grid-column: 2;
+    grid-row: 1;
+    height: 100vh;
+    max-height: 100vh;
+    border-radius: 16px 0 0 0;
+    box-shadow: -5px 0 15px rgba(0, 0, 0, 0.3);
+  }
+
+  /* Remove pull handle in landscape mode */
+  .info-container::before {
+    display: none;
+  }
+
+  /* Reset top margin for header in landscape */
+  .info-header {
+    margin-top: 0;
+  }
+
+  /* Expanded state doesn't make sense in landscape, reset it */
+  .info-container.expanded {
+    transform: none;
+    height: 100vh;
+  }
+
+  /* Ensure inner containers utilize full height in landscape */
+  .content-panel {
+    max-height: calc(100vh - 120px);
+    height: calc(100vh - 120px);
+  }
+  
+  /* Fix for content panel height in landscape */
+  .content-panel.active {
+    height: calc(100vh - 120px);
+  }
+}
+
+/*
+ * Small Mobile Devices
+ * ==========================================================================
+ */
+
+@media (max-width: 375px) {
+  /* Adjust container proportions for very small screens */
+  .container {
+    grid-template-rows: minmax(0, 55vh) minmax(0, 45vh);
+  }
+
+  /* Further reduce padding to maximize usable space */
+  .info-container {
+    padding: 12px 10px;
+    height: 45vh;
+    max-height: 45vh;
+  }
+  
+  /* Update content panel height for small screens */
+  .content-panel {
+    height: calc(45vh - 60px);
+  }
+  
+  /* Update expanded content panel height for small screens */
+  .info-container.expanded .content-panel {
+    height: calc(85vh - 60px);
+  }
+
+  /* Optimize handle for smaller screens */
+  .info-container::before {
+    width: 30px;
+    height: 3px;
+    top: 6px;
+  }
+
+  /* Smaller initial height for compact screens */
+  .background-info {
+    min-height: 80px;
+  }
+}
+
+/*
+ * Container Relationship & Hierarchy
+ * ==========================================================================
+ */
+
+@media (max-width: 768px) {
+  /* Ensure proper nesting and hierarchy of containers */
+  .content-panel {
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Ensure panels fill available space but don't overflow */
+  .data-panels {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* Panels should scroll independently */
+  .data-panels .data-panel {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 12px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+
+  /* Only active panels should be visible and interactive */
+  .data-panels .data-panel.active {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  /* Optimize quick stats for mobile viewing */
+  .quick-stats-container {
+    margin-bottom: 12px;
+  }
+
+  .quick-stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto;
+    gap: 10px;
+    width: 100%;
+  }
+
+  /* Ensure stat items are touch-friendly */
+  .stat-item {
+    border-radius: 12px;
+    min-height: 80px;
+    display: flex;
+    flex-direction: column;
+    padding: 12px;
+    /* Make stat items tappable */
+    cursor: pointer;
+    /* Visual feedback on touch */
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .stat-item:active {
+    transform: scale(0.98);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  }
+  
+  /* Fix background info scrolling */
+  .background-info {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    flex: 1;
+  }
+}
+
+/*
+ * Touch & Gesture Support
+ * ==========================================================================
+ */
+
+@media (max-width: 768px) {
+  /* Enable swipe gestures for panels */
+  .swipeable-container {
+    width: 100%;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* Swipeable panel row */
+  .swipeable-content {
+    display: flex;
+    transition: transform 0.3s ease;
+    width: 100%;
+    will-change: transform;
+  }
+
+  /* Add momentum scrolling to all scrollable areas */
+  .scrollable {
+    -webkit-overflow-scrolling: touch;
+    overflow-y: auto;
+    scrollbar-width: thin;
+  }
+
+  /* Touch indication for interactive elements */
+  .touch-highlight:active {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+}
+
+/*
+ * Z-Index Management
+ * ==========================================================================
+ */
+
+@media (max-width: 768px) {
+  /* Ensure proper layering of UI elements */
+  .nav-sidebar {
+    z-index: 40; /* Always on top */
+  }
+
+  .info-container {
+    z-index: 20; /* Above map but below nav */
+  }
+
+  .map-container {
+    z-index: 10; /* Base layer */
+  }
+  
+  /* Mobile navigation should be on top */
+  .mobile-nav-container {
+    z-index: 50;
+  }
+  
+  /* Ensure mobile nav is only visible when info container is collapsed */
+  .mobile-nav-container {
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  /* Use the .hidden class managed by JS */
+  .mobile-nav-container.hidden {
+    transform: translateY(100%);
+  }
+  
+  /* Hamburger menu should be on top of everything */
+  .hamburger-menu-toggle {
+    z-index: 60;
+  }
+  
+  .hamburger-menu-panel {
+    z-index: 55;
+  }
+}
+
+/* 
+ * Navigation Bar Positioning
+ * ==========================================================================
+ */
+
+@media (max-width: 768px) {
+  /* Position navigation bar horizontally on mobile */
+  .nav-sidebar {
+    position: fixed;
+    bottom: 70px; /* Position above the mobile nav bar */
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    background: transparent;
+  }
+  
+  /* Make nav buttons horizontal */
+  .nav-sidebar .nav-button {
+    margin: 0 8px;
+    background-color: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+  }
+  
+  /* Show nav-sidebar only when info container is collapsed */
+  .info-container.collapsed ~ .nav-sidebar,
+  .nav-sidebar.visible {
+    opacity: 1;
+    pointer-events: auto;
+  }
+} 
+/* 
+ * Mobile Touch Interactions
+ * Provides enhanced touch-based interactions and feedback for mobile devices
+ * 
+ * Implementation goals:
+ * - Add subtle animation and transition effects for mobile interactions
+ * - Implement proper feedback for touch interactions  
+ * - Create smooth transitions between application states
+ * - Ensure all interactions feel native and responsive on mobile
+ */
+
+/* 
+ * Touch Feedback and Interaction Styles
+ * ========================================================================== 
+ */
+
+@media (max-width: 768px) {
+  /* Make all interactive elements have clear touch feedback */
+  
+  /* Apply ripple effect container to interactive elements */
+  .touch-ripple-container {
+    position: relative;
+    overflow: hidden;
+  }
+  
+  /* Base touch feedback for buttons and interactive elements */
+  button,
+  [role="button"],
+  .interactive-element,
+  .sidebar-button,
+  .data-tab,
+  .nav-button,
+  .stat-item,
+  .list-item-interactive {
+    /* Remove default focus highlight */
+    -webkit-tap-highlight-color: transparent;
+    /* Provide haptic-like visual feedback */
+    transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1),
+                background-color 0.15s cubic-bezier(0.4, 0, 0.2, 1),
+                opacity 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    /* Improve touch target size for all interactive elements */
+    min-height: 44px; /* Apple's recommended minimum */
+    cursor: pointer;
+    /* Enable hardware acceleration */
+    transform: translateZ(0);
+    will-change: transform, background-color;
+  }
+  
+  /* Active state feedback for touch */
+  button:active,
+  [role="button"]:active,
+  .interactive-element:active,
+  .sidebar-button:active,
+  .data-tab:active,
+  .nav-button:active {
+    transform: scale(0.96);
+    transition-duration: 0.1s;
+  }
+  
+  /* Ripple effect animation for touch interactions */
+  .touch-ripple {
+    position: absolute;
+    background: radial-gradient(circle, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0) 70%);
+    border-radius: 50%;
+    transform: scale(0);
+    pointer-events: none;
+    z-index: 10;
+    animation: touch-ripple-animation 0.6s ease-out;
+  }
+  
+  @keyframes touch-ripple-animation {
+    0% {
+      transform: scale(0);
+      opacity: 0.5;
+    }
+    100% {
+      transform: scale(2.5);
+      opacity: 0;
+    }
+  }
+  
+  /* Enhanced state change animations */
+  .state-change-container {
+    position: relative;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+  }
+  
+  .state-change-enter {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  
+  .state-change-enter-active {
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+  }
+  
+  .state-change-exit {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  
+  .state-change-exit-active {
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+  }
+}
+
+/* 
+ * Enhanced Scrolling Experience
+ * ========================================================================== 
+ */
+
+@media (max-width: 768px) {
+  /* Optimize scrolling behavior */
+  .scroll-container {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+    overscroll-behavior: contain;
+    /* Prevent content shift during momentum scrolling */
+    will-change: transform;
+  }
+  
+  /* Snapping scroll for carousel-like elements */
+  .snap-scroll-container {
+    scroll-snap-type: x mandatory;
+    scroll-padding: 16px;
+  }
+  
+  .snap-scroll-item {
+    scroll-snap-align: start;
+    flex-shrink: 0;
+  }
+  
+  /* Custom scrollbar for WebKit browsers */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 3px;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3);
+  }
+  
+  /* Hide scrollbar but keep functionality */
+  .hidden-scrollbar {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+  }
+  
+  .hidden-scrollbar::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+  }
+}
+
+/* 
+ * Gesture-Based Interactions
+ * ========================================================================== 
+ */
+
+@media (max-width: 768px) {
+  /* Swipeable containers */
+  .swipeable {
+    position: relative;
+    user-select: none;
+    touch-action: pan-y;
+    will-change: transform;
+    transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  
+  /* Handle for draggable elements */
+  .draggable {
+    position: relative;
+    width: 40px;
+    height: 5px;
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 2.5px;
+    margin: 8px auto;
+    transition: background-color 0.2s ease;
+  }
+  
+  .draggable:active {
+    background-color: rgba(255, 255, 255, 0.4);
+  }
+  
+  /* Dragging state */
+  .is-dragging {
+    transition: none;
+    cursor: grabbing;
+  }
+  
+  /* Gesture instruction hints */
+  .gesture-hint {
+    position: absolute;
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    pointer-events: none;
+    z-index: 100;
+  }
+  
+  .gesture-hint.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  
+  /* Pan and zoom container for map */
+  .pan-zoom-container {
+    touch-action: none;
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+  }
+  
+  .pan-zoom-content {
+    transform-origin: 0 0;
+    transition: transform 0.1s ease-out;
+    will-change: transform;
+  }
+  
+  .pan-zoom-content.animating {
+    transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  
+  /* Custom swipe actions */
+  .swipe-action-container {
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .swipe-action-item {
+    position: relative;
+    transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+    will-change: transform;
+  }
+  
+  .swipe-action {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 500;
+  }
+  
+  .swipe-action-left {
+    left: 0;
+    background-color: #2a629c; /* Blue */
+  }
+  
+  .swipe-action-right {
+    right: 0;
+    background-color: #e03131; /* Red */
+  }
+}
+
+/* 
+ * Realistic Physical Animations
+ * ========================================================================== 
+ */
+
+@media (max-width: 768px) {
+  /* Bounce effect for pulled content */
+  .bounce-effect {
+    transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+  
+  /* Spring-like transitions for natural feel */
+  .spring-transition {
+    transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+  
+  /* Elastic transition for menu items */
+  .elastic-transition {
+    transition: transform 0.6s cubic-bezier(0.68, -0.6, 0.32, 1.6);
+  }
+  
+  /* Staggered animations for lists */
+  .stagger-item {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  
+  /* Automatically apply staggered animations to children */
+  .stagger-container .stagger-item:nth-child(1) { animation-delay: 0.05s; }
+  .stagger-container .stagger-item:nth-child(2) { animation-delay: 0.1s; }
+  .stagger-container .stagger-item:nth-child(3) { animation-delay: 0.15s; }
+  .stagger-container .stagger-item:nth-child(4) { animation-delay: 0.2s; }
+  .stagger-container .stagger-item:nth-child(5) { animation-delay: 0.25s; }
+  .stagger-container .stagger-item:nth-child(6) { animation-delay: 0.3s; }
+  .stagger-container .stagger-item:nth-child(7) { animation-delay: 0.35s; }
+  .stagger-container .stagger-item:nth-child(8) { animation-delay: 0.4s; }
+  .stagger-container .stagger-item:nth-child(9) { animation-delay: 0.45s; }
+  .stagger-container .stagger-item:nth-child(10) { animation-delay: 0.5s; }
+  
+  /* Animation for stagger items */
+  @keyframes stagger-in {
+    from {
+      opacity: 0;
+      transform: translateY(15px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .stagger-container.animate .stagger-item {
+    animation: stagger-in 0.3s ease-out forwards;
+  }
+  
+  /* Breathe animation for subtle attention */
+  @keyframes breathe {
+    0%, 100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.03);
+    }
+  }
+  
+  .breathe-animation {
+    animation: breathe 3s ease-in-out infinite;
+  }
+}
+
+/* 
+ * State Transition Animations
+ * ========================================================================== 
+ */
+
+@media (max-width: 768px) {
+  /* Fade transitions */
+  .fade-enter {
+    opacity: 0;
+  }
+  
+  .fade-enter-active {
+    opacity: 1;
+    transition: opacity 0.3s ease;
+  }
+  
+  .fade-exit {
+    opacity: 1;
+  }
+  
+  .fade-exit-active {
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  
+  /* Slide transitions */
+  .slide-up-enter {
+    transform: translateY(100%);
+  }
+  
+  .slide-up-enter-active {
+    transform: translateY(0);
+    transition: transform 0.3s ease;
+  }
+  
+  .slide-up-exit {
+    transform: translateY(0);
+  }
+  
+  .slide-up-exit-active {
+    transform: translateY(100%);
+    transition: transform 0.3s ease;
+  }
+  
+  /* Scale transitions */
+  .scale-enter {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  
+  .scale-enter-active {
+    transform: scale(1);
+    opacity: 1;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+  }
+  
+  .scale-exit {
+    transform: scale(1);
+    opacity: 1;
+  }
+  
+  .scale-exit-active {
+    transform: scale(0.9);
+    opacity: 0;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+  }
+  
+  /* Loading states */
+  .loading-placeholder {
+    background: linear-gradient(90deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 100%);
+    background-size: 200% 100%;
+    animation: loading-pulse 1.5s ease-in-out infinite;
+    border-radius: 4px;
+  }
+  
+  @keyframes loading-pulse {
+    0% {
+      background-position: 200% 0;
+    }
+    100% {
+      background-position: -200% 0;
+    }
+  }
+}
+
+/* 
+ * Accessibility Considerations
+ * ========================================================================== 
+ */
+
+@media (max-width: 768px) {
+  /* Reduce animations if preferred */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.001s !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001s !important;
+      scroll-behavior: auto !important;
+    }
+    
+    .touch-ripple {
+      display: none !important;
+    }
+    
+    .loading-placeholder {
+      background: rgba(255,255,255,0.05) !important;
+      animation: none !important;
+    }
+    
+    .stagger-container .stagger-item {
+      animation: none !important;
+      opacity: 1 !important;
+      transform: none !important;
+    }
+  }
+  
+  /* High contrast mode */
+  @media (prefers-contrast: more) {
+    .draggable {
+      background-color: rgba(255, 255, 255, 0.5);
+    }
+    
+    .touch-ripple {
+      background: radial-gradient(circle, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0) 70%);
+    }
+    
+    button:active,
+    [role="button"]:active,
+    .interactive-element:active,
+    .sidebar-button:active,
+    .data-tab:active,
+    .nav-button:active {
+      outline: 2px solid white;
+    }
+  }
+} 
+/* 
+ * Mobile Typography Enhancements
+ * Further refines typography for mobile devices with optimized readability and visual hierarchy
+ * Implementation for task 9.5: Mobile Typography Enhancement
+ */
+
+/* 
+ * Enhanced Typography Base for Mobile
+ * ========================================================================== 
+ */
+
+@media (max-width: 768px) {
+  /* Improved base typography settings */
+  body {
+    /* Optimize for mobile reading with slightly larger base size */
+    font-size: 16px;
+    line-height: 1.6;
+    /* Improve legibility with slight letter-spacing adjustments */
+    letter-spacing: 0.015em;
+    /* Apply text rendering optimization for legibility */
+    text-rendering: optimizeLegibility;
+    /* Ensure proper font smoothing across devices */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    /* Prevent text adjustment on orientation change */
+    -webkit-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+  
+  /* Enhanced typography scale with better visual hierarchy */
+  h1, .h1 {
+    font-size: 1.5rem; /* 24px */
+    line-height: 1.2;
+    letter-spacing: -0.01em; /* Tighter for headlines */
+    margin-bottom: 0.7em;
+    font-weight: 700;
+  }
+  
+  h2, .h2 {
+    font-size: 1.25rem; /* 20px */
+    line-height: 1.3;
+    letter-spacing: -0.005em;
+    margin-bottom: 0.6em;
+    font-weight: 600;
+  }
+  
+  h3, .h3 {
+    font-size: 1.125rem; /* 18px */
+    line-height: 1.4;
+    margin-bottom: 0.5em;
+    font-weight: 600;
+  }
+  
+  h4, .h4 {
+    font-size: 1rem; /* 16px */
+    line-height: 1.4;
+    margin-bottom: 0.5em;
+    font-weight: 600;
+  }
+  
+  h5, .h5, h6, .h6 {
+    font-size: 0.875rem; /* 14px */
+    line-height: 1.5;
+    margin-bottom: 0.5em;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+  
+  /* Paragraph and body text optimization */
+  p {
+    font-size: 1rem; /* 16px */
+    line-height: 1.6;
+    margin-bottom: 1em;
+    /* Optimize line length for mobile reading (30-40 characters) */
+    max-width: 40em;
+  }
+  
+  /* List text optimization */
+  li {
+    font-size: 1rem;
+    line-height: 1.5;
+    margin-bottom: 0.5em;
+    padding-left: 0.25em;
+  }
+  
+  /* Optimized line height for bullet lists */
+  ul li, ol li {
+    line-height: 1.4;
+  }
+  
+  /* Enhanced blockquote styling */
+  blockquote {
+    font-size: 1rem;
+    line-height: 1.6;
+    font-style: italic;
+    padding-left: 1em;
+    border-left: 3px solid rgba(255, 255, 255, 0.2);
+    margin: 1.5em 0;
+  }
+  
+  /* Caption and small text optimization */
+  small, .small, figcaption, .caption {
+    font-size: 0.75rem; /* 12px */
+    line-height: 1.4;
+    letter-spacing: 0.02em;
+    opacity: 0.85;
+  }
+}
+
+/* 
+ * Screen Size-Specific Typography Adjustments
+ * ========================================================================== 
+ */
+
+/* Very small devices (phones under 360px) */
+@media (max-width: 360px) {
+  body {
+    font-size: 15px; /* Slightly smaller base for very small screens */
+  }
+  
+  h1, .h1 {
+    font-size: 1.3rem; /* 20.8px */
+    line-height: 1.3;
+  }
+  
+  h2, .h2 {
+    font-size: 1.15rem; /* 18.4px */
+    line-height: 1.35;
+  }
+  
+  /* Scale down other headings proportionally */
+  h3, .h3 { font-size: 1.05rem; } /* 16.8px */
+  h4, .h4 { font-size: 0.95rem; } /* 15.2px */
+  
+  /* Ensure touch targets remain accessible while text size decreases */
+  button, .button, [role="button"] {
+    font-size: 0.9375rem; /* 15px */
+    min-height: 44px;
+    padding: 10px 14px;
+  }
+}
+
+/* 
+ * Component Typography Refinements
+ * ========================================================================== 
+ */
+
+@media (max-width: 768px) {
+  /* Card and panel typography refinements */
+  .data-card-title, .panel-title {
+    font-size: 1.125rem; /* 18px */
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    line-height: 1.3;
+    margin-bottom: 0.5em;
+  }
+  
+  .data-card-subtitle, .panel-subtitle {
+    font-size: 0.875rem; /* 14px */
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.7);
+    margin-top: -0.3em;
+    margin-bottom: 0.8em;
+  }
+  
+  /* Stats display refinements */
+  .stat-value {
+    font-size: 1.5rem; /* 24px */
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+  }
+  
+  .stat-label {
+    font-size: 0.75rem; /* 12px */
+    font-weight: 500;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    opacity: 0.85;
+  }
+  
+  /* Navigation item refinements */
+  .mobile-nav-item {
+    font-size: 0.875rem; /* 14px */
+    font-weight: 500;
+    letter-spacing: 0.02em;
+  }
+  
+  /* Tab refinements */
+  .data-tab {
+    font-size: 0.875rem; /* 14px */
+    font-weight: 600;
+    letter-spacing: 0.01em;
+  }
+  
+  /* Lists and tables */
+  .data-list-item {
+    font-size: 0.9375rem; /* 15px */
+    line-height: 1.5;
+    padding: 10px 0;
+  }
+  
+  .data-table-cell {
+    font-size: 0.875rem; /* 14px */
+    line-height: 1.4;
+    padding: 8px 10px;
+  }
+  
+  .data-table-header {
+    font-size: 0.75rem; /* 12px */
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+  
+  /* Chart label refinements */
+  .chart-axis-label {
+    font-size: 0.6875rem; /* 11px */
+    letter-spacing: 0.02em;
+    font-weight: 500;
+  }
+  
+  .chart-title {
+    font-size: 0.9375rem; /* 15px */
+    font-weight: 600;
+    margin-bottom: 0.5em;
+  }
+  
+  .chart-legend-item {
+    font-size: 0.75rem; /* 12px */
+    letter-spacing: 0.01em;
+  }
+}
+
+/* 
+ * Line Length and Paragraph Spacing Optimization
+ * ========================================================================== 
+ */
+
+@media (max-width: 768px) {
+  /* Optimize content container widths */
+  .content-container, .info-text, .detail-text {
+    padding-right: 5%;
+    padding-left: 5%;
+    max-width: 100%;
+  }
+  
+  /* Optimize paragraph spacing */
+  p + p {
+    margin-top: -0.3em; /* Tighten space between paragraphs */
+  }
+  
+  /* Optimized paragraph spacing in different contexts */
+  .info-section p {
+    margin-bottom: 0.8em;
+  }
+  
+  .detail-section p {
+    margin-bottom: 1em;
+  }
+  
+  /* Handle line breaks better */
+  .info-text br {
+    display: block;
+    content: "";
+    margin-top: 0.8em;
+  }
+  
+  /* Adjust list spacing */
+  ul, ol {
+    padding-left: 1.2em;
+    margin-bottom: 1em;
+  }
+  
+  /* Add space after lists */
+  ul + p, ol + p {
+    margin-top: 0.8em;
+  }
+}
+
+/* 
+ * Text Overflow and Visibility Refinements
+ * ========================================================================== 
+ */
+
+@media (max-width: 768px) {
+  /* Improved truncation with better fade effect */
+  .text-fade-container {
+    position: relative;
+    max-height: 6em; /* Approximately 4 lines at 1.5 line height */
+    overflow: hidden;
+  }
+  
+  .text-fade-container::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 2em;
+    background: linear-gradient(to bottom, transparent, var(--color-background, #121212));
+    pointer-events: none;
+  }
+  
+  /* Improved multi-line truncation */
+  .truncate-2-lines {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .truncate-3-lines {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  /* More visible link styling */
+  a {
+    text-decoration: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+    transition: border-color 0.2s ease;
+  }
+  
+  a:hover, a:focus {
+    border-bottom-color: rgba(255, 255, 255, 0.7);
+  }
+  
+  /* Expand/collapse button for truncated text */
+  .expand-collapse-btn {
+    background: none;
+    border: none;
+    color: #4da3ff;
+    font-size: 0.875rem;
+    padding: 6px 0;
+    text-decoration: underline;
+    cursor: pointer;
+    margin-top: -0.5em;
+    margin-bottom: 0.5em;
+    display: block;
+  }
+  
+  /* Fade indicators for scrollable content */
+  .scroll-fade-indicators {
+    position: relative;
+  }
+  
+  .fade-top,
+  .fade-bottom {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 25px;
+    pointer-events: none;
+    z-index: 5;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+  
+  .fade-top {
+    top: 0;
+    background: linear-gradient(to bottom, rgba(18, 18, 18, 0.9), transparent);
+  }
+  
+  .fade-bottom {
+    bottom: 0;
+    background: linear-gradient(to top, rgba(18, 18, 18, 0.9), transparent);
+  }
+  
+  .fade-top.visible,
+  .fade-bottom.visible {
+    opacity: 1;
+  }
+}
+
+/* 
+ * Reading Mode Toggle & UI
+ * ========================================================================== 
+ */
+
+@media (max-width: 768px) {
+  /* Reading mode toggle button */
+  .reading-mode-toggle {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background-color: rgba(77, 163, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    /* Ensure safe area on newer devices */
+    bottom: max(20px, env(safe-area-inset-bottom, 20px) + 5px);
+    right: max(20px, env(safe-area-inset-right, 20px) + 5px);
+  }
+  
+  .reading-mode-toggle:active {
+    transform: scale(0.95);
+  }
+  
+  .reading-mode-toggle.active {
+    background-color: rgba(77, 163, 255, 0.6);
+    border-color: rgba(255, 255, 255, 0.4);
+  }
+  
+  /* Ensure button doesn't interfere with home indicator on newer iPhones */
+  .has-home-indicator .reading-mode-toggle {
+    bottom: calc(env(safe-area-inset-bottom, 34px) + 10px);
+  }
+  
+  /* Text container optimizations */
+  .text-container {
+    max-width: 100%;
+    padding: 0;
+  }
+  
+  /* Mobile typography optimized elements */
+  .mobile-typography-optimized {
+    font-size: 16px;
+    line-height: 1.6;
+  }
+  
+  /* Paragraph optimized containers */
+  .paragraph-optimized p:not(:last-child) {
+    margin-bottom: 0.8em;
+  }
+  
+  /* Mobile optimized tables */
+  .mobile-table-optimized th {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+  
+  .mobile-table-optimized td {
+    font-size: 0.875rem;
+    line-height: 1.4;
+  }
+  
+  /* Mobile optimized lists */
+  .mobile-list-optimized li {
+    margin-bottom: 0.5em;
+    line-height: 1.4;
+  }
+}
+
+/* 
+ * Accessibility and Reading Experience Improvements
+ * ========================================================================== 
+ */
+
+@media (max-width: 768px) {
+  /* High contrast improvements */
+  @media (prefers-contrast: more) {
+    body {
+      line-height: 1.7; /* Increased line height */
+      letter-spacing: 0.025em; /* Increased letter spacing */
+    }
+    
+    /* Higher contrast for links */
+    a {
+      color: #4da3ff; /* Brighter blue for links */
+      text-decoration: underline;
+      border-bottom: none;
+    }
+    
+    /* Improve contrast for secondary text */
+    .text-secondary, .subdued-text, .caption, small, .small {
+      opacity: 0.9; /* Higher opacity for better contrast */
+    }
+    
+    /* Improve contrast for borders */
+    hr, .divider {
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+  }
+  
+  /* Reading mode improvements */
+  @media (prefers-color-scheme: dark) {
+    body {
+      --mobile-reading-bg: #121212;
+      --mobile-reading-text: rgba(255, 255, 255, 0.87);
+    }
+  }
+  
+  @media (prefers-color-scheme: light) {
+    body {
+      --mobile-reading-bg: #f8f9fa;
+      --mobile-reading-text: rgba(0, 0, 0, 0.87);
+    }
+  }
+  
+  /* Apply reading mode when explicitly enabled */
+  .reading-mode {
+    background-color: var(--mobile-reading-bg);
+    color: var(--mobile-reading-text);
+    font-size: 1.05rem; /* Slightly larger text */
+    line-height: 1.7; /* Increased line height */
+    padding: 1rem;
+  }
+  
+  .reading-mode p {
+    margin-bottom: 1.2em;
+  }
+  
+  /* Enhance reading mode styles */
+  .reading-mode .data-panel-title,
+  .reading-mode h1, 
+  .reading-mode h2,
+  .reading-mode h3 {
+    margin-top: 0.5em;
+    margin-bottom: 0.8em;
+  }
+  
+  .reading-mode ul, 
+  .reading-mode ol {
+    margin-bottom: 1.2em;
+  }
+  
+  .reading-mode li {
+    margin-bottom: 0.7em;
+  }
+  
+  .reading-mode a {
+    color: #4da3ff;
+    text-decoration: underline;
+    border-bottom: none;
+  }
+} 
+/* 
+ * Mobile-Optimized Panel Styles
+ * Provides enhanced mobile presentation, scrolling, and transitions for content panels
+ */
+
+/* 
+ * Base Mobile Panel Styles
+ * ========================================================================== 
+ */
+
+@media (max-width: 768px) {
+  /* Optimize panel dimensions and spacing for mobile viewports */
+  .data-panels {
+    flex-direction: column;
+    padding: 0;
+    margin: 0;
+    height: auto;
+    /* Allow panels to take remaining height in the container */
+    flex: 1 1 auto;
+    overflow: hidden; /* Prevent double scrolling issues */
+    position: relative;
+    border-radius: 0;
+  }
+
+  /* Base panel styles for mobile */
+  .data-panels .data-panel {
+    padding: 12px;
+    border-radius: 0;
+    box-shadow: none;
+    border: none;
+    margin: 0;
+    min-height: 120px;
+    max-height: none;
+    /* Take full size of container */
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    /* Improve scrolling performance */
+    will-change: transform, opacity;
+    -webkit-overflow-scrolling: touch;
+    overflow-y: auto;
+    /* Fix iOS momentum scrolling */
+    /* overflow-clip-margin: touch; */
+    /* Transitions for panel switching */
+    transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    /* Start with opacity 0 and transform out of view */
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(20px);
+  }
+
+  /* Only make active panel visible and interactive */
+  .data-panels .data-panel.active {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(0);
+    z-index: 2;
+  }
+
+  /* Create slide out animation for panels being deactivated */
+  .data-panels .data-panel.leaving {
+    opacity: 0;
+    transform: translateX(-20px);
+    transition: opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+                transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1;
+  }
+
+  /* Adjust tab styles for mobile */
+  .data-tabs {
+    border-radius: 0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+    background-color: var(--color-sidebar-bg);
+    padding: 8px 8px 0;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    display: flex;
+    justify-content: flex-start;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none; /* Hide scrollbar on Firefox */
+    -ms-overflow-style: none; /* Hide scrollbar on IE/Edge */
+    /* Smooth sticky scrolling */
+    transition: box-shadow 0.2s ease;
+  }
+
+  /* Hide scrollbar on WebKit browsers */
+  .data-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Individual tabs */
+  .data-tab {
+    flex: 0 0 auto;
+    padding: 10px 16px;
+    margin-right: 6px;
+    min-width: 100px;
+    text-align: center;
+    position: relative;
+    border-radius: 8px 8px 0 0;
+    white-space: nowrap;
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  /* Add indicator for active tab */
+  .data-tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--color-accent);
+    border-radius: 3px 3px 0 0;
+  }
+}
+
+/* 
+ * Scrolling Behavior for Long Content
+ * ========================================================================== 
+ */
+
+@media (max-width: 768px) {
+  /* Create clear scroll areas within panels */
+  .panel-scroll-container {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    height: 100%;
+    padding-bottom: 16px;
+    /* Create proper momentum scrolling */
+    will-change: transform;
+    /* Prevent content jumping on scroll */
+    overscroll-behavior: contain;
+  }
+
+  /* Scroll indicators */
+  .panel-scroll-indicator {
+    position: absolute;
+    right: 4px;
+    top: 10%;
+    height: 80%;
+    width: 4px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .panel-scroll-indicator::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(255, 255, 255, 0.25);
+    border-radius: 2px;
+  }
+
+  .panel-scroll-indicator.visible {
+    opacity: 1;
+  }
+
+  /* Refresh indicator for pull-to-refresh */
+  .panel-refresh-indicator {
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-text-secondary);
+    font-size: 12px;
+    transform: translateY(-100%);
+    transition: transform 0.2s ease;
+  }
+
+  .panel-refresh-indicator.visible {
+    transform: translateY(0);
+  }
+
+  .panel-refresh-indicator .spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid transparent;
+    border-top-color: var(--color-accent);
+    border-radius: 50%;
+    margin-right: 8px;
+    animation: panel-spinner 0.8s linear infinite;
+  }
+
+  @keyframes panel-spinner {
+    to { transform: rotate(360deg); }
+  }
+}
+
+/* 
+ * Responsive Panel Dimensions & Spacing
+ * ========================================================================== 
+ */
+
+@media (max-width: 768px) {
+  /* Base content padding */
+  .data-content {
+    padding: 12px 2px;
+  }
+
+  /* Optimize spacing for small screens */
+  @media (max-width: 375px) {
+    .data-panels .data-panel {
+      padding: 10px 8px;
+    }
+
+    .data-tab {
+      padding: 8px 12px;
+      font-size: 13px;
+      min-width: 90px;
+    }
+  }
+
+  /* Adjust for landscape orientation */
+  @media (orientation: landscape) {
+    .data-panels {
+      max-height: calc(100vh - 150px);
+    }
+  }
+  
+  /* Adjust for safe area insets on modern devices */
+  @supports (padding: max(0px)) {
+    .data-panels .data-panel {
+      padding-bottom: max(12px, var(--safe-area-inset-bottom, 0px));
+    }
+  }
+}
+
+/* 
+ * Panel Content Optimizations
+ * ========================================================================== 
+ */
+
+@media (max-width: 768px) {
+  /* Optimize data tables for mobile */
+  .data-table {
+    width: 100%;
+    font-size: 13px;
+    border-collapse: collapse;
+  }
+
+  .data-table th,
+  .data-table td {
+    padding: 8px 6px;
+    text-align: left;
+  }
+
+  /* Allow tables to scroll horizontally if needed */
+  .table-container {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin-bottom: 16px;
+  }
+
+  /* Charts optimizations */
+  .chart-container {
+    height: 220px;
+    width: 100%;
+    margin-bottom: 16px;
+  }
+
+  /* Interactive list items */
+  .interactive-list-item {
+    padding: 12px 8px;
+    border-bottom: 1px solid var(--color-border);
+    display: flex;
+    align-items: center;
+  }
+
+  .interactive-list-item:active {
+    background-color: rgba(255, 255, 255, 0.05);
+  }
+}
+
+/* 
+ * Navigation Bar Positioning
+ * ========================================================================== 
+ */
+
+@media (max-width: 768px) {
+  /* Only show when sidebar is collapsed */
+  .nav-sidebar {
+    display: none;
+    position: fixed;
+    top: auto; /* Reset top position */
+    right: auto; /* Reset right position */
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: auto;
+    flex-direction: row;
+    flex-wrap: nowrap; /* Prevent wrapping */
+    justify-content: center; /* Center buttons */
+    align-items: center; /* Vertically center */
+    background-color: var(--color-sidebar-bg);
+    border-radius: 24px;
+    padding: 6px 16px; /* Increased horizontal padding further */
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    z-index: 990;
+    min-width: 230px; /* Ensure minimum width to fit all buttons */
+  }
+
+  .nav-sidebar.visible {
+    display: flex;
+    max-width: 95%; /* Ensure it doesn't overflow screen */
+  }
+
+  /* Adjust button styling for mobile nav */
+  .nav-button {
+    width: 36px;
+    height: 36px;
+    margin: 0 4px; /* Slightly more spacing between buttons */
+    border-radius: 50%;
+    flex-shrink: 0; /* Prevent buttons from shrinking */
+  }
+
+  /* When navigation bar is visible and info container is collapsed */
+  .container.sidebar-collapsed .map-container {
+    padding-bottom: 65px; /* Make space for the navigation bar */
+  }
+}
+
+/* 
+ * Accessibility and User Preference Adjustments
+ * ========================================================================== 
+ */
+
+@media (max-width: 768px) {
+  /* For users who prefer reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    .data-panels .data-panel,
+    .data-panels .data-panel.leaving,
+    .data-tabs {
+      transition-duration: 0.1s;
+    }
+  }
+
+  /* High contrast mode */
+  @media (prefers-contrast: more) {
+    .data-tab.active {
+      background-color: var(--color-accent);
+      color: black;
+    }
+
+    .data-tab.active::after {
+      background-color: white;
+    }
+  }
+} 
 /* 
  * Mobile Typography Styles
  * Enhances text readability on mobile devices through optimized font sizing and spacing
@@ -2923,6 +8612,10 @@ pre {
 /* Core styles - basic styling already inlined in HTML */
 
 /* Layout styles */ /* Container queries styles */
+
+/* Component styles */
+
+/* Mobile-specific styles */
 
 /* Mobile typography - loaded conditionally for mobile devices */
 
