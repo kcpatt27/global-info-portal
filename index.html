@@ -43,14 +43,9 @@
 </head>
 <body>
     <div class="container">
-      
       <div class="map-container">
-          <!-- Search Bar -->
-          <div class="search-bar-container">
-            <div id="country-search-container"></div>
-          </div>
-            <svg width="960" height="500" viewBox="0 0 960 500" preserveAspectRatio="xMidYMid meet"></svg>
-        </div>
+          <svg width="960" height="500" viewBox="0 0 960 500" preserveAspectRatio="xMidYMid meet"></svg>
+      </div>
         <div class="info-container">
             <div class="info-header">
                 <div class="flag">FLAG</div>
@@ -137,7 +132,12 @@
             </div>
         </div>
     </div>
-    
+
+    <!-- Fixed Search Bar at bottom of screen -->
+    <div class="search-bar-fixed">
+      <div id="country-search-container"></div>
+    </div>
+
     <!-- Navigation sidebar that appears when info sidebar is collapsed -->
     <div class="nav-sidebar" id="nav-sidebar">
         <button class="nav-button" id="open-sidebar" title="Open Info Panel">

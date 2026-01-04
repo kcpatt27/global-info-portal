@@ -24,7 +24,7 @@ module.exports = (env = {}) => {
       filename: isProd ? '[name].[contenthash].js' : '[name].js',
       chunkFilename: isProd ? '[name].[contenthash].chunk.js' : '[name].chunk.js',
       clean: true,
-      publicPath: '/global-info-portal/dist/',
+      publicPath: isProd ? '/global-info-portal/dist/' : '/dist/',
     },
     optimization: {
       moduleIds: 'deterministic',
