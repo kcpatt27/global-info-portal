@@ -72,11 +72,6 @@ export function createRankingsPanel(data) {
 
   // Set up basic panel structure
   panelElement.innerHTML = `
-    <!-- Spider Chart for Influence Scores -->
-    <div class="spider-chart-container" id="country-spider-chart">
-      <!-- Spider chart will be rendered here -->
-    </div>
-
     <div class="global-leaderboard-container" id="global-leaderboard-container">
       <!-- Global Leaderboard will be inserted here -->
     </div>
@@ -115,11 +110,6 @@ export function createRankingsPanel(data) {
   setTimeout(() => {
     createGlobalLeaderboard(panelElement.querySelector('#global-leaderboard-container'), countryCode);
   }, 100);
-
-  // Create spider chart for influence scores
-  setTimeout(() => {
-    createCountrySpiderChart(panelElement.querySelector('#country-spider-chart'), data, countryCode);
-  }, 200);
 
   // Find all numeric metrics that could be used for ranking
   const rankingMetrics = findRankingMetrics(data);
@@ -1412,6 +1402,17 @@ function createGlobalLeaderboard(container, currentCountryCode) {
         expandedContent.style.display = 'block';
         expandIcon.className = 'fas fa-chevron-up';
         entry.classList.add('expanded');
+
+        // Create spider chart for the expanded country
+        const countryData = topCountries[index]; // index is the rank - 1
+        const rank = index + 1;
+        const chartContainer = expandedContent.querySelector(`#spider-chart-${rank}-${countryData.code}`);
+        if (chartContainer && !chartContainer.hasChildNodes()) {
+          // Create spider chart with a small delay to ensure DOM is ready
+          setTimeout(() => {
+            createCountrySpiderChart(chartContainer, countryData, countryData.code);
+          }, 50);
+        }
       }
     });
   });
@@ -1642,11 +1643,8 @@ function createExpandedCountryDetails(country, rank) {
         ${buildCategoryHTML('Quality', qualityMetrics, country.quality || {}, 'category-quality')}
       </div>
       
-      <div class="spider-chart-placeholder">
-        <p class="placeholder-note">
-          <i class="fas fa-chart-line"></i>
-          Spider chart visualization coming soon
-        </p>
+      <div class="spider-chart-container" id="spider-chart-${rank}-${country.code}">
+        <!-- Spider chart will be rendered here -->
       </div>
     </div>
   `;
@@ -1655,17 +1653,15 @@ function createExpandedCountryDetails(country, rank) {
 /**
  * Create spider chart for country influence scores
  * @param {HTMLElement} container - Container element for the chart
- * @param {Object} countryData - Country data object
+ * @param {Object} countryData - Country leaderboard data object
  * @param {string} countryCode - Country code
  */
 function createCountrySpiderChart(container, countryData, countryCode) {
   if (!container) return;
 
   try {
-    // Calculate influence data for the country
-    const influenceData = calculateInfluenceScale(countryCode, countryData);
-
-    if (!influenceData || !influenceData.people || !influenceData.money) {
+    // Use the influence data that's already calculated in the leaderboard data
+    if (!countryData || !countryData.people || !countryData.money) {
       container.innerHTML = '<div class="chart-placeholder"><p>No influence data available</p></div>';
       return;
     }
@@ -1677,26 +1673,33 @@ function createCountrySpiderChart(container, countryData, countryCode) {
     const title = document.createElement('div');
     title.className = 'chart-title';
     title.textContent = 'Influence Profile';
+    title.style.fontSize = '14px';
+    title.style.fontWeight = 'bold';
+    title.style.marginBottom = '10px';
+    title.style.textAlign = 'center';
     container.appendChild(title);
 
     // Create chart container
     const chartDiv = document.createElement('div');
-    chartDiv.id = `spider-chart-${countryCode}`;
+    const chartId = `spider-chart-${countryCode}-${Date.now()}`; // Unique ID
+    chartDiv.id = chartId;
     chartDiv.style.width = '100%';
-    chartDiv.style.height = '300px';
+    chartDiv.style.height = '200px';
+    chartDiv.style.maxWidth = '300px';
+    chartDiv.style.margin = '0 auto';
     container.appendChild(chartDiv);
 
-    // Prepare data for spider chart
+    // Prepare data for spider chart using the calculated scores
     const chartData = {
-      People: influenceData.people.totalScore || 0,
-      Money: influenceData.money.totalScore || 0,
-      Reach: influenceData.reach.totalScore || 0,
-      Resources: influenceData.resources.totalScore || 0,
-      Quality: influenceData.quality.totalScore || 0
+      People: countryData.people.totalScore || 0,
+      Money: countryData.money.totalScore || 0,
+      Reach: countryData.reach.totalScore || 0,
+      Resources: countryData.resources.totalScore || 0,
+      Quality: countryData.quality.totalScore || 0
     };
 
     // Create spider chart
-    const spiderChart = createInfluenceSpiderChart(`#spider-chart-${countryCode}`, chartData);
+    const spiderChart = createInfluenceSpiderChart(`#${chartId}`, chartData);
 
     // Store reference for cleanup
     container.spiderChart = spiderChart;

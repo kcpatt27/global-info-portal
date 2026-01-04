@@ -3,8 +3,8 @@
   "styles.css": "/dist/styles.css",
   "styles.js": "/dist/styles.js",
   "runtime.js": "/dist/runtime.js",
-  "js_panels_statsPanel_js.chunk.js": "/dist/js_panels_statsPanel_js.chunk.js",
-  "js_panels_rankingsPanel_js.chunk.js": "/dist/js_panels_rankingsPanel_js.chunk.js",
+  "144.chunk.js": "/dist/144.chunk.js",
+  "320.chunk.js": "/dist/320.chunk.js",
   "charts.js": "/dist/charts.chunk.js",
   "vendors.js": "/dist/vendors.js"
 }

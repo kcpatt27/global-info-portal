@@ -1,22 +1,15 @@
-/* Fixed Search Bar at bottom of screen */
-.search-bar-fixed {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    padding: 15px;
-    background-color: rgba(18, 18, 18, 0.95);
-    backdrop-filter: blur(10px);
-    border-top: 1px solid var(--color-border);
-    z-index: 100;
-    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.3);
+/* Search Bar Container within map area */
+.search-bar-container {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    right: 15px;
+    z-index: 10;
+    pointer-events: none; /* Allow map interaction through search bar */
 }
 
-/* Search Bar Container (when inside other elements) */
-.search-bar-container {
-    padding: 10px 15px;
-    border-bottom: 1px solid var(--color-border);
-    background-color: var(--color-panel-bg);
+.search-bar-container > div {
+    pointer-events: auto; /* Re-enable for search input */
 }
 
 /* Search Input Styling */
@@ -96,13 +89,10 @@
 
 /* Mobile Search Adjustments */
 @media (max-width: 768px) {
-    .search-bar-fixed {
-        padding: 12px;
-        bottom: 0;
-    }
-
     .search-bar-container {
-        padding: 8px 12px;
+        top: 10px;
+        left: 10px;
+        right: 10px;
     }
 
     .search-input {
@@ -113,17 +103,6 @@
     .search-icon svg {
         width: 20px;
         height: 20px;
-    }
-}
-
-/* Ensure search bar doesn't interfere with mobile navigation */
-@media (max-width: 768px) {
-    .search-bar-fixed {
-        bottom: 80px; /* Account for mobile nav bar */
-    }
-
-    .mobile-nav-container {
-        bottom: 0;
     }
 }
 

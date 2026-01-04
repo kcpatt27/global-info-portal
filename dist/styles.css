@@ -1,6 +1,3 @@
-/*!*******************************************************************************************************************************************************!*\
-  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[1].use[1]!./node_modules/postcss-loader/dist/cjs.js!./css-styles/core/variables.css ***!
-  \*******************************************************************************************************************************************************/
 :root {
     /* Color System - Core Palette */
     --color-background: #121212;
@@ -138,9 +135,6 @@
     --space-chart-error: 20px;
     --space-chart-padding: 10px;
 }
-/*!********************************************************************************************************************************************************!*\
-  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[1].use[1]!./node_modules/postcss-loader/dist/cjs.js!./css-styles/core/typography.css ***!
-  \********************************************************************************************************************************************************/
 /* 
  * Core Typography Styles
  * Base typography rules for the Global Info Portal
@@ -335,9 +329,6 @@ pre {
   overflow: hidden;
   text-overflow: ellipsis;
 } 
-/*!**********************************************************************************************************************************************************!*\
-  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[1].use[1]!./node_modules/postcss-loader/dist/cjs.js!./css-styles/core/text-scaling.css ***!
-  \**********************************************************************************************************************************************************/
 /* 
  * Text Scaling Core Utilities
  * Implements fluid typography scaling for responsive text adjustments
@@ -550,9 +541,6 @@ pre {
 .no-js body {
   opacity: 1;
 } 
-/*!********************************************************************************************************************************************************!*\
-  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[1].use[1]!./node_modules/postcss-loader/dist/cjs.js!./css-styles/core/animations.css ***!
-  \********************************************************************************************************************************************************/
 /* Animation Performance Optimizations
  * - GPU-accelerated properties
  * - Reduced motion support
@@ -624,9 +612,6 @@ pre {
   transition-duration: var(--transition-medium);
   transition-timing-function: var(--easing-standard);
 } 
-/*!**********************************************************************************************************************************************!*\
-  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[1].use[1]!./node_modules/postcss-loader/dist/cjs.js!./css-styles/utils.css ***!
-  \**********************************************************************************************************************************************/
 /* Updated animation for stat transitions */
 @keyframes fadeOut {
   from { opacity: 1; transform: translateY(0); }
@@ -741,9 +726,6 @@ pre {
         transform: none;
     }
 } 
-/*!******************************************************************************************************************************************************!*\
-  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[1].use[1]!./node_modules/postcss-loader/dist/cjs.js!./css-styles/layout/layout.css ***!
-  \******************************************************************************************************************************************************/
 /* Responsive grid container */
 .container {
     display: grid;
@@ -793,9 +775,6 @@ pre {
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
 } 
-/*!*******************************************************************************************************************************************************!*\
-  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[1].use[1]!./node_modules/postcss-loader/dist/cjs.js!./css-styles/layout/sidebar.css ***!
-  \*******************************************************************************************************************************************************/
 /* Info sidebar styling */
 .info-container {
     background-color: var(--color-sidebar-bg);
@@ -1123,9 +1102,6 @@ pre {
   transform: translateY(0);
   transition: all 0.3s ease;
 } 
-/*!**********************************************************************************************************************************************************!*\
-  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[1].use[1]!./node_modules/postcss-loader/dist/cjs.js!./css-styles/layout/scrollbars.css ***!
-  \**********************************************************************************************************************************************************/
 /* 
  * scrollbars.css
  * Custom scrollbar styling for the Global Information Portal
@@ -1172,9 +1148,6 @@ pre {
   background-color: rgba(255, 255, 255, 0.4);
 } 
 */
-/*!**********************************************************************************************************************************************************!*\
-  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[1].use[1]!./node_modules/postcss-loader/dist/cjs.js!./css-styles/layout/responsive.css ***!
-  \**********************************************************************************************************************************************************/
 /* Responsive styles */
 
 /* Mobile-first approach: Start with base styles for mobile */
@@ -1369,9 +1342,6 @@ pre {
        /* Adjust padding or styles if needed for this view */
     }
 } 
-/*!**********************************************************************************************************************************************************!*\
-  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[1].use[1]!./node_modules/postcss-loader/dist/cjs.js!./css-styles/layout/containers.css ***!
-  \**********************************************************************************************************************************************************/
 /* Container Queries */
 
 /*
@@ -1595,28 +1565,18 @@ pre {
   font-size: 0.7rem;
   min-height: 100px;
 } 
-/*!**************************************************************************************************************************************************************!*\
-  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[1].use[1]!./node_modules/postcss-loader/dist/cjs.js!./css-styles/components/navigation.css ***!
-  \**************************************************************************************************************************************************************/
-/* Fixed Search Bar at bottom of screen */
-.search-bar-fixed {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    padding: 15px;
-    background-color: rgba(18, 18, 18, 0.95);
-    backdrop-filter: blur(10px);
-    border-top: 1px solid var(--color-border);
-    z-index: 100;
-    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.3);
+/* Search Bar Container within map area */
+.search-bar-container {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    right: 15px;
+    z-index: 10;
+    pointer-events: none; /* Allow map interaction through search bar */
 }
 
-/* Search Bar Container (when inside other elements) */
-.search-bar-container {
-    padding: 10px 15px;
-    border-bottom: 1px solid var(--color-border);
-    background-color: var(--color-panel-bg);
+.search-bar-container > div {
+    pointer-events: auto; /* Re-enable for search input */
 }
 
 /* Search Input Styling */
@@ -1697,7 +1657,9 @@ pre {
 /* Mobile Search Adjustments */
 @media (max-width: 768px) {
     .search-bar-container {
-        padding: 8px 12px;
+        top: 10px;
+        left: 10px;
+        right: 10px;
     }
 
     .search-input {
@@ -1833,9 +1795,6 @@ pre {
         color: var(--color-text-primary);
     }
 }
-/*!**********************************************************************************************************************************************************!*\
-  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[1].use[1]!./node_modules/postcss-loader/dist/cjs.js!./css-styles/components/panels.css ***!
-  \**********************************************************************************************************************************************************/
 /* Data container */
 .data-panels {
     flex: 1;
@@ -1931,9 +1890,6 @@ pre {
   display: flex !important;
   flex-direction: column;
 }
-/*!********************************************************************************************************************************************************!*\
-  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[1].use[1]!./node_modules/postcss-loader/dist/cjs.js!./css-styles/components/tabs.css ***!
-  \********************************************************************************************************************************************************/
 /* Data Tabs styling */
 .data-tabs {
     display: flex;
@@ -2070,9 +2026,6 @@ pre {
         height: 38px;
     }
 } 
-/*!*********************************************************************************************************************************************************!*\
-  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[1].use[1]!./node_modules/postcss-loader/dist/cjs.js!./css-styles/components/stats.css ***!
-  \*********************************************************************************************************************************************************/
 /* 
  * Updated Stats Tab Styling for Global Information Portal
  */
@@ -2337,9 +2290,6 @@ pre {
     animation: none;
   }
 } 
-/*!************************************************************************************************************************************************************!*\
-  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[1].use[1]!./node_modules/postcss-loader/dist/cjs.js!./css-styles/components/rankings.css ***!
-  \************************************************************************************************************************************************************/
 /* 
  * Updated Rankings Tab Styling for Global Information Portal
  */
@@ -3991,9 +3941,6 @@ pre {
     grid-template-columns: 1fr;
   }
 } 
-/*!**********************************************************************************************************************************************************!*\
-  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[1].use[1]!./node_modules/postcss-loader/dist/cjs.js!./css-styles/components/charts.css ***!
-  \**********************************************************************************************************************************************************/
 /* 
  * Common Chart Styles for Global Information Portal
  */
@@ -4326,9 +4273,6 @@ svg .tick text {
         font-size: 10px;
     }
 }
-/*!***************************************************************************************************************************************************************!*\
-  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[1].use[1]!./node_modules/postcss-loader/dist/cjs.js!./css-styles/components/quick-stats.css ***!
-  \***************************************************************************************************************************************************************/
 /* 
  * Updated quick-stats.css
  * Styles for quick stats grid with icons and labels
@@ -4515,9 +4459,6 @@ svg .tick text {
     font-size: 1rem;
   }
 } 
-/*!******************************************************************************************************************************************************************!*\
-  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[1].use[1]!./node_modules/postcss-loader/dist/cjs.js!./css-styles/components/settings-panel.css ***!
-  \******************************************************************************************************************************************************************/
 /**
  * settings-panel.css
  * Styles for the settings panel and its components
@@ -4702,9 +4643,6 @@ svg .tick text {
     font-size: 0.9rem;
   }
 } 
-/*!***********************************************************************************************************************************************!*\
-  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[1].use[1]!./node_modules/postcss-loader/dist/cjs.js!./css-styles/mobile.css ***!
-  \***********************************************************************************************************************************************/
 /* 
  * Mobile-specific styles for enhanced touch experience
  * This file contains styles optimized for mobile devices
@@ -5138,9 +5076,6 @@ svg .tick text {
 .interaction-hint.visible {
   opacity: 1;
 } 
-/*!**********************************************************************************************************************************************************!*\
-  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[1].use[1]!./node_modules/postcss-loader/dist/cjs.js!./css-styles/navigation/mobile.css ***!
-  \**********************************************************************************************************************************************************/
 /* 
  * Mobile Navigation Styles
  * Implements mobile-optimized navigation patterns and transitions
@@ -5643,9 +5578,6 @@ svg .tick text {
   background-color: var(--color-sidebar-bg, #1c1c1c);
   z-index: 999; /* Below the navbar but above content */
 } 
-/*!*************************************************************************************************************************************************************!*\
-  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[1].use[1]!./node_modules/postcss-loader/dist/cjs.js!./css-styles/layout/mobile-layout.css ***!
-  \*************************************************************************************************************************************************************/
 /* 
  * Mobile Container Architecture
  * This file contains the mobile-optimized container structure for the Global Information Portal
@@ -6124,9 +6056,6 @@ svg .tick text {
     pointer-events: auto;
   }
 } 
-/*!*****************************************************************************************************************************************************************!*\
-  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[1].use[1]!./node_modules/postcss-loader/dist/cjs.js!./css-styles/interaction/mobile-touch.css ***!
-  \*****************************************************************************************************************************************************************/
 /* 
  * Mobile Touch Interactions
  * Provides enhanced touch-based interactions and feedback for mobile devices
@@ -6609,9 +6538,6 @@ svg .tick text {
     }
   }
 } 
-/*!******************************************************************************************************************************************************************!*\
-  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[1].use[1]!./node_modules/postcss-loader/dist/cjs.js!./css-styles/typography/mobile-refined.css ***!
-  \******************************************************************************************************************************************************************/
 /* 
  * Mobile Typography Enhancements
  * Further refines typography for mobile devices with optimized readability and visual hierarchy
@@ -7154,9 +7080,6 @@ svg .tick text {
     border-bottom: none;
   }
 } 
-/*!*****************************************************************************************************************************************************************!*\
-  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[1].use[1]!./node_modules/postcss-loader/dist/cjs.js!./css-styles/components/panels-mobile.css ***!
-  \*****************************************************************************************************************************************************************/
 /* 
  * Mobile-Optimized Panel Styles
  * Provides enhanced mobile presentation, scrolling, and transitions for content panels
@@ -7516,9 +7439,6 @@ svg .tick text {
     }
   }
 } 
-/*!**********************************************************************************************************************************************************!*\
-  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[1].use[1]!./node_modules/postcss-loader/dist/cjs.js!./css-styles/typography/mobile.css ***!
-  \**********************************************************************************************************************************************************/
 /* 
  * Mobile Typography Styles
  * Enhances text readability on mobile devices through optimized font sizing and spacing
@@ -7752,9 +7672,6 @@ svg .tick text {
     }
   }
 } 
-/*!**************************************************************************************************************************************************************!*\
-  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[1].use[1]!./node_modules/postcss-loader/dist/cjs.js!./css-styles/navigation/mobile.css (1) ***!
-  \**************************************************************************************************************************************************************/
 /* 
  * Mobile Navigation Styles
  * Implements mobile-optimized navigation patterns and transitions
@@ -8257,9 +8174,6 @@ svg .tick text {
   background-color: var(--color-sidebar-bg, #1c1c1c);
   z-index: 999; /* Below the navbar but above content */
 } 
-/*!****************************************************************************************************************************************************!*\
-  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[1].use[1]!./node_modules/postcss-loader/dist/cjs.js!./css-styles/devices/ios.css ***!
-  \****************************************************************************************************************************************************/
 /* 
  * iOS-Specific Optimizations
  * Handles quirks and optimizations specific to iOS devices
@@ -8503,9 +8417,6 @@ svg .tick text {
     }
   }
 } 
-/*!********************************************************************************************************************************************************!*\
-  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[1].use[1]!./node_modules/postcss-loader/dist/cjs.js!./css-styles/devices/android.css ***!
-  \********************************************************************************************************************************************************/
 /* 
  * Android-Specific Optimizations
  * Handles quirks and optimizations specific to Android devices
@@ -8774,9 +8685,6 @@ svg .tick text {
     }
   }
 } 
-/*!*******************************************************************************************************************************************************!*\
-  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[1].use[1]!./node_modules/postcss-loader/dist/cjs.js!./css-styles/components/map.css ***!
-  \*******************************************************************************************************************************************************/
 /* Map container */
 .map-container {
     position: relative;
@@ -8881,9 +8789,6 @@ svg .tick text {
     stroke: var(--color-map-stroke-selected-hover);
     stroke-width: var(--map-stroke-width-selected-hover);
 } 
-/*!*********************************************************************************************************************************************!*\
-  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[1].use[1]!./node_modules/postcss-loader/dist/cjs.js!./css-styles/main.css ***!
-  \*********************************************************************************************************************************************/
 /**
  * Global Info Portal - Main CSS
  * Modular CSS approach with critical vs non-critical paths
