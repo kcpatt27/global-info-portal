@@ -169,7 +169,9 @@
   }
   
   .quick-stats-grid .stat-item {
-    padding: 10px;
+    padding: 10px 12px;
+    padding-bottom: 35px; /* Reduced from 40px for mobile to prevent overlap */
+    min-height: 80px; /* Ensure minimum height for content and badge */
   }
   
   .quick-stats-grid .stat-icon {
@@ -178,9 +180,20 @@
   
   .quick-stats-grid .stat-label {
     font-size: 0.8rem;
+    margin-bottom: 4px; /* Add spacing between label and value */
   }
   
   .quick-stats-grid .stat-value {
     font-size: 1rem;
+    padding-bottom: 4px; /* Add padding to prevent overlap with badge */
+    margin-bottom: 2px;
+    line-height: 1.2;
+  }
+  
+  .quick-stats-grid .stat-rank-badge {
+    bottom: 6px; /* Slightly adjust badge position on mobile */
+    right: 8px;
+    font-size: 0.7rem; /* Slightly smaller on mobile */
+    padding: 2px 5px;
   }
 } 

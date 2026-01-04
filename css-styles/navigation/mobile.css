@@ -9,19 +9,10 @@
  */
 
 /* Bottom Navigation Bar - Primary Navigation Pattern */
+/* Mobile nav bar removed - hidden */
 .mobile-nav-container {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  z-index: 1000;
-  background-color: var(--color-sidebar-bg, #1c1c1c);
-  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.2);
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  padding-bottom: env(safe-area-inset-bottom, 0);
-  height: 60px; /* Increased height for better touch targets */
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  display: none !important;
+  visibility: hidden;
 }
 
 /* Animate the navigation in and out */

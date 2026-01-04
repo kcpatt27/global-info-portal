@@ -119,6 +119,19 @@ export function createSearchInput(config = {}) {
       // Prevent default behavior
       e.preventDefault();
     }
+    // Handle Enter key to trigger search immediately
+    else if (e.key === 'Enter') {
+      e.preventDefault();
+      const searchValue = input.value.trim();
+      
+      // Clear any pending debounced callback
+      if (debounceTimeout) {
+        clearTimeout(debounceTimeout);
+      }
+      
+      // Trigger callback immediately
+      callback(searchValue);
+    }
   });
   
   // Assemble container

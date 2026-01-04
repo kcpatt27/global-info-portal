@@ -178,11 +178,15 @@
     right: 20px;
     display: flex;
     flex-direction: column;
-    background-color: var(--color-sidebar-bg);
-    border-radius: 8px;
-    padding: 10px;
+    background-color: rgba(28, 28, 28, 0.95);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 12px;
+    padding: 12px;
     z-index: 30;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4),
+                0 0 0 1px rgba(105, 179, 162, 0.2);
+    border: 1px solid rgba(105, 179, 162, 0.3);
     /* Hidden by default */
     opacity: 0;
     transform: translateX(50px);
@@ -190,6 +194,7 @@
                 transform var(--transition-medium) var(--easing-standard);
     will-change: transform, opacity;
     pointer-events: none;
+    gap: 8px;
 }
 
 /* Show nav sidebar when it has the visible class */
@@ -200,21 +205,48 @@
 }
 
 .nav-button {
-    width: 40px;
-    height: 40px;
-    margin-bottom: 10px;
-    background-color: var(--color-nav-button-bg);
-    border: none;
-    border-radius: 6px;
+    width: 44px;
+    height: 44px;
+    background-color: rgba(40, 40, 50, 0.6);
+    border: 1px solid rgba(105, 179, 162, 0.2);
+    border-radius: 10px;
     color: var(--color-text-primary);
     cursor: pointer;
-    transition: background-color var(--transition-fast) var(--easing-standard),
-                transform var(--transition-fast) var(--easing-standard);
+    transition: all var(--transition-fast) var(--easing-standard);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.nav-button::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(105, 179, 162, 0.2);
+    transform: translate(-50%, -50%);
+    transition: width 0.3s ease, height 0.3s ease;
 }
 
 .nav-button:hover {
-    transform: translateY(-2px);
-    background-color: var(--color-nav-button-hover);
+    transform: translateY(-3px) scale(1.05);
+    background-color: rgba(105, 179, 162, 0.15);
+    border-color: rgba(105, 179, 162, 0.5);
+    box-shadow: 0 4px 12px rgba(105, 179, 162, 0.3);
+}
+
+.nav-button:hover::before {
+    width: 100%;
+    height: 100%;
+}
+
+.nav-button:active {
+    transform: translateY(-1px) scale(1.02);
 }
 
 /* Apply will-change only during hover to save resources */
@@ -227,7 +259,14 @@
 }
 
 .nav-button i {
-    font-size: 20px;
+    font-size: 18px;
+    position: relative;
+    z-index: 1;
+    transition: color var(--transition-fast) var(--easing-standard);
+}
+
+.nav-button:hover i {
+    color: var(--color-accent, #69b3a2);
 }
 
 /* Grouped media queries */

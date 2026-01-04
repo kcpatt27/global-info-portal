@@ -148,38 +148,9 @@
         <button class="nav-button" id="toggle-search" title="Search">
             <i class="fas fa-search"></i>
         </button>
-        <button class="nav-button" id="toggle-settings" title="Settings">
-            <i class="fas fa-cog"></i>
-        </button>
         <button class="nav-button" id="toggle-help" title="Help">
             <i class="fas fa-question-circle"></i>
         </button>
-    </div>
-    
-    <!-- Mobile Navigation Container (will be populated by MobileNav.js) -->
-    <div class="mobile-nav-container">
-        <div class="mobile-nav-bar">
-            <!-- <a href="#" class="mobile-nav-item" data-nav-id="map">
-                <i class="fas fa-map-marked-alt nav-icon"></i>
-                <span class="nav-text">Map</span>
-            </a> -->
-            <a href="#" class="mobile-nav-item" data-nav-id="info">
-                <i class="fas fa-info-circle nav-icon"></i>
-                <span class="nav-text">Info</span>
-            </a>
-            <a href="#" class="mobile-nav-item" data-nav-id="data">
-                <i class="fas fa-chart-bar nav-icon"></i>
-                <span class="nav-text">Data</span>
-            </a>
-            <a href="#" class="mobile-nav-item" data-nav-id="search">
-                <i class="fas fa-search nav-icon"></i>
-                <span class="nav-text">Search</span>
-            </a>
-            <a href="#" class="mobile-nav-item" data-nav-id="settings">
-                <i class="fas fa-cog nav-icon"></i>
-                <span class="nav-text">More</span>
-            </a>
-        </div>
     </div>
     
     <!-- Hamburger Menu Components -->
@@ -264,84 +235,144 @@
         const infoContainer = document.querySelector('.info-container');
         const mapContainer = document.querySelector('.map-container');
         const navSidebar = document.querySelector('.nav-sidebar');
-        const mobileNavContainer = document.querySelector('.mobile-nav-container');
         
-        // Function to handle sidebar collapse
+        // Function to update nav bar visibility based on panel state
+        function updateNavBarVisibility() {
+          const isCollapsed = infoContainer.classList.contains('collapsed');
+          const isExpanded = infoContainer.classList.contains('expanded');
+          const isVisible = !isCollapsed; // Panel is visible when not collapsed
+          
+          // Nav bar should show when info panel is NOT visible (collapsed)
+          // Nav bar should hide when info panel IS visible (expanded or normal)
+          if (isVisible) {
+            // Panel is visible - hide nav bar
+            navSidebar.classList.remove('visible');
+          } else {
+            // Panel is collapsed/not visible - show nav bar
+            navSidebar.classList.add('visible');
+          }
+        }
+        
+        // Function to handle sidebar collapse - but keep header visible
         window.collapseSidebar = function() {
           infoContainer.classList.add('collapsed');
-          navSidebar.classList.add('visible');
-          
-          // Show mobile navigation when sidebar is collapsed
-          if (mobileNavContainer) {
-            mobileNavContainer.classList.remove('hidden');
-          }
+          infoContainer.classList.remove('expanded');
+          // Set explicit height to show only header (flag + country name)
+          infoContainer.style.height = '100px';
           
           // Show the map fully when sidebar is collapsed
           if (mapContainer) {
             mapContainer.classList.add('expanded');
           }
+          
+          // Update nav bar visibility
+          updateNavBarVisibility();
         };
         
         // Function to handle sidebar expansion
         window.expandSidebar = function() {
           infoContainer.classList.remove('collapsed');
-          navSidebar.classList.remove('visible');
-          
-          // Hide mobile navigation when sidebar is expanded
-          if (mobileNavContainer) {
-            mobileNavContainer.classList.add('hidden');
-          }
+          // Reset height to default
+          infoContainer.style.height = '';
           
           // Contract the map when sidebar is shown
           if (mapContainer) {
             mapContainer.classList.remove('expanded');
           }
+          
+          // Update nav bar visibility
+          updateNavBarVisibility();
         };
         
         // Set up initial state - sidebar is visible initially on mobile
         if (infoContainer) {
+          // Mark as set up to prevent duplicate handlers from mobile-interactions.js
+          infoContainer.setAttribute('data-drag-setup', 'true');
+          
           // Ensure sidebar is visible initially 
           infoContainer.classList.remove('collapsed');
           navSidebar.classList.remove('visible');
           
-          // Hide mobile navigation initially when sidebar is expanded
-          if (mobileNavContainer) {
-            mobileNavContainer.classList.add('hidden');
-          }
+          // Initial nav bar visibility update
+          updateNavBarVisibility();
           
-          // Add swipe-down gesture to close panel
+          // Add swipe-down gesture to close panel (only when touching header area)
           let touchStartY = 0;
           let touchEndY = 0;
+          let touchStartScrollTop = 0;
+          let isTouchDragging = false;
           const SWIPE_THRESHOLD = 50; // Minimum distance for swipe
           
           infoContainer.addEventListener('touchstart', (e) => {
-            touchStartY = e.touches[0].clientY;
+            // Only start drag if touching header area or top 40px
+            const rect = infoContainer.getBoundingClientRect();
+            const touchY = e.touches[0].clientY;
+            const isTopArea = e.target === infoContainer ||
+                              e.target.closest('.info-header') ||
+                              touchY < (rect.top + 40);
+            
+            if (!isTopArea) return;
+            
+            // Check if content is scrolled - if so, don't start drag
+            const activePanel = infoContainer.querySelector('.content-panel.active');
+            const scrollContainer = activePanel?.querySelector('.background-info') || 
+                                   activePanel?.querySelector('.data-panel') ||
+                                   activePanel;
+            touchStartScrollTop = scrollContainer?.scrollTop || 0;
+            
+            // Only start drag if not scrolled or scrolled to top
+            if (touchStartScrollTop > 5) return;
+            
+            touchStartY = touchY;
+            isTouchDragging = true;
+            infoContainer.style.transition = 'none';
           }, { passive: true });
           
           infoContainer.addEventListener('touchmove', (e) => {
+            if (!isTouchDragging || touchStartY === 0) return;
+            
             touchEndY = e.touches[0].clientY;
+            
+            // Check if content has scrolled during drag - if so, cancel drag
+            const activePanel = infoContainer.querySelector('.content-panel.active');
+            const scrollContainer = activePanel?.querySelector('.background-info') || 
+                                   activePanel?.querySelector('.data-panel') ||
+                                   activePanel;
+            const currentScrollTop = scrollContainer?.scrollTop || 0;
+            
+            // If content scrolled significantly, cancel drag to allow scrolling
+            if (Math.abs(currentScrollTop - touchStartScrollTop) > 10) {
+              isTouchDragging = false;
+              touchStartY = 0;
+              infoContainer.classList.remove('swiping');
+              infoContainer.style.transform = '';
+              return;
+            }
             
             // Calculate distance
             const swipeDistance = touchEndY - touchStartY;
             
-            // If swiping down
-            if (swipeDistance > 10) {
+            // If swiping down (positive distance)
+            if (swipeDistance > 5) {
               // Add visual feedback during swipe
               infoContainer.classList.add('swiping');
               
-              // Add slight move to the panel based on swipe distance (max 30px)
-              const moveDistance = Math.min(swipeDistance * 0.3, 30);
+              // Add move to the panel based on swipe distance (smoother)
+              const moveDistance = Math.min(swipeDistance * 0.5, 50);
               infoContainer.style.transform = `translateY(${moveDistance}px)`;
-              
-              // Removed preventDefault to avoid interfering with map gestures
-              // const scrollTop = e.target.closest('.content-panel')?.scrollTop || 0;
-              // if (scrollTop <= 0) {
-              //   e.preventDefault(); 
-              // }
+            }
+            // If swiping up (negative distance) - expand panel
+            else if (swipeDistance < -5) {
+              infoContainer.classList.add('swiping');
+              const maxMove = window.innerHeight * 0.4;
+              const translate = Math.max(-maxMove, Math.min(0, -swipeDistance * 0.5));
+              infoContainer.style.transform = `translateY(${translate}px)`;
             }
           }, { passive: true });
           
           infoContainer.addEventListener('touchend', (e) => {
+            if (!isTouchDragging) return;
+            
             const swipeDistance = touchEndY - touchStartY;
             
             // Remove visual feedback
@@ -350,61 +381,135 @@
             // Reset transform
             infoContainer.style.transform = '';
             
-            // If swipe down distance is greater than threshold
+            // If swipe down distance is greater than threshold, collapse
             if (swipeDistance > SWIPE_THRESHOLD) {
               window.collapseSidebar();
+            }
+            // If swipe up distance is greater than threshold, expand
+            else if (swipeDistance < -SWIPE_THRESHOLD && !infoContainer.classList.contains('expanded')) {
+              infoContainer.classList.add('expanded');
+              infoContainer.style.transition = '';
+              updateNavBarVisibility();
+            }
+            // If swipe down and panel is expanded, collapse it
+            else if (swipeDistance > SWIPE_THRESHOLD && infoContainer.classList.contains('expanded')) {
+              infoContainer.classList.remove('expanded');
+              infoContainer.style.transition = '';
+              updateNavBarVisibility();
             }
             
             // Reset values
             touchStartY = 0;
             touchEndY = 0;
+            touchStartScrollTop = 0;
+            isTouchDragging = false;
           });
           
           // Pointer-based drag to expand/collapse (mouse/pen parity)
           let pointerStartY = 0;
           let isPointerDragging = false;
+          let pointerStartScrollTop = 0;
+          
           infoContainer.addEventListener('pointerdown', (e) => {
             // Only act on primary button
             if (e.button !== undefined && e.button !== 0) return;
+            
+            // Check if touch is in the header area or top 40px of panel
+            const rect = infoContainer.getBoundingClientRect();
             const isTopArea = e.target === infoContainer ||
                               e.target.closest('.info-header') ||
-                              e.clientY < (infoContainer.getBoundingClientRect().top + 40);
+                              e.clientY < (rect.top + 40);
+            
             if (!isTopArea) return;
+            
+            // Check if content is scrolled - if so, don't start drag
+            const activePanel = infoContainer.querySelector('.content-panel.active');
+            const scrollContainer = activePanel?.querySelector('.background-info') || 
+                                   activePanel?.querySelector('.data-panel') ||
+                                   activePanel;
+            pointerStartScrollTop = scrollContainer?.scrollTop || 0;
+            
+            // Only start drag if not scrolled or scrolled to top
+            if (pointerStartScrollTop > 5) return;
+            
             isPointerDragging = true;
             pointerStartY = e.clientY;
             infoContainer.style.transition = 'none';
             infoContainer.setPointerCapture && infoContainer.setPointerCapture(e.pointerId);
+            e.preventDefault(); // Prevent text selection and other default behaviors
           });
+          
           infoContainer.addEventListener('pointermove', (e) => {
             if (!isPointerDragging) return;
+            
+            // Check if content has scrolled during drag - if so, cancel drag
+            const activePanel = infoContainer.querySelector('.content-panel.active');
+            const scrollContainer = activePanel?.querySelector('.background-info') || 
+                                   activePanel?.querySelector('.data-panel') ||
+                                   activePanel;
+            const currentScrollTop = scrollContainer?.scrollTop || 0;
+            
+            // If content scrolled significantly, cancel drag to allow scrolling
+            if (Math.abs(currentScrollTop - pointerStartScrollTop) > 10) {
+              isPointerDragging = false;
+              infoContainer.classList.remove('swiping');
+              infoContainer.style.transform = '';
+              infoContainer.style.transition = '';
+              return;
+            }
+            
             const diffY = pointerStartY - e.clientY; // positive when dragging up
-            // Visual feedback
+            // Visual feedback with smoother movement
             const maxMove = window.innerHeight * 0.4;
-            const translate = Math.max(-maxMove, Math.min(0, -diffY * 0.3));
+            const translate = Math.max(-maxMove, Math.min(0, -diffY * 0.5)); // Increased responsiveness
             infoContainer.style.transform = `translateY(${translate}px)`;
             infoContainer.classList.add('swiping');
-            // Snap when threshold exceeded
-            if (diffY > 50 && !infoContainer.classList.contains('expanded')) {
+            
+            // Snap when threshold exceeded (reduced threshold for better responsiveness)
+            if (diffY > 40 && !infoContainer.classList.contains('expanded')) {
               infoContainer.classList.remove('swiping');
               infoContainer.style.transform = '';
               infoContainer.classList.add('expanded');
               infoContainer.style.transition = '';
               isPointerDragging = false;
-            } else if (diffY < -50 && infoContainer.classList.contains('expanded')) {
+              updateNavBarVisibility(); // Update nav bar when expanded
+            } else if (diffY < -40 && infoContainer.classList.contains('expanded')) {
               infoContainer.classList.remove('swiping');
               infoContainer.style.transform = '';
               infoContainer.classList.remove('expanded');
               infoContainer.style.transition = '';
               isPointerDragging = false;
+              updateNavBarVisibility(); // Update nav bar when collapsed
             }
+            
+            e.preventDefault(); // Prevent scrolling during drag
           });
+          
           const endPointerDrag = () => {
             if (!isPointerDragging) return;
+            
+            // Apply final state based on current position
+            const currentTransform = infoContainer.style.transform;
+            const translateMatch = currentTransform.match(/translateY\((-?\d+)px\)/);
+            if (translateMatch) {
+              const translate = parseInt(translateMatch[1]);
+              // If dragged more than halfway, snap to expanded/collapsed
+              if (translate < -window.innerHeight * 0.2 && !infoContainer.classList.contains('expanded')) {
+                infoContainer.classList.add('expanded');
+                updateNavBarVisibility();
+              } else if (translate > -window.innerHeight * 0.2 && infoContainer.classList.contains('expanded')) {
+                infoContainer.classList.remove('expanded');
+                updateNavBarVisibility();
+              }
+            }
+            
             infoContainer.classList.remove('swiping');
             infoContainer.style.transform = '';
             infoContainer.style.transition = '';
             isPointerDragging = false;
+            pointerStartScrollTop = 0;
           };
+          
           infoContainer.addEventListener('pointerup', endPointerDrag);
           infoContainer.addEventListener('pointercancel', endPointerDrag);
           
@@ -432,47 +537,6 @@
               e.preventDefault();
               window.expandSidebar();
             });
-          }
-          
-          // Handle mobile nav item clicks
-          document.querySelectorAll('.mobile-nav-item').forEach(item => {
-            item.addEventListener('click', (e) => {
-              e.preventDefault();
-              
-              // Get the nav ID
-              const navId = item.getAttribute('data-nav-id');
-              
-              // Set active nav item
-              document.querySelectorAll('.mobile-nav-item').forEach(navItem => {
-                navItem.classList.remove('active');
-              });
-              item.classList.add('active');
-              
-              // Handle navigation action
-              if (navId === 'map') {
-                window.collapseSidebar();
-              } else if (navId === 'info' || navId === 'data') {
-                window.expandSidebar();
-                
-                // Switch to correct panel
-                document.querySelectorAll('.sidebar-button').forEach(btn => {
-                  btn.classList.remove('active');
-                });
-                document.querySelectorAll('.content-panel').forEach(panel => {
-                  panel.classList.remove('active');
-                });
-                
-                const panelId = navId + '-panel';
-                document.querySelector(`.sidebar-button[data-panel="${navId}"]`).classList.add('active');
-                document.getElementById(panelId).classList.add('active');
-              }
-            });
-          });
-          
-          // Set the first nav item as active by default
-          const firstNavItem = document.querySelector('.mobile-nav-item');
-          if (firstNavItem) {
-            firstNavItem.classList.add('active');
           }
           
           // Handle hamburger menu
@@ -508,11 +572,7 @@
                 // Handle navigation based on menu-id
                 const menuId = link.getAttribute('data-menu-id');
                 
-                // Find and trigger the corresponding mobile nav item if it exists
-                const navItem = document.querySelector(`.mobile-nav-item[data-nav-id="${menuId}"]`);
-                if (navItem) {
-                  navItem.click();
-                }
+                // Mobile nav removed - handle menu clicks directly if needed
               });
             });
           }
@@ -535,97 +595,36 @@
             document.body.classList.add('android-device');
           }
           
-          // Handle Settings Panel Toggle
-          const settingsToggleButton = document.getElementById('toggle-settings');
+          // Handle Settings Panel (removed from navbar, but keep panel functionality)
           const settingsPanel = document.getElementById('settings-panel');
           const closePanelButton = document.querySelector('#settings-panel .close-panel-button');
           let lastActivePanel = null;
           
-          if (settingsToggleButton && settingsPanel) {
-            // Open settings when the settings button is clicked
-            settingsToggleButton.addEventListener('click', function(e) {
-              e.preventDefault();
+          // Close settings when the close button is clicked
+          if (closePanelButton && settingsPanel) {
+            closePanelButton.addEventListener('click', function() {
+              // Hide settings panel
+              settingsPanel.classList.remove('active');
               
-              // Expand the sidebar if it's collapsed
-              if (infoContainer.classList.contains('collapsed')) {
-                window.expandSidebar();
-              }
-              
-              // Store the currently active panel
-              lastActivePanel = document.querySelector('.content-panel.active');
-              
-              // Hide all content panels
-              document.querySelectorAll('.content-panel').forEach(panel => {
-                panel.classList.remove('active');
-              });
-              
-              // Show settings panel
-              settingsPanel.classList.add('active');
-              
-              // Update sidebar buttons visual state (unselect all)
-              document.querySelectorAll('.sidebar-button').forEach(btn => {
-                btn.classList.remove('active');
-              });
-            });
-            
-            // Close settings when the close button is clicked
-            if (closePanelButton) {
-              closePanelButton.addEventListener('click', function() {
-                // Hide settings panel
-                settingsPanel.classList.remove('active');
+              // Restore the last active panel or default to info panel
+              if (lastActivePanel) {
+                lastActivePanel.classList.add('active');
                 
-                // Restore the last active panel or default to info panel
-                if (lastActivePanel) {
-                  lastActivePanel.classList.add('active');
-                  
-                  // Update sidebar button state to match
-                  const panelId = lastActivePanel.id;
-                  const panelType = panelId.replace('-panel', '');
-                  const sidebarButton = document.querySelector(`.sidebar-button[data-panel="${panelType}"]`);
-                  if (sidebarButton) {
-                    sidebarButton.classList.add('active');
-                  }
-                } else {
-                  // Default to info panel
-                  document.getElementById('info-panel').classList.add('active');
-                  document.querySelector('.sidebar-button[data-panel="info"]').classList.add('active');
+                // Update sidebar button state to match
+                const panelId = lastActivePanel.id;
+                const panelType = panelId.replace('-panel', '');
+                const sidebarButton = document.querySelector(`.sidebar-button[data-panel="${panelType}"]`);
+                if (sidebarButton) {
+                  sidebarButton.classList.add('active');
                 }
-              });
-            }
+              } else {
+                // Default to info panel
+                document.getElementById('info-panel').classList.add('active');
+                document.querySelector('.sidebar-button[data-panel="info"]').classList.add('active');
+              }
+            });
           }
           
-          // Make the mobile nav settings button also open the settings panel
-          const mobileSettingsButton = document.querySelector('.mobile-nav-item[data-nav-id="settings"]');
-          if (mobileSettingsButton && settingsPanel) {
-            mobileSettingsButton.addEventListener('click', function(e) {
-              e.preventDefault();
-              
-              // Set active nav item
-              document.querySelectorAll('.mobile-nav-item').forEach(navItem => {
-                navItem.classList.remove('active');
-              });
-              mobileSettingsButton.classList.add('active');
-              
-              // Expand sidebar if collapsed
-              window.expandSidebar();
-              
-              // Store the currently active panel
-              lastActivePanel = document.querySelector('.content-panel.active');
-              
-              // Hide all content panels
-              document.querySelectorAll('.content-panel').forEach(panel => {
-                panel.classList.remove('active');
-              });
-              
-              // Show settings panel
-              settingsPanel.classList.add('active');
-              
-              // Update sidebar buttons visual state (unselect all)
-              document.querySelectorAll('.sidebar-button').forEach(btn => {
-                btn.classList.remove('active');
-              });
-            });
-          }
         }
       }
     });
