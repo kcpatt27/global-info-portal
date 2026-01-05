@@ -152,5 +152,3 @@ Shows where countries rank globally with customizable metrics and filters.
 
 ### Quick Stats
 Provides cycling display of key statistics for selected countries.
-
-## 🙏 Prayer for continued development 💛 ✨

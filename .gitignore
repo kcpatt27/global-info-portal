@@ -11,5 +11,5 @@ build/
 *.log
 
 # Documentation
-memory-bank/
-docs/
+# memory-bank/
+# docs/
