@@ -579,7 +579,10 @@ function updateStatRanking(statItem, label, value, countryCode) {
   // Get ranking using the value from index (or fallback value)
   const ranking = getMetricRanking(metricId, normalizedCodeForRanking, rankingValue);
   
-  if (!ranking || ranking.rank === 0) {
+  // Require minimum of 10 countries for meaningful ranking display
+  // Otherwise rankings are misleading (e.g., always #1 with sparse data)
+  const MIN_COUNTRIES_FOR_RANKING = 10;
+  if (!ranking || ranking.rank === 0 || ranking.total < MIN_COUNTRIES_FOR_RANKING) {
     removeStatRanking(statItem);
     return;
   }

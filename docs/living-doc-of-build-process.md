@@ -36,9 +36,9 @@ but i persisted and eventually overcame, and when the electricity was settling o
 
 > "What the heck, I clicked on Canada, not Croatia..."
 
-for whatever reason, the dang country codes were out of alignment!!
+the dang country codes were out of alignment!!
 
-the JSON file pair i used had different codes from the world factbook JSON (go figures, the standardizing machine mustve been broken 🙄).
+it turns out, the CIA world factbook uses FIPS codes the world atlas uses ISO codes, which in laymans terms means: i have a problem.
 
 at this point i felt like all hope was lost...for like half a second lol.
 
@@ -60,9 +60,16 @@ theres specified groups across the globe, G20, NATO, 5 Eyes, etc., and i thought
 
 im literally trying this now and we'll see how effective it is.
 
+> "So I literally just updated the caching so that ALL countries have their data on the leaderboard/rankings. There's a couple bugs to iron out there but both that AND the search feature is implemented, as well as a global superpower leaderboard, an influence score system to determine its rankings and a buggy spider chart! 😀"
+
+
+
+<!--  -->
 finished the superpower and rankings tab overhaul
 ironed out initial bugs
 fleshed out the caching of data and added a load all countries button
 updated the influence system
 
-next is charts and search
+search feature is fully implemented, edge cases not addressed though.
+spider charts are implemented for the influence system but they currently fill the whole chart instead of adjust to the actual influence values.
+<!--  -->

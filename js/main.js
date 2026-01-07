@@ -13,7 +13,6 @@ import { preCacheG20Countries } from './utils/globalPreCache.js';
 import { initializeTouchInteractions, isTouchDevice } from './utils/touch.js';
 // import { initInteractiveComponents } from './components/interactive/index.js';
 import { initMobileNav } from './components/navigation/MobileNav.js';
-import { createSearchInput, createSearchHistory } from './utils/search.js';
 import { initMobilePanels } from './components/panels/PanelMobileManager.js';
 import { initMobileInteractions } from './utils/mobile-interactions.js';
 import { initMobileTypography } from './utils/typography-enhancements.js';
@@ -47,10 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Make map instance available globally for gesture handling
     window.mapInstance = map;
-
-    // Initialize country search
-    initCountrySearch();
-
+    
     // Initialize touch interactions
     if (isTouchDevice()) {
         initializeTouchInteractions();
@@ -616,155 +612,5 @@ function addDragHandlesToExpandableContainers() {
                 item.classList.add('stagger-item');
             });
         }
-    });
-}
-
-/**
- * Initialize country search functionality
- */
-function initCountrySearch() {
-    const searchContainer = document.getElementById('country-search-container');
-    if (!searchContainer) return;
-
-    // Create search input
-    const searchInput = createSearchInput({
-        placeholder: 'Search countries...',
-        callback: handleCountrySearch,
-        debounceTime: 300,
-        className: 'country-search-input',
-        clearButton: true
-    });
-
-    // Add to container
-    searchContainer.appendChild(searchInput);
-
-    // Add search history management
-    const searchHistory = createSearchHistory({
-        storageKey: 'country_search_history',
-        maxItems: 10
-    });
-
-    // Store references for later use
-    window.countrySearchInput = searchInput;
-    window.countrySearchHistory = searchHistory;
-}
-
-/**
- * Handle country search input
- */
-function handleCountrySearch(query) {
-    if (!query || query.trim().length === 0) {
-        // Clear any search highlights
-        clearSearchHighlights();
-        return;
-    }
-
-    const searchTerm = query.trim().toLowerCase();
-    const matchingCountries = findMatchingCountries(searchTerm);
-
-    if (matchingCountries.length === 1) {
-        // Exact match - select the country
-        const country = matchingCountries[0];
-        selectCountryBySearch(country);
-
-        // Add to search history
-        if (window.countrySearchHistory) {
-            window.countrySearchHistory.addItem(country.name);
-        }
-    } else if (matchingCountries.length > 1) {
-        // Multiple matches - highlight them
-        highlightMatchingCountries(matchingCountries);
-    } else {
-        // No matches
-        clearSearchHighlights();
-    }
-}
-
-/**
- * Find countries matching the search term
- */
-function findMatchingCountries(searchTerm) {
-    if (!window.countriesList || !Array.isArray(window.countriesList)) {
-        return [];
-    }
-
-    return window.countriesList.filter(country => {
-        if (!country || !country.name) return false;
-
-        const countryName = country.name.toLowerCase();
-        const countryCode = (country.code || '').toLowerCase();
-
-        return countryName.includes(searchTerm) || countryCode.includes(searchTerm);
-    });
-}
-
-/**
- * Select a country found through search
- */
-function selectCountryBySearch(country) {
-    // Try to find the country path by title
-    // Title format is "Country Name (XX)" where XX is the 2-letter code
-    const countryPaths = document.querySelectorAll('svg path');
-
-    for (const path of countryPaths) {
-        const title = path.querySelector('title');
-        if (!title) continue;
-
-        const titleText = title.textContent || '';
-        // Title format: "France (FR)" - extract just the country name
-        const countryNameFromTitle = titleText.replace(/\s*\([^)]*\)\s*$/, '').trim().toLowerCase();
-        const codeMatch = titleText.match(/\(([^)]+)\)/);
-        const codeFromTitle = codeMatch ? codeMatch[1].toLowerCase() : '';
-
-        if (countryNameFromTitle === country.name.toLowerCase() ||
-            codeFromTitle === country.code.toLowerCase()) {
-
-            // Simulate click on the path
-            path.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-            clearSearchHighlights();
-            return;
-        }
-    }
-
-    console.log('Could not find country path for:', country.name);
-}
-
-/**
- * Highlight countries that match the search
- */
-function highlightMatchingCountries(countries) {
-    clearSearchHighlights();
-
-    countries.forEach(country => {
-        const paths = document.querySelectorAll('svg path');
-
-        for (const path of paths) {
-            const title = path.querySelector('title');
-            if (!title) continue;
-
-            const titleText = title.textContent || '';
-            // Title format: "France (FR)" - extract just the country name
-            const countryNameFromTitle = titleText.replace(/\s*\([^)]*\)\s*$/, '').trim().toLowerCase();
-            const codeMatch = titleText.match(/\(([^)]+)\)/);
-            const codeFromTitle = codeMatch ? codeMatch[1].toLowerCase() : '';
-
-            if (countryNameFromTitle === country.name.toLowerCase() ||
-                codeFromTitle === country.code.toLowerCase() ||
-                countryNameFromTitle.includes(country.name.toLowerCase()) ||
-                country.name.toLowerCase().includes(countryNameFromTitle)) {
-
-                path.classList.add('search-highlight');
-                break;
-            }
-        }
-    });
-}
-
-/**
- * Clear search highlights
- */
-function clearSearchHighlights() {
-    document.querySelectorAll('.search-highlight').forEach(element => {
-        element.classList.remove('search-highlight');
     });
 } 

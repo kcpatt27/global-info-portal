@@ -2581,8 +2581,7 @@ pre {
 
 .leaderboard-country {
   flex: 1 1 auto;
-  min-width: 120px;
-  max-width: 300px;
+  min-width: 0;
   overflow: hidden;
 }
 
@@ -2591,91 +2590,62 @@ pre {
   font-weight: 600;
   color: var(--color-text-primary);
   margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.leaderboard-score-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
 .leaderboard-score {
   font-size: 0.85rem;
   color: var(--color-text-secondary);
   font-family: 'Courier New', monospace;
-}
-
-.leaderboard-breakdown {
-  flex: 1 1 auto;
-  min-width: 0;
-  max-width: 100%;
-  width: 100%;
-  overflow: hidden;
+  white-space: nowrap;
 }
 
 .breakdown-bar {
-  height: 6px;
-  background-color: rgba(0, 0, 0, 0.1);
-  border-radius: 3px;
+  height: 8px;
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
   overflow: hidden;
   display: flex;
-  margin-bottom: 4px;
-  width: 100%;
-  min-width: 0;
-  max-width: 100%;
-  position: relative;
-  gap: 0;
-  flex-wrap: nowrap;
-  align-items: stretch;
-  box-sizing: border-box;
+  width: 100px;
+  min-width: 80px;
+  max-width: 150px;
+  flex: 1 1 auto;
+  gap: 1px;
 }
 
 .breakdown-segment {
   height: 100%;
-  transition: width 0.3s ease;
-  flex-shrink: 1;
-  flex-grow: 0;
-  min-width: 0;
-  max-width: 25%;
-  box-sizing: border-box;
-  display: block;
-  overflow: hidden;
+  flex: 0 0 auto;
+  border-radius: 2px;
 }
 
 .breakdown-segment.people {
-  background-color: #4A90E2;
-  order: 1;
+  background-color: #3498DB;
 }
 
 .breakdown-segment.money {
-  background-color: #F5A623;
-  order: 2;
+  background-color: #2ECC71;
 }
 
 .breakdown-segment.reach {
-  background-color: #7ED321;
-  order: 3;
+  background-color: #F39C12;
 }
 
 .breakdown-segment.resources {
   background-color: #9B59B6;
-  order: 4;
 }
 
 .breakdown-segment.quality {
   background-color: #E74C3C;
-  order: 5;
-}
-
-/* Ensure breakdown segments don't overflow - removed conflicting rule */
-
-.breakdown-labels {
-  display: flex;
-  gap: 8px;
-  font-size: 0.75rem;
-  color: var(--color-text-secondary);
-  flex-wrap: wrap;
-  margin-top: 2px;
-}
-
-.breakdown-labels span {
-  font-family: 'Courier New', monospace;
-  white-space: nowrap;
-  flex-shrink: 0;
 }
 
 .leaderboard-footer {
@@ -2699,9 +2669,39 @@ pre {
 
 .leaderboard-actions {
   display: flex;
-  align-items: center;
-  gap: 16px;
+  align-items: stretch;
+  gap: 8px;
   margin-top: 12px;
+}
+
+.leaderboard-actions button {
+  flex: 1;
+  justify-content: center;
+}
+
+.refresh-leaderboard-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background-color: var(--color-surface-lighter);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-small);
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: all 0.2s ease;
+  order: 2; /* Put refresh on right */
+}
+
+.refresh-leaderboard-btn:hover {
+  background-color: var(--color-surface);
+  border-color: var(--color-accent);
+}
+
+.refresh-leaderboard-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .load-all-countries-btn {
@@ -2717,6 +2717,7 @@ pre {
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
+  order: 1; /* Put load all on left */
 }
 
 .load-all-countries-btn:hover:not(:disabled) {
@@ -2736,13 +2737,14 @@ pre {
 .cache-status {
   font-size: 0.8rem;
   color: var(--color-text-secondary);
-  display: flex;
-  align-items: center;
-  gap: 6px;
+  display: block;
+  margin-top: 8px;
+  width: 100%;
 }
 
 .cache-status i {
   color: var(--color-accent);
+  margin-right: 4px;
 }
 
 .leaderboard-placeholder {
@@ -2871,8 +2873,36 @@ pre {
   color: var(--color-text-primary);
   margin: 0 0 12px 0;
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  gap: 8px;
+}
+
+.category-title.category-toggle {
+  cursor: pointer;
+  user-select: none;
+  padding: 8px;
+  margin: -8px -8px 4px -8px;
+  border-radius: var(--radius-small);
+  transition: background-color 0.2s ease;
+}
+
+.category-title.category-toggle:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.toggle-icon {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  transition: transform 0.2s ease;
+  width: 12px;
+}
+
+.category-breakdown.collapsed .toggle-icon {
+  transform: rotate(0deg);
+}
+
+.category-breakdown:not(.collapsed) .toggle-icon {
+  transform: rotate(90deg);
 }
 
 .category-score {
@@ -2880,6 +2910,7 @@ pre {
   font-weight: 400;
   color: var(--color-text-secondary);
   font-family: 'Courier New', monospace;
+  margin-left: auto;
 }
 
 .category-no-data {
@@ -2933,33 +2964,57 @@ pre {
   font-weight: 600;
 }
 
-/* Spider Chart Container in Expanded View */
 .spider-chart-container {
-  padding: 16px;
-  background-color: var(--color-surface-lighter);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-small);
-  margin-top: 16px;
-  min-height: 200px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  padding: 16px;
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: var(--radius-small);
+  margin-top: 8px;
 }
 
-.spider-chart-container .chart-title {
-  font-size: 13px;
-  font-weight: bold;
-  margin-bottom: 8px;
-  text-align: center;
+.spider-chart-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0 0 12px 0;
+}
+
+.spider-chart-canvas {
+  display: block;
+  max-width: 100%;
+}
+
+.spider-chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
   color: var(--color-text-secondary);
 }
 
-.spider-chart-container svg {
-  max-width: 100%;
-  height: auto;
+.legend-color {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
 }
 
+.legend-item.people .legend-color { background-color: #3498DB; }
+.legend-item.money .legend-color { background-color: #2ECC71; }
+.legend-item.reach .legend-color { background-color: #F39C12; }
+.legend-item.resources .legend-color { background-color: #9B59B6; }
+.legend-item.quality .legend-color { background-color: #E74C3C; }
+
+/* Backwards compatibility - remove later */
 .spider-chart-placeholder {
   padding: 40px 20px;
   text-align: center;
@@ -2980,14 +3035,6 @@ pre {
 
 .placeholder-note i {
   color: var(--color-accent);
-}
-
-.chart-placeholder,
-.chart-error {
-  padding: 20px;
-  text-align: center;
-  color: var(--color-text-secondary);
-  font-size: 0.9rem;
 }
 
 /* Metrics Grid - New Card-Based Metric Selection */
@@ -3980,14 +4027,8 @@ pre {
     padding: 16px;
   }
 
-  .global-leaderboard-container {
-    overflow-x: hidden;
-    max-width: 100%;
-  }
-
   .leaderboard-title {
     font-size: 1.2rem;
-    flex-wrap: wrap;
   }
 
   .current-country-leaderboard {
@@ -3999,78 +4040,27 @@ pre {
     font-size: 1.5rem;
   }
 
-  .current-country-breakdown {
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .leaderboard-entry-wrapper {
-    max-width: 100%;
-    overflow: hidden;
-  }
-
   .leaderboard-entry {
     flex-wrap: wrap;
     gap: 8px;
     align-items: flex-start;
-    padding: 10px;
-  }
-
-  .leaderboard-rank {
-    width: auto;
-    flex-shrink: 0;
   }
 
   .leaderboard-country {
     min-width: 0;
-    max-width: none;
     flex: 1 1 auto;
-    order: 2;
   }
-
-  .leaderboard-breakdown {
-    min-width: 100%;
-    max-width: 100%;
-    flex: 1 1 100%;
-    order: 3;
-  }
-
-  .leaderboard-expand-icon {
-    order: 1;
-    margin-left: auto;
-  }
-
-  .breakdown-labels {
+  
+  .leaderboard-score-row {
+    flex-direction: column;
+    align-items: flex-start;
     gap: 6px;
-    font-size: 0.7rem;
   }
-
-  .breakdown-labels span {
-    flex-shrink: 1;
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .leaderboard-expanded-content {
-    padding: 12px;
-  }
-
-  .expanded-header h3 {
-    font-size: 1.1rem;
-  }
-
-  .category-breakdowns {
-    grid-template-columns: 1fr;
-  }
-
-  .category-breakdown {
-    padding: 12px;
-  }
-
-  .spider-chart-container {
-    padding: 12px;
-    min-height: 180px;
+  
+  .breakdown-bar {
+    width: 100%;
+    max-width: 100%;
+    min-width: 60px;
   }
 
   .key-metrics-grid,
@@ -4113,21 +4103,11 @@ pre {
   }
 
   .global-leaderboard {
-    padding: 10px;
-    border-radius: var(--radius-small);
+    padding: 12px;
   }
 
   .leaderboard-title {
     font-size: 1rem;
-    gap: 8px;
-  }
-
-  .leaderboard-description {
-    font-size: 0.8rem;
-  }
-
-  .current-country-leaderboard {
-    padding: 12px;
   }
 
   .current-country-name {
@@ -4140,99 +4120,11 @@ pre {
 
   .leaderboard-entry {
     padding: 8px;
-    gap: 6px;
   }
 
   .leaderboard-rank {
-    font-size: 0.9rem;
-    width: auto;
-    min-width: 28px;
-  }
-
-  .leaderboard-name {
-    font-size: 0.9rem;
-  }
-
-  .leaderboard-score {
-    font-size: 0.75rem;
-  }
-
-  .breakdown-bar {
-    height: 5px;
-  }
-
-  .breakdown-labels {
-    gap: 4px;
-    font-size: 0.65rem;
-    justify-content: space-between;
-  }
-
-  .breakdown-labels span {
-    flex: 0 1 auto;
-  }
-
-  .leaderboard-expand-icon {
-    width: 20px;
-    height: 20px;
-  }
-
-  .leaderboard-expanded-content {
-    padding: 10px;
-  }
-
-  .expanded-header h3 {
     font-size: 1rem;
-  }
-
-  .expanded-description {
-    font-size: 0.8rem;
-  }
-
-  .category-title {
-    font-size: 1rem;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 4px;
-  }
-
-  .category-metric-item {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 4px;
-  }
-
-  .metric-details {
-    width: 100%;
-    justify-content: space-between;
-  }
-
-  .spider-chart-container {
-    padding: 10px;
-    min-height: 160px;
-  }
-
-  .leaderboard-footer {
-    padding-top: 12px;
-  }
-
-  .leaderboard-note {
-    font-size: 0.75rem;
-    flex-wrap: wrap;
-  }
-
-  .leaderboard-actions {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 10px;
-  }
-
-  .load-all-countries-btn {
-    width: 100%;
-    justify-content: center;
-  }
-
-  .cache-status {
-    text-align: center;
+    width: 30px;
   }
 
   .key-metrics-grid,

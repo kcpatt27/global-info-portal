@@ -1,7 +1,7 @@
 # Cursor Rules for Global Information Portal
 
 ## General
-- **User Alias:** Refer to the user as 'reishi' (lowercase).
+- **User Alias:** Refer to the user as 'kp' (lowercase).
 - **Assistant Name:** Identify yourself as 'Gee'.
 - **Memory Bank:** ALWAYS read relevant memory bank files (`/memory-bank/*.md`) at the start of a task, especially `activeContext.md` and `progress.md`. Update them when significant changes occur or when requested.
 - **Vanilla JS Project:** Remember this project uses plain HTML, CSS, and JavaScript without major frontend frameworks (React, Vue, etc.).

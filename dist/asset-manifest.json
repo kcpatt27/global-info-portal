@@ -5,6 +5,5 @@
   "runtime.js": "/dist/runtime.js",
   "144.chunk.js": "/dist/144.chunk.js",
   "320.chunk.js": "/dist/320.chunk.js",
-  "charts.js": "/dist/charts.chunk.js",
   "vendors.js": "/dist/vendors.js"
 }

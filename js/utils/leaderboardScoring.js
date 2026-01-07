@@ -1,7 +1,7 @@
 /**
  * leaderboardScoring.js
  * Handles scoring calculations for the Global Superpower Leaderboard
- * Includes optimal range scoring, inverse ranking, and category aggregation
+ * Uses FIXED reference scales to ensure scores are stable regardless of which countries are loaded
  */
 
 import { extractNumber } from '../utils.js';
@@ -9,18 +9,115 @@ import { getAllMetrics, getMetricById, getMetricsByCategory } from './leaderboar
 import { globalDataIndex } from '../state.js';
 
 /**
+ * FIXED REFERENCE SCALES for scoring
+ * These define the min/max values for normalization, ensuring consistent scores
+ * regardless of which countries are currently loaded
+ */
+const REFERENCE_SCALES = {
+  // People metrics - MUST match IDs in leaderboardMetrics.js
+  people_population: { min: 100000, max: 1500000000, type: 'log' },
+  people_population_growth: { min: -2, max: 4, type: 'optimal', optimal: 1.5, range: [1, 2.5] },
+  people_median_age: { min: 15, max: 50, type: 'optimal', optimal: 32, range: [28, 38] },
+  people_labor_force: { min: 10000, max: 800000000, type: 'log' },
+  people_dependency_ratio: { min: 20, max: 100, type: 'optimal', optimal: 50, range: [40, 60] },
+  people_sex_ratio: { min: 0.9, max: 1.1, type: 'optimal', optimal: 1.0, range: [0.95, 1.05] },
+  people_urban_population: { min: 10, max: 100, type: 'higher' },
+  people_poverty_line: { min: 0, max: 80, type: 'lower' },
+  people_net_migration: { min: -20, max: 20, type: 'higher' },
+  people_urbanization_rate: { min: -2, max: 5, type: 'optimal', optimal: 1.5, range: [0.5, 2.5] },
+  people_youth_dependency: { min: 15, max: 100, type: 'optimal', optimal: 35, range: [25, 50] },
+  people_elderly_dependency: { min: 5, max: 50, type: 'optimal', optimal: 20, range: [10, 30] },
+  
+  // Money metrics
+  money_real_gdp_ppp: { min: 1000000000, max: 35000000000000, type: 'log' }, // $1B to $35T
+  money_gdp_per_capita: { min: 500, max: 150000, type: 'log' },
+  money_gdp_growth: { min: -10, max: 15, type: 'optimal', optimal: 3, range: [2, 6] },
+  money_unemployment: { min: 0, max: 30, type: 'lower' },
+  money_inflation: { min: -5, max: 50, type: 'optimal', optimal: 2, range: [1, 4] },
+  money_public_debt: { min: 0, max: 300, type: 'lower' },
+  money_external_debt: { min: 0, max: 35000000000000, type: 'log' }, // Actually higher can mean more credit access
+  money_agriculture_gdp: { min: 0, max: 50, type: 'linear' },
+  money_industry_gdp: { min: 5, max: 60, type: 'linear' },
+  money_services_gdp: { min: 20, max: 90, type: 'linear' },
+  money_exports: { min: 100000000, max: 4000000000000, type: 'log' },
+  money_imports: { min: 100000000, max: 4000000000000, type: 'log' },
+  money_current_account: { min: -500000000000, max: 500000000000, type: 'higher' },
+  money_reserves: { min: 100000000, max: 4000000000000, type: 'log' },
+  money_budget_surplus: { min: -20, max: 10, type: 'higher' },
+  
+  // Reach metrics
+  reach_area: { min: 1000, max: 20000000, type: 'log' },
+  reach_land_area: { min: 1000, max: 18000000, type: 'log' },
+  reach_water_area: { min: 0, max: 1000000, type: 'log' },
+  reach_coastline: { min: 0, max: 55000, type: 'log' },
+  reach_internet_users: { min: 10, max: 100, type: 'higher' },
+  reach_military_expenditures: { min: 0.5, max: 15, type: 'linear' },
+  reach_airports: { min: 1, max: 15000, type: 'log' },
+  reach_ports: { min: 0, max: 500, type: 'log' },
+  reach_military_personnel: { min: 0, max: 4000000, type: 'log' },
+  reach_military_deployments: { min: 0, max: 200000, type: 'log' },
+  reach_land_boundaries: { min: 0, max: 25000, type: 'log' },
+  
+  // Resources metrics
+  resources_coal_reserves: { min: 0, max: 500000000000, type: 'log' },
+  resources_petroleum_reserves: { min: 0, max: 300000000000, type: 'log' },
+  resources_natural_gas_reserves: { min: 0, max: 50000000000000, type: 'log' },
+  resources_coal_production: { min: 0, max: 5000000000, type: 'log' },
+  resources_petroleum_production: { min: 0, max: 15000000, type: 'log' },
+  resources_natural_gas_production: { min: 0, max: 1000000000000, type: 'log' },
+  resources_coal_consumption: { min: 0, max: 5500000000, type: 'log' },
+  resources_petroleum_consumption: { min: 0, max: 20000000, type: 'log' },
+  resources_natural_gas_consumption: { min: 0, max: 900000000000, type: 'log' },
+  resources_electricity_capacity: { min: 0, max: 2500000000, type: 'log' }, // kW
+  resources_electricity_consumption: { min: 0, max: 8000000000000, type: 'log' },
+  resources_energy_consumption: { min: 0, max: 1000000000, type: 'log' },
+  resources_nuclear_capacity: { min: 0, max: 120000, type: 'log' },
+  resources_nuclear_reactors: { min: 0, max: 100, type: 'log' },
+  resources_nuclear_percent: { min: 0, max: 80, type: 'higher' },
+  resources_solar_capacity: { min: 0, max: 50, type: 'higher' },
+  resources_wind_capacity: { min: 0, max: 50, type: 'higher' },
+  resources_hydro_capacity: { min: 0, max: 70, type: 'higher' },
+  resources_geothermal_capacity: { min: 0, max: 20, type: 'higher' },
+  resources_biomass_capacity: { min: 0, max: 30, type: 'higher' },
+  resources_arable_land: { min: 0, max: 60, type: 'higher' },
+  resources_agricultural_land: { min: 0, max: 90, type: 'linear' },
+  resources_forest: { min: 0, max: 75, type: 'higher' },
+  resources_permanent_crops: { min: 0, max: 30, type: 'linear' },
+  resources_permanent_pasture: { min: 0, max: 80, type: 'linear' },
+  resources_renewable_water: { min: 0, max: 10000, type: 'log' },
+  resources_irrigated_land: { min: 0, max: 800000, type: 'log' },
+  
+  // Quality metrics
+  quality_life_expectancy: { min: 50, max: 90, type: 'higher' },
+  quality_infant_mortality: { min: 1, max: 100, type: 'lower' },
+  quality_death_rate: { min: 3, max: 20, type: 'lower' },
+  quality_birth_rate: { min: 5, max: 45, type: 'optimal', optimal: 15, range: [12, 18] },
+  quality_fertility_rate: { min: 0.8, max: 7, type: 'optimal', optimal: 2.1, range: [1.8, 2.5] },
+  quality_physicians: { min: 0.01, max: 10, type: 'higher' },
+  quality_hospital_beds: { min: 0.1, max: 15, type: 'higher' },
+  quality_obesity: { min: 1, max: 50, type: 'lower' },
+  quality_drinking_water: { min: 30, max: 100, type: 'higher' },
+  quality_sanitation: { min: 10, max: 100, type: 'higher' },
+  quality_education_expenditure: { min: 1, max: 12, type: 'higher' },
+  quality_literacy: { min: 30, max: 100, type: 'higher' },
+  quality_school_life: { min: 5, max: 22, type: 'higher' },
+  quality_co2_emissions: { min: 0, max: 15000000000, type: 'lower' },
+  quality_particulate_matter: { min: 5, max: 150, type: 'lower' },
+  quality_methane_emissions: { min: 0, max: 1000000000, type: 'lower' },
+  quality_waste_recycled: { min: 0, max: 70, type: 'higher' }
+};
+
+// Default scale for metrics without explicit definition
+const DEFAULT_SCALE = { min: 0, max: 100, type: 'linear' };
+
+/**
  * Extract a metric value from country data using the metric definition
- * @param {Object} countryData - The country data object
- * @param {Object} metric - Metric definition from leaderboardMetrics.js
- * @returns {number|null} - The extracted numeric value, or null if not found
  */
 export function extractMetricValue(countryData, metric) {
   if (!countryData || !metric || !metric.dataPath) return null;
 
-  // Try primary data path
   let value = extractValueByPath(countryData, metric.dataPath);
   
-  // Try fallback paths if primary fails
   if (value === null && metric.fallbackPaths) {
     for (const fallbackPath of metric.fallbackPaths) {
       value = extractValueByPath(countryData, fallbackPath);
@@ -33,7 +130,6 @@ export function extractMetricValue(countryData, metric) {
 
 /**
  * Extract value from country data using a path array
- * Uses fallback matching for keys with whitespace differences or case mismatches
  */
 function extractValueByPath(countryData, path) {
   if (!path || path.length === 0) return null;
@@ -42,13 +138,11 @@ function extractValueByPath(countryData, path) {
   for (const key of path) {
     if (!current || typeof current !== 'object') return null;
     
-    // Try exact match first
     if (key in current) {
       current = current[key];
       continue;
     }
     
-    // Fallback: try trimmed key matching (handles keys with trailing/leading spaces)
     const trimmedKey = key.trim();
     const matchingKey = Object.keys(current).find(k => k.trim() === trimmedKey);
     
@@ -57,7 +151,6 @@ function extractValueByPath(countryData, path) {
       continue;
     }
     
-    // Fallback: try case-insensitive match
     const lowerKey = key.toLowerCase();
     const caseInsensitiveKey = Object.keys(current).find(k => 
       k.toLowerCase() === lowerKey || k.trim().toLowerCase() === lowerKey
@@ -68,34 +161,27 @@ function extractValueByPath(countryData, path) {
       continue;
     }
     
-    // No match found
     return null;
   }
 
-  // Handle object with .text property (common in Factbook data structure)
   if (current && typeof current === 'object' && current.text) {
     current = current.text;
   }
 
   if (current && typeof current === 'string') {
-    // Handle special cases for optimal range metrics
     if (current.includes('male(s)/female')) {
-      // Extract sex ratio: "1.01 male(s)/female" -> 1.01
       const match = current.match(/(\d+\.?\d*)\s*male\(s\)\/female/);
       if (match) return parseFloat(match[1]);
     }
     
-    // Extract percentage: "97% (2022 est.)" -> 97
     if (current.includes('%')) {
-      const match = current.match(/(\d+\.?\d*)%/);
+      const match = current.match(/(-?\d+\.?\d*)%/);
       if (match) return parseFloat(match[1]);
     }
     
-    // Handle scale multipliers (trillion, billion, million) for monetary/large values
-    // This is critical for correct GDP/population rankings
     const lowerText = current.toLowerCase();
     if (lowerText.includes('trillion') || lowerText.includes('billion') || lowerText.includes('million')) {
-      const numMatch = current.match(/[\$]?\s*(\d+(?:,\d{3})*(?:\.\d+)?)/);
+      const numMatch = current.match(/[\$]?\s*(-?\d+(?:,\d{3})*(?:\.\d+)?)/);
       if (numMatch) {
         let num = parseFloat(numMatch[1].replace(/,/g, ''));
         if (lowerText.includes('trillion')) {
@@ -109,7 +195,6 @@ function extractValueByPath(countryData, path) {
       }
     }
     
-    // Standard number extraction
     return extractNumber(current);
   }
 
@@ -117,11 +202,45 @@ function extractValueByPath(countryData, path) {
 }
 
 /**
- * Calculate optimal range score (distance from optimal value)
- * Lower distance = better rank
- * @param {number} value - The actual value
- * @param {number} optimalValue - The optimal value
- * @returns {number} - Distance from optimal (always positive)
+ * Calculate score for a metric value using FIXED reference scales
+ * Returns a value between 0-1 (1 being best)
+ * @param {string} metricId - The metric ID
+ * @param {number} value - The raw metric value
+ * @returns {number} - Score between 0 and 1
+ */
+export function calculateMetricScoreFixed(metricId, value) {
+  if (value === null || value === undefined || isNaN(value)) return 0;
+  
+  const scale = REFERENCE_SCALES[metricId] || DEFAULT_SCALE;
+  const { min, max, type, optimal, range } = scale;
+  
+  // Clamp value to scale bounds
+  const clampedValue = Math.max(min, Math.min(max, value));
+  
+  if (type === 'log') {
+    // Logarithmic scale for values spanning many orders of magnitude
+    // Handles values like population (millions to billions) or GDP ($billions to $trillions)
+    const logMin = min > 0 ? Math.log10(min) : 0;
+    const logMax = max > 0 ? Math.log10(max) : 1;
+    const logValue = clampedValue > 0 ? Math.log10(clampedValue) : logMin;
+    return Math.max(0, Math.min(1, (logValue - logMin) / (logMax - logMin)));
+  } else if (type === 'lower') {
+    // Lower is better (e.g., unemployment, infant mortality)
+    return Math.max(0, Math.min(1, 1 - (clampedValue - min) / (max - min)));
+  } else if (type === 'optimal') {
+    // Distance from optimal value
+    // Score is 1 at optimal, decreases as distance increases
+    const distance = Math.abs(clampedValue - optimal);
+    const maxDistance = Math.max(optimal - min, max - optimal);
+    return Math.max(0, Math.min(1, 1 - (distance / maxDistance)));
+  } else {
+    // Linear: higher is better (default)
+    return Math.max(0, Math.min(1, (clampedValue - min) / (max - min)));
+  }
+}
+
+/**
+ * Calculate optimal range score (for backwards compatibility)
  */
 export function calculateOptimalRangeDistance(value, optimalValue) {
   if (value === null || value === undefined || isNaN(value)) return Infinity;
@@ -129,20 +248,14 @@ export function calculateOptimalRangeDistance(value, optimalValue) {
 }
 
 /**
- * Get ranking for a metric, handling different ranking types
- * @param {string} metricId - The metric ID
- * @param {string} countryCode - The country code
- * @param {number} value - The metric value (optional, will be looked up if not provided)
- * @returns {Object|null} - Ranking object with rank, total, etc.
+ * Get ranking for a metric (for display purposes only, not for scoring)
  */
 export function getMetricRanking(metricId, countryCode, value = null) {
   const metric = getMetricById(metricId);
   if (!metric) return null;
 
-  // Get all countries with this metric
   const allCountries = globalDataIndex.getCountriesWithMetric(metricId);
   
-  // Add current country if not in list
   if (value !== null) {
     const exists = allCountries.find(c => c.code === countryCode);
     if (!exists) {
@@ -152,31 +265,18 @@ export function getMetricRanking(metricId, countryCode, value = null) {
 
   if (allCountries.length === 0) return null;
 
-  // Sort based on ranking type
   if (metric.rankingType === 'lower') {
-    // Lower is better - sort ascending
     allCountries.sort((a, b) => a.value - b.value);
   } else if (metric.rankingType === 'optimal') {
-    // Optimal range - sort by distance from optimal
     allCountries.forEach(country => {
-      const distance = calculateOptimalRangeDistance(country.value, metric.optimalValue);
-      country.distance = distance;
+      country.distance = calculateOptimalRangeDistance(country.value, metric.optimalValue);
     });
     allCountries.sort((a, b) => a.distance - b.distance);
   } else {
-    // Higher is better - sort descending (default)
     allCountries.sort((a, b) => b.value - a.value);
   }
 
-  // Find rank
-  let rank;
-  if (metric.rankingType === 'optimal') {
-    const country = allCountries.find(c => c.code === countryCode);
-    if (!country) return null;
-    rank = allCountries.findIndex(c => c.code === countryCode) + 1;
-  } else {
-    rank = allCountries.findIndex(c => c.code === countryCode) + 1;
-  }
+  const rank = allCountries.findIndex(c => c.code === countryCode) + 1;
 
   return {
     rank: rank || 0,
@@ -188,55 +288,12 @@ export function getMetricRanking(metricId, countryCode, value = null) {
 }
 
 /**
- * Normalize a value to 0-1 scale using min-max normalization
- * @param {number} value - The value to normalize
- * @param {number} minValue - Minimum value in the dataset
- * @param {number} maxValue - Maximum value in the dataset
- * @returns {number} - Normalized value between 0 and 1
- */
-function normalizeValue(value, minValue, maxValue) {
-  if (minValue === maxValue) return 0.5; // All values are the same
-  return (value - minValue) / (maxValue - minValue);
-}
-
-/**
- * Calculate normalized score for a metric value
- * @param {Object} metric - Metric definition
- * @param {number} value - The raw metric value
- * @param {number} minValue - Minimum value across all countries
- * @param {number} maxValue - Maximum value across all countries
- * @returns {number} - Normalized score (0-1, where 1 is best)
- */
-function calculateMetricScore(metric, value, minValue, maxValue) {
-  if (value === null || value === undefined || isNaN(value)) return 0;
-  
-  if (metric.rankingType === 'optimal') {
-    // For optimal range: score based on distance from optimal
-    // Closer to optimal = higher score
-    const distance = calculateOptimalRangeDistance(value, metric.optimalValue);
-    const maxDistance = Math.max(
-      Math.abs(maxValue - metric.optimalValue),
-      Math.abs(minValue - metric.optimalValue)
-    );
-    if (maxDistance === 0) return 1; // All values are optimal
-    // Invert: distance 0 = score 1, max distance = score 0
-    return 1 - (distance / maxDistance);
-  } else if (metric.rankingType === 'lower') {
-    // Lower is better: invert the normalized value
-    const normalized = normalizeValue(value, minValue, maxValue);
-    return 1 - normalized;
-  } else {
-    // Higher is better: use normalized value directly
-    return normalizeValue(value, minValue, maxValue);
-  }
-}
-
-/**
- * Calculate category score (sum of normalized values for all metrics in category)
- * @param {string} category - 'people', 'money', 'reach', or 'resources'
- * @param {string} countryCode - The country code
- * @param {Object} countryData - The country data (optional, for extracting values)
- * @returns {Object} - Category score with totalScore, metricsCounted, averageScore, and averageRank (for display)
+ * Calculate category score using FIXED reference scales
+ * Score is based on raw data values, NOT ranks
+ * @param {string} category - Category name
+ * @param {string} countryCode - Country code
+ * @param {Object} countryData - Optional country data for extraction
+ * @returns {Object} - Category score object
  */
 export function calculateCategoryScore(category, countryCode, countryData = null) {
   const metrics = getMetricsByCategory(category);
@@ -246,7 +303,6 @@ export function calculateCategoryScore(category, countryCode, countryData = null
   const metricScores = {};
 
   metrics.forEach(metric => {
-    // Get value from country data or global index
     let value = null;
     if (countryData) {
       value = extractMetricValue(countryData, metric);
@@ -256,56 +312,29 @@ export function calculateCategoryScore(category, countryCode, countryData = null
     }
 
     if (value === null || value === undefined || isNaN(value)) {
-      // Skip optional metrics if data not available
       if (metric.optional) return;
-      // For non-optional metrics, skip if no data
       return;
     }
 
-    // Get all countries with this metric to find min/max for normalization
-    const allCountries = globalDataIndex.getCountriesWithMetric(metric.id);
-    
-    // Add current country if not in list
-    const exists = allCountries.find(c => c.code === countryCode);
-    if (!exists) {
-      allCountries.push({ code: countryCode, value: value });
-    }
-
-    if (allCountries.length === 0) return;
-
-    // Extract all values and find min/max
-    const values = allCountries.map(c => c.value).filter(v => v !== null && v !== undefined && !isNaN(v));
-    if (values.length === 0) return;
-
-    // For optimal metrics, we need to handle distance calculation
-    let minValue, maxValue;
-    if (metric.rankingType === 'optimal') {
-      // For optimal, use the actual min/max values for distance calculation
-      minValue = Math.min(...values);
-      maxValue = Math.max(...values);
-    } else {
-      minValue = Math.min(...values);
-      maxValue = Math.max(...values);
-    }
-
-    // Calculate normalized score
-    const normalizedScore = calculateMetricScore(metric, value, minValue, maxValue);
+    // Use FIXED reference scale scoring instead of dynamic min/max
+    const normalizedScore = calculateMetricScoreFixed(metric.id, value);
     
     totalScore += normalizedScore;
     metricsCounted++;
 
-    // Also get ranking for display purposes
+    // Get ranking for display purposes only
     const ranking = getMetricRanking(metric.id, countryCode, value);
     
     metricScores[metric.id] = {
       score: normalizedScore,
       rank: ranking?.rank || null,
+      total: ranking?.total || null,
       value: value,
       label: metric.label
     };
   });
 
-  // Calculate average rank for display (still useful for breakdown bars)
+  // Average rank for display only
   let totalRank = 0;
   let ranksCounted = 0;
   Object.values(metricScores).forEach(ms => {
@@ -316,21 +345,18 @@ export function calculateCategoryScore(category, countryCode, countryData = null
   });
 
   return {
-    totalScore: totalScore, // Sum of normalized scores (0-1 per metric)
+    totalScore: totalScore,
     metricsCounted: metricsCounted,
     averageScore: metricsCounted > 0 ? totalScore / metricsCounted : null,
-    averageRank: ranksCounted > 0 ? totalRank / ranksCounted : null, // For display/breakdown bars
-    totalRank: totalRank, // Keep for backward compatibility if needed
+    averageRank: ranksCounted > 0 ? totalRank / ranksCounted : null,
+    totalRank: totalRank,
     metricScores: metricScores
   };
 }
 
 /**
- * Calculate Influence Scale (sum of all category scores: People + Money + Reach + Resources)
- * Uses normalized raw values instead of ranks
- * @param {string} countryCode - The country code
- * @param {Object} countryData - The country data (optional)
- * @returns {Object} - Influence scale with total score and category breakdowns
+ * Calculate Influence Scale using FIXED reference scales
+ * Scores are stable regardless of which countries are loaded
  */
 export function calculateInfluenceScale(countryCode, countryData = null) {
   const peopleScore = calculateCategoryScore('people', countryCode, countryData);
@@ -339,9 +365,6 @@ export function calculateInfluenceScale(countryCode, countryData = null) {
   const resourcesScore = calculateCategoryScore('resources', countryCode, countryData);
   const qualityScore = calculateCategoryScore('quality', countryCode, countryData);
 
-  // Sum normalized scores from all categories
-  // Each category score is the sum of normalized metric scores (0-1 per metric)
-  // Higher total = better influence
   const influenceScale = (peopleScore.totalScore || 0) + 
                          (moneyScore.totalScore || 0) + 
                          (reachScore.totalScore || 0) + 
@@ -349,7 +372,7 @@ export function calculateInfluenceScale(countryCode, countryData = null) {
                          (qualityScore.totalScore || 0);
 
   return {
-    influenceScale: influenceScale, // Higher = better (sum of normalized scores)
+    influenceScale: influenceScale,
     people: peopleScore,
     money: moneyScore,
     reach: reachScore,
@@ -367,10 +390,6 @@ export function calculateInfluenceScale(countryCode, countryData = null) {
 
 /**
  * Process all leaderboard metrics for a country and add to global index
- * Also processes additional metrics like Land Boundaries for stats tab rankings
- * @param {string} countryCode - The country code
- * @param {Object} countryData - The country data
- * @param {string} countryName - The country name
  */
 export function processLeaderboardMetrics(countryCode, countryData, countryName) {
   const allMetrics = getAllMetrics();
@@ -383,7 +402,6 @@ export function processLeaderboardMetrics(countryCode, countryData, countryName)
     }
   });
 
-  // Also process Land Boundaries for stats tab ranking (even though it's optional)
   const landBoundariesMetric = getMetricById('reach_land_boundaries');
   if (landBoundariesMetric) {
     const value = extractMetricValue(countryData, landBoundariesMetric);
@@ -392,7 +410,6 @@ export function processLeaderboardMetrics(countryCode, countryData, countryName)
     }
   }
 
-  // Add to global index
   if (Object.keys(metrics).length > 0) {
     globalDataIndex.addCountryData(countryName, countryCode, metrics);
   }

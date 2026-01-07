@@ -83,10 +83,48 @@ export const LEADERBOARD_METRICS = {
       dataPath: ['People and Society', 'Population below poverty line', 'text'],
       category: 'people',
       rankingType: 'lower' // Lower is better
+    },
+    // Migration & Movement
+    {
+      id: 'people_net_migration',
+      label: 'Net Migration Rate',
+      dataPath: ['People and Society', 'Net migration rate', 'text'],
+      category: 'people',
+      rankingType: 'higher', // Positive migration = attractive country
+      optional: true
+    },
+    {
+      id: 'people_urbanization_rate',
+      label: 'Urbanization Rate',
+      dataPath: ['People and Society', 'Urbanization', 'rate of urbanization', 'text'],
+      category: 'people',
+      rankingType: 'optimal',
+      optimalValue: 1.5,
+      optimalRange: [0.5, 2.5], // Moderate urbanization is optimal
+      optional: true
+    },
+    // Age Structure
+    {
+      id: 'people_youth_dependency',
+      label: 'Youth Dependency Ratio',
+      dataPath: ['People and Society', 'Dependency ratios', 'youth dependency ratio', 'text'],
+      category: 'people',
+      rankingType: 'optimal',
+      optimalValue: 30,
+      optimalRange: [20, 40], // Balance is optimal
+      optional: true
+    },
+    {
+      id: 'people_elderly_dependency',
+      label: 'Elderly Dependency Ratio',
+      dataPath: ['People and Society', 'Dependency ratios', 'elderly dependency ratio', 'text'],
+      category: 'people',
+      rankingType: 'lower', // Lower burden is better
+      optional: true
     }
   ],
 
-  // Category 2: Money (7 metrics)
+  // Category 2: Money (16 metrics)
   money: [
     {
       id: 'money_real_gdp_ppp',
@@ -158,10 +196,81 @@ export const LEADERBOARD_METRICS = {
       dataPath: ['Economy', 'Debt - external', 'text'],
       category: 'money',
       rankingType: 'lower' // Lower is better
+    },
+    // GDP Composition (moved from Resources)
+    {
+      id: 'money_agriculture_gdp',
+      label: 'Agriculture % of GDP',
+      dataPath: ['Economy', 'GDP - composition, by sector of origin', 'agriculture', 'text'],
+      category: 'money',
+      rankingType: 'higher',
+      optional: true
+    },
+    {
+      id: 'money_industry_gdp',
+      label: 'Industry % of GDP',
+      dataPath: ['Economy', 'GDP - composition, by sector of origin', 'industry', 'text'],
+      category: 'money',
+      rankingType: 'higher',
+      optional: true
+    },
+    {
+      id: 'money_services_gdp',
+      label: 'Services % of GDP',
+      dataPath: ['Economy', 'GDP - composition, by sector of origin', 'services', 'text'],
+      category: 'money',
+      rankingType: 'higher',
+      optional: true
+    },
+    // Trade
+    {
+      id: 'money_exports',
+      label: 'Exports',
+      dataPath: ['Economy', 'Exports', 'text'],
+      category: 'money',
+      rankingType: 'higher'
+    },
+    {
+      id: 'money_imports',
+      label: 'Imports',
+      dataPath: ['Economy', 'Imports', 'text'],
+      category: 'money',
+      rankingType: 'higher'
+    },
+    // Financial Health
+    {
+      id: 'money_current_account',
+      label: 'Current Account Balance',
+      dataPath: ['Economy', 'Current account balance', 'Current account balance 2023', 'text'],
+      category: 'money',
+      rankingType: 'higher', // Surplus is better
+      optional: true,
+      fallbackPaths: [
+        ['Economy', 'Current account balance', 'text']
+      ]
+    },
+    {
+      id: 'money_reserves',
+      label: 'Foreign Exchange Reserves',
+      dataPath: ['Economy', 'Reserves of foreign exchange and gold', 'Reserves of foreign exchange and gold 2023', 'text'],
+      category: 'money',
+      rankingType: 'higher',
+      optional: true,
+      fallbackPaths: [
+        ['Economy', 'Reserves of foreign exchange and gold', 'text']
+      ]
+    },
+    {
+      id: 'money_budget_surplus',
+      label: 'Budget Surplus/Deficit',
+      dataPath: ['Economy', 'Budget', 'text'],
+      category: 'money',
+      rankingType: 'higher', // Surplus is better
+      optional: true
     }
   ],
 
-  // Category 3: Reach (6 core metrics)
+  // Category 3: Reach (8 core metrics)
   reach: [
     {
       id: 'reach_area',
@@ -487,23 +596,6 @@ export const LEADERBOARD_METRICS = {
       rankingType: 'higher',
       optional: true
     },
-    // Agriculture & Industry
-    {
-      id: 'resources_agriculture_gdp',
-      label: 'Agriculture % of GDP',
-      dataPath: ['Economy', 'GDP - composition, by sector of origin', 'agriculture', 'text'],
-      category: 'resources',
-      rankingType: 'higher',
-      optional: true
-    },
-    {
-      id: 'resources_industry_gdp',
-      label: 'Industry % of GDP',
-      dataPath: ['Economy', 'GDP - composition, by sector of origin', 'industry', 'text'],
-      category: 'resources',
-      rankingType: 'higher',
-      optional: true
-    }
   ],
 
   // Category 5: Quality (health, education, sustainability)

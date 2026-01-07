@@ -116,7 +116,7 @@ export const countriesList = [
   { code: "ba", name: "Bosnia and Herzegovina", folder: "europe" },
   
   // Russia & Central Asia
-  { code: "ru", name: "Russia", folder: "central-asia" },
+  { code: "ru", name: "Russia", folder: "russia" },
   { code: "kz", name: "Kazakhstan", folder: "central-asia" },
   { code: "uz", name: "Uzbekistan", folder: "central-asia" },
   

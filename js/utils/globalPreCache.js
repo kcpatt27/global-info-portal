@@ -25,32 +25,32 @@ import { getMetricById } from './leaderboardMetrics.js';
 const PRIORITY_COUNTRIES = [
   // Major Powers (5)
   { code: 'us', name: 'United States', folder: 'north-america' },
-  { code: 'cn', name: 'China', folder: 'east-n-southeast-asia' },
-  { code: 'ru', name: 'Russia', folder: 'central-asia' },
-  { code: 'gb', name: 'United Kingdom', folder: 'europe' },
+  { code: 'ch', name: 'China', folder: 'east-n-southeast-asia' },  // FIPS code 'ch' -> ISO 'cn'
+  { code: 'rs', name: 'Russia', folder: 'russia' },  // FIPS code 'rs' -> ISO 'ru'
+  { code: 'uk', name: 'United Kingdom', folder: 'europe' },  // FIPS 'uk' -> ISO 'gb'
   { code: 'fr', name: 'France', folder: 'europe' },
   
   // G20 Economies (14 more)
-  { code: 'de', name: 'Germany', folder: 'europe' },
-  { code: 'jp', name: 'Japan', folder: 'east-n-southeast-asia' },
+  { code: 'gm', name: 'Germany', folder: 'europe' },  // FIPS 'gm' -> ISO 'de'
+  { code: 'ja', name: 'Japan', folder: 'east-n-southeast-asia' },  // FIPS 'ja' -> ISO 'jp'
   { code: 'in', name: 'India', folder: 'south-asia' },
   { code: 'br', name: 'Brazil', folder: 'south-america' },
   { code: 'it', name: 'Italy', folder: 'europe' },
   { code: 'ca', name: 'Canada', folder: 'north-america' },
-  { code: 'kr', name: 'South Korea', folder: 'east-n-southeast-asia' },
-  { code: 'au', name: 'Australia', folder: 'australia-oceania' },
+  { code: 'ks', name: 'South Korea', folder: 'east-n-southeast-asia' },  // FIPS 'ks' -> ISO 'kr'
+  { code: 'as', name: 'Australia', folder: 'australia-oceania' },  // FIPS 'as' -> ISO 'au'
   { code: 'mx', name: 'Mexico', folder: 'north-america' },
   { code: 'id', name: 'Indonesia', folder: 'east-n-southeast-asia' },
-  { code: 'tr', name: 'Turkey', folder: 'middle-east' },
+  { code: 'tu', name: 'Turkey', folder: 'middle-east' },  // FIPS 'tu' -> ISO 'tr'
   { code: 'sa', name: 'Saudi Arabia', folder: 'middle-east' },
   { code: 'ar', name: 'Argentina', folder: 'south-america' },
-  { code: 'za', name: 'South Africa', folder: 'africa' },
+  { code: 'sf', name: 'South Africa', folder: 'africa' },  // FIPS 'sf' -> ISO 'za'
   
   // Key NATO & EU (12)
-  { code: 'es', name: 'Spain', folder: 'europe' },
+  { code: 'sp', name: 'Spain', folder: 'europe' },  // FIPS 'sp' -> ISO 'es'
   { code: 'pl', name: 'Poland', folder: 'europe' },
   { code: 'nl', name: 'Netherlands', folder: 'europe' },
-  { code: 'ch', name: 'Switzerland', folder: 'europe' },
+  { code: 'sz', name: 'Switzerland', folder: 'europe' },  // FIPS 'sz' -> ISO 'ch'
   { code: 'se', name: 'Sweden', folder: 'europe' },
   { code: 'no', name: 'Norway', folder: 'europe' },
   { code: 'be', name: 'Belgium', folder: 'europe' },
@@ -61,12 +61,12 @@ const PRIORITY_COUNTRIES = [
   { code: 'pt', name: 'Portugal', folder: 'europe' },
   
   // Key Middle East (6)
-  { code: 'il', name: 'Israel', folder: 'middle-east' },
+  { code: 'is', name: 'Israel', folder: 'middle-east' },  // FIPS 'is' -> ISO 'il'
   { code: 'ae', name: 'United Arab Emirates', folder: 'middle-east' },
   { code: 'ir', name: 'Iran', folder: 'middle-east' },
-  { code: 'iq', name: 'Iraq', folder: 'middle-east' },
+  { code: 'iz', name: 'Iraq', folder: 'middle-east' },  // FIPS 'iz' -> ISO 'iq'
   { code: 'qa', name: 'Qatar', folder: 'middle-east' },
-  { code: 'kw', name: 'Kuwait', folder: 'middle-east' },
+  { code: 'ku', name: 'Kuwait', folder: 'middle-east' },  // FIPS 'ku' -> ISO 'kw'
   
   // Key Asia-Pacific (7)
   { code: 'tw', name: 'Taiwan', folder: 'east-n-southeast-asia' },
@@ -79,8 +79,8 @@ const PRIORITY_COUNTRIES = [
   
   // Key Others (6)
   { code: 'eg', name: 'Egypt', folder: 'africa' },
-  { code: 'ng', name: 'Nigeria', folder: 'africa' },
-  { code: 'ua', name: 'Ukraine', folder: 'europe' },
+  { code: 'ni', name: 'Nigeria', folder: 'africa' },  // FIPS 'ni' -> ISO 'ng'
+  { code: 'up', name: 'Ukraine', folder: 'europe' },  // FIPS 'up' -> ISO 'ua'
   { code: 've', name: 'Venezuela', folder: 'south-america' },
   { code: 'co', name: 'Colombia', folder: 'south-america' },
   { code: 'nz', name: 'New Zealand', folder: 'australia-oceania' }
@@ -135,7 +135,7 @@ const SECONDARY_COUNTRIES = [
 const STORAGE_KEY = 'global_leaderboard_cache';
 const STORAGE_TIMESTAMP_KEY = 'global_cache_timestamp';
 const STORAGE_VERSION_KEY = 'global_cache_version';
-const CACHE_VERSION = 8; // Bump when extraction logic changes
+const CACHE_VERSION = 13; // Fixed reference scale IDs to match metric IDs
 const CACHE_DURATION_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 
 // Batch size for parallel fetching (balance between speed and API load)
@@ -385,6 +385,13 @@ export async function progressiveCacheSecondary(onProgress = null) {
   // Update storage with new data
   if (successful > 0) {
     saveToStorage(cached);
+    
+    // Dispatch event to notify UI of new data
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('leaderboard-data-updated', {
+        detail: { countriesAdded: successful, total: Object.keys(cached).length }
+      }));
+    }
   }
   
   console.log(`✅ Progressive cache complete: ${successful} additional countries`);
