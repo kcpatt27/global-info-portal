@@ -106,8 +106,10 @@
     font-size: 14px;
     font-weight: 500;
     background-color: var(--color-surface-lighter, #2a2a35);
-    border: 1px solid var(--color-border, #3a3a45);
-    border-bottom: 3px solid var(--color-border, #3a3a45);
+    /* Using explicit border properties to prevent cssnano reordering issues */
+    border-style: solid;
+    border-color: var(--color-border, #3a3a45);
+    border-width: 1px 1px 3px 1px;
     color: var(--color-text-secondary, #888);
     transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
   }
