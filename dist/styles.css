@@ -793,6 +793,11 @@ pre {
     will-change: transform, opacity;
 }
 
+/* Hide drag handle on desktop */
+.panel-drag-handle {
+    display: none;
+}
+
 .info-container.collapsed {
     transform: translateX(100%);
     opacity: 0;
@@ -5791,55 +5796,58 @@ svg .tick text {
 
 /* Reset container structure for mobile devices */
 @media (max-width: 768px) {
-  /* Primary container structure - stack map and info vertically in portrait mode */
+  /* Primary container - map fills entire viewport, info panel overlays */
   .container {
-    display: grid;
-    grid-template-columns: 1fr;
-    grid-template-rows: minmax(0, 60vh) minmax(0, 40vh);
+    display: block;
     height: 100vh; /* Force full viewport height */
-    overflow: hidden; /* Prevent scrolling on the container */
     width: 100%;
     position: relative;
+    overflow: hidden;
   }
 
-  /* Map container takes full width, fixed height in portrait */
+  /* Map container takes full viewport */
   .map-container {
     width: 100%;
-    height: 100%;
+    height: 100vh; /* Full viewport height */
     overflow: hidden;
-    grid-row: 1;
-    position: relative;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     z-index: 10;
     /* Hardware acceleration for smoother interactions */
     transform: translateZ(0);
     will-change: transform;
     touch-action: none; /* Allow D3 to handle touch events like pan/zoom */
+    background-color: #000; /* Ensure black background, no gray */
   }
 
-  /* Info container slides up from bottom */
+  /* Info container as overlay at bottom */
   .info-container {
     width: 100%;
-    grid-row: 2;
     z-index: 20;
     display: flex;
     flex-direction: column;
     background-color: #1c1c1c;
     border-radius: 16px 16px 0 0;
     box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.3);
-    /* Add subtle indication that panel can be expanded */
-    position: relative;
+    /* Position at bottom as overlay */
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
     padding: 15px;
-    overflow: hidden; /* Changed from overflow-y: auto to prevent double scrolling */
-    height: 40vh; /* Fixed height to match grid template */
-    max-height: 40vh;
+    overflow: hidden;
+    height: 40vh; /* Default height */
+    max-height: calc(100vh - 20px); /* Can't exceed viewport */
     min-height: 100px; /* Minimum height to always show flag and country name */
     /* Enable smooth inertial scrolling on iOS */
     -webkit-overflow-scrolling: touch;
     /* Smoother animations */
     transition: height 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
-                transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
                 box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    will-change: transform, height;
+    will-change: height;
   }
 
   /* Pull handle for expanding the info container */
@@ -5926,13 +5934,11 @@ svg .tick text {
 /* Define expanded state for info panel */
 @media (max-width: 768px) {
   .info-container.expanded {
-    /* Take over most of the screen when expanded - can go all the way to top */
-    transform: translateY(0); /* Move to top of viewport */
-    height: calc(100vh - env(safe-area-inset-top, 0px));
-    max-height: calc(100vh - env(safe-area-inset-top, 0px));
-    min-height: 100px; /* Still maintain minimum for header */
+    /* Full screen mode */
+    height: calc(100vh - 20px); /* Almost full viewport */
+    min-height: 100px;
     z-index: 30;
-    /* Add overlay to dim the map */
+    border-radius: 16px 16px 0 0;
     box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.4);
   }
   
@@ -6456,9 +6462,41 @@ svg .tick text {
   }
   
   /* Dragging state */
-  .is-dragging {
-    transition: none;
+  .is-dragging,
+  .info-container.dragging {
+    transition: none !important;
     cursor: grabbing;
+  }
+  
+  /* Swiping visual feedback */
+  .info-container.swiping {
+    box-shadow: 0 -8px 25px rgba(0, 0, 0, 0.4);
+  }
+  
+  /* Panel drag handle - visible on mobile */
+  .panel-drag-handle {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 8px 0 4px 0;
+    cursor: grab;
+    touch-action: none;
+    user-select: none;
+  }
+  
+  .panel-drag-handle .drag-bar {
+    width: 40px;
+    height: 5px;
+    background-color: rgba(255, 255, 255, 0.3);
+    border-radius: 3px;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+  }
+  
+  .panel-drag-handle:active .drag-bar,
+  .info-container.dragging .drag-bar,
+  .info-container.swiping .drag-bar {
+    background-color: var(--color-accent, #69b3a2);
+    transform: scaleX(1.2);
   }
   
   /* Gesture instruction hints */
@@ -6919,7 +6957,7 @@ svg .tick text {
     font-size: 0.75rem; /* 12px */
     font-weight: 500;
     letter-spacing: 0.03em;
-    text-transform: uppercase;
+    text-transform: none; /* Keep labels as-is, not uppercase */
     opacity: 0.85;
   }
   
@@ -7377,11 +7415,11 @@ svg .tick text {
     display: none;
   }
 
-  /* Individual tabs */
+  /* Individual tabs - proper tab appearance */
   .data-tab {
     flex: 0 0 auto;
     padding: 10px 16px;
-    margin-right: 6px;
+    margin-right: -5px;
     min-width: 100px;
     text-align: center;
     position: relative;
@@ -7389,19 +7427,38 @@ svg .tick text {
     white-space: nowrap;
     font-size: 14px;
     font-weight: 500;
+    background-color: var(--color-surface-lighter, #2a2a35);
+    border: 1px solid var(--color-border, #3a3a45);
+    border-bottom: 3px solid var(--color-border, #3a3a45);
+    color: var(--color-text-secondary, #888);
+    transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  
+  .data-tab:last-child {
+    margin-right: 0;
   }
 
-  /* Add indicator for active tab */
-  .data-tab.active::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: var(--color-accent);
-    border-radius: 3px 3px 0 0;
+  /* Active tab styling */
+  .data-tab.active {
+    background-color: var(--color-sidebar-bg, #1c1c1c);
+    border-color: var(--color-inactive-text, #666);
+    border-bottom: none !important;
+    color: var(--color-text-primary, #fff);
+    font-weight: bold;
+    z-index: 10;
+    transform: translateY(-2px);
+    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.3);
   }
+  
+  /* Remove the after indicator since we're using border-bottom style */
+  .data-tab.active::after {
+    display: none;
+  }
+  
+  /* Z-index stacking */
+  .data-tab:nth-child(1) { z-index: 4; }
+  .data-tab:nth-child(2) { z-index: 3; }
+  .data-tab.active { z-index: 10; }
 }
 
 /* 

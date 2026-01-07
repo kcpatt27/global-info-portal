@@ -51,6 +51,10 @@
           <svg width="960" height="500" viewBox="0 0 960 500" preserveAspectRatio="xMidYMid meet"></svg>
       </div>
         <div class="info-container">
+            <!-- Drag handle for mobile panel gesture -->
+            <div class="panel-drag-handle" aria-hidden="true">
+                <div class="drag-bar"></div>
+            </div>
             <div class="info-header">
                 <div class="flag">FLAG</div>
                 <div class="country-info">COUNTRY INFO</div>
@@ -296,230 +300,257 @@
           // Initial nav bar visibility update
           updateNavBarVisibility();
           
-          // Add swipe-down gesture to close panel (only when touching header area)
+          // Panel drag gesture - smooth continuous movement with snap on release
           let touchStartY = 0;
-          let touchEndY = 0;
-          let touchStartScrollTop = 0;
-          let isTouchDragging = false;
-          const SWIPE_THRESHOLD = 50; // Minimum distance for swipe
+          let touchCurrentY = 0;
+          let panelStartHeight = 0;
+          let isDragging = false;
+          let lastVelocity = 0;
+          let lastTouchTime = 0;
+          let lastTouchY = 0;
+          
+          // Height constants
+          const MIN_HEIGHT = 100; // Collapsed - just header
+          const DEFAULT_HEIGHT = window.innerHeight * 0.4; // Default 40vh
+          const MAX_HEIGHT = window.innerHeight - 20; // Full screen (with small margin)
+          
+          // Get the pull handle area (top 50px of panel)
+          const isPullArea = (touchY) => {
+            const rect = infoContainer.getBoundingClientRect();
+            return touchY < rect.top + 50;
+          };
           
           infoContainer.addEventListener('touchstart', (e) => {
-            // Only start drag if touching header area or top 40px
-            const rect = infoContainer.getBoundingClientRect();
             const touchY = e.touches[0].clientY;
-            const isTopArea = e.target === infoContainer ||
-                              e.target.closest('.info-header') ||
-                              touchY < (rect.top + 40);
             
-            if (!isTopArea) return;
-            
-            // Check if content is scrolled - if so, don't start drag
-            const activePanel = infoContainer.querySelector('.content-panel.active');
-            const scrollContainer = activePanel?.querySelector('.background-info') || 
-                                   activePanel?.querySelector('.data-panel') ||
-                                   activePanel;
-            touchStartScrollTop = scrollContainer?.scrollTop || 0;
-            
-            // Only start drag if not scrolled or scrolled to top
-            if (touchStartScrollTop > 5) return;
-            
-            touchStartY = touchY;
-            isTouchDragging = true;
-            infoContainer.style.transition = 'none';
-          }, { passive: true });
-          
-          infoContainer.addEventListener('touchmove', (e) => {
-            if (!isTouchDragging || touchStartY === 0) return;
-            
-            touchEndY = e.touches[0].clientY;
-            
-            // Check if content has scrolled during drag - if so, cancel drag
-            const activePanel = infoContainer.querySelector('.content-panel.active');
-            const scrollContainer = activePanel?.querySelector('.background-info') || 
-                                   activePanel?.querySelector('.data-panel') ||
-                                   activePanel;
-            const currentScrollTop = scrollContainer?.scrollTop || 0;
-            
-            // If content scrolled significantly, cancel drag to allow scrolling
-            if (Math.abs(currentScrollTop - touchStartScrollTop) > 10) {
-              isTouchDragging = false;
-              touchStartY = 0;
-              infoContainer.classList.remove('swiping');
-              infoContainer.style.transform = '';
-              return;
-            }
-            
-            // Calculate distance
-            const swipeDistance = touchEndY - touchStartY;
-            
-            // If swiping down (positive distance)
-            if (swipeDistance > 5) {
-              // Add visual feedback during swipe
-              infoContainer.classList.add('swiping');
-              
-              // Add move to the panel based on swipe distance (smoother)
-              const moveDistance = Math.min(swipeDistance * 0.5, 50);
-              infoContainer.style.transform = `translateY(${moveDistance}px)`;
-            }
-            // If swiping up (negative distance) - expand panel
-            else if (swipeDistance < -5) {
-              infoContainer.classList.add('swiping');
-              const maxMove = window.innerHeight * 0.4;
-              const translate = Math.max(-maxMove, Math.min(0, -swipeDistance * 0.5));
-              infoContainer.style.transform = `translateY(${translate}px)`;
-            }
-          }, { passive: true });
-          
-          infoContainer.addEventListener('touchend', (e) => {
-            if (!isTouchDragging) return;
-            
-            const swipeDistance = touchEndY - touchStartY;
-            
-            // Remove visual feedback
-            infoContainer.classList.remove('swiping');
-            
-            // Reset transform
-            infoContainer.style.transform = '';
-            
-            // If swipe down distance is greater than threshold, collapse
-            if (swipeDistance > SWIPE_THRESHOLD) {
-              window.collapseSidebar();
-            }
-            // If swipe up distance is greater than threshold, expand
-            else if (swipeDistance < -SWIPE_THRESHOLD && !infoContainer.classList.contains('expanded')) {
-              infoContainer.classList.add('expanded');
-              infoContainer.style.transition = '';
-              updateNavBarVisibility();
-            }
-            // If swipe down and panel is expanded, collapse it
-            else if (swipeDistance > SWIPE_THRESHOLD && infoContainer.classList.contains('expanded')) {
-              infoContainer.classList.remove('expanded');
-              infoContainer.style.transition = '';
-              updateNavBarVisibility();
-            }
-            
-            // Reset values
-            touchStartY = 0;
-            touchEndY = 0;
-            touchStartScrollTop = 0;
-            isTouchDragging = false;
-          });
-          
-          // Pointer-based drag to expand/collapse (mouse/pen parity)
-          let pointerStartY = 0;
-          let isPointerDragging = false;
-          let pointerStartScrollTop = 0;
-          
-          infoContainer.addEventListener('pointerdown', (e) => {
-            // Only act on primary button
-            if (e.button !== undefined && e.button !== 0) return;
-            
-            // Check if touch is in the header area or top 40px of panel
-            const rect = infoContainer.getBoundingClientRect();
-            const isTopArea = e.target === infoContainer ||
-                              e.target.closest('.info-header') ||
-                              e.clientY < (rect.top + 40);
-            
-            if (!isTopArea) return;
-            
-            // Check if content is scrolled - if so, don't start drag
-            const activePanel = infoContainer.querySelector('.content-panel.active');
-            const scrollContainer = activePanel?.querySelector('.background-info') || 
-                                   activePanel?.querySelector('.data-panel') ||
-                                   activePanel;
-            pointerStartScrollTop = scrollContainer?.scrollTop || 0;
-            
-            // Only start drag if not scrolled or scrolled to top
-            if (pointerStartScrollTop > 5) return;
-            
-            isPointerDragging = true;
-            pointerStartY = e.clientY;
-            infoContainer.style.transition = 'none';
-            infoContainer.setPointerCapture && infoContainer.setPointerCapture(e.pointerId);
-            e.preventDefault(); // Prevent text selection and other default behaviors
-          });
-          
-          infoContainer.addEventListener('pointermove', (e) => {
-            if (!isPointerDragging) return;
-            
-            // Check if content has scrolled during drag - if so, cancel drag
-            const activePanel = infoContainer.querySelector('.content-panel.active');
-            const scrollContainer = activePanel?.querySelector('.background-info') || 
-                                   activePanel?.querySelector('.data-panel') ||
-                                   activePanel;
-            const currentScrollTop = scrollContainer?.scrollTop || 0;
-            
-            // If content scrolled significantly, cancel drag to allow scrolling
-            if (Math.abs(currentScrollTop - pointerStartScrollTop) > 10) {
-              isPointerDragging = false;
-              infoContainer.classList.remove('swiping');
-              infoContainer.style.transform = '';
-              infoContainer.style.transition = '';
-              return;
-            }
-            
-            const diffY = pointerStartY - e.clientY; // positive when dragging up
-            // Visual feedback with smoother movement
-            const maxMove = window.innerHeight * 0.4;
-            const translate = Math.max(-maxMove, Math.min(0, -diffY * 0.5)); // Increased responsiveness
-            infoContainer.style.transform = `translateY(${translate}px)`;
-            infoContainer.classList.add('swiping');
-            
-            // Snap when threshold exceeded (reduced threshold for better responsiveness)
-            if (diffY > 40 && !infoContainer.classList.contains('expanded')) {
-              infoContainer.classList.remove('swiping');
-              infoContainer.style.transform = '';
-              infoContainer.classList.add('expanded');
-              infoContainer.style.transition = '';
-              isPointerDragging = false;
-              updateNavBarVisibility(); // Update nav bar when expanded
-            } else if (diffY < -40 && infoContainer.classList.contains('expanded')) {
-              infoContainer.classList.remove('swiping');
-              infoContainer.style.transform = '';
-              infoContainer.classList.remove('expanded');
-              infoContainer.style.transition = '';
-              isPointerDragging = false;
-              updateNavBarVisibility(); // Update nav bar when collapsed
-            }
-            
-            e.preventDefault(); // Prevent scrolling during drag
-          });
-          
-          const endPointerDrag = () => {
-            if (!isPointerDragging) return;
-            
-            // Apply final state based on current position
-            const currentTransform = infoContainer.style.transform;
-            const translateMatch = currentTransform.match(/translateY\((-?\d+)px\)/);
-            if (translateMatch) {
-              const translate = parseInt(translateMatch[1]);
-              // If dragged more than halfway, snap to expanded/collapsed
-              if (translate < -window.innerHeight * 0.2 && !infoContainer.classList.contains('expanded')) {
-                infoContainer.classList.add('expanded');
-                updateNavBarVisibility();
-              } else if (translate > -window.innerHeight * 0.2 && infoContainer.classList.contains('expanded')) {
-                infoContainer.classList.remove('expanded');
-                updateNavBarVisibility();
+            // Check if touching the pull handle area at top of panel
+            if (!isPullArea(touchY)) {
+              // Not in pull area - check if scrolled content
+              const activePanel = infoContainer.querySelector('.content-panel.active');
+              const scrollContainer = activePanel?.querySelector('.background-info, .data-panel');
+              if (scrollContainer && scrollContainer.scrollTop > 0) {
+                return; // Let the content scroll
               }
             }
             
+            touchStartY = touchY;
+            touchCurrentY = touchY;
+            panelStartHeight = infoContainer.offsetHeight;
+            isDragging = true;
+            lastTouchTime = Date.now();
+            lastTouchY = touchY;
+            lastVelocity = 0;
+            
+            // Disable transitions during drag for responsive feel
+            infoContainer.style.transition = 'none';
+            infoContainer.classList.add('dragging');
+          }, { passive: true });
+          
+          infoContainer.addEventListener('touchmove', (e) => {
+            if (!isDragging) return;
+            
+            const touchY = e.touches[0].clientY;
+            const now = Date.now();
+            const dt = now - lastTouchTime;
+            
+            // Calculate velocity for momentum
+            if (dt > 0) {
+              lastVelocity = (touchY - lastTouchY) / dt;
+            }
+            lastTouchTime = now;
+            lastTouchY = touchY;
+            touchCurrentY = touchY;
+            
+            // Calculate new height based on drag direction
+            // Moving finger down = smaller panel, finger up = larger panel
+            const dragDistance = touchStartY - touchY;
+            let newHeight = panelStartHeight + dragDistance;
+            
+            // Clamp height between min and max
+            newHeight = Math.max(MIN_HEIGHT, Math.min(MAX_HEIGHT, newHeight));
+            
+            // Apply the height directly for smooth 1:1 tracking
+            infoContainer.style.height = `${newHeight}px`;
+            
+            // Visual feedback
+            infoContainer.classList.add('swiping');
+          }, { passive: true });
+          
+          infoContainer.addEventListener('touchend', (e) => {
+            if (!isDragging) return;
+            
+            isDragging = false;
+            infoContainer.classList.remove('dragging');
             infoContainer.classList.remove('swiping');
-            infoContainer.style.transform = '';
+            
+            // Get current height
+            const currentHeight = infoContainer.offsetHeight;
+            
+            // Calculate momentum-based target (velocity * time constant)
+            const momentumOffset = lastVelocity * 150; // 150ms momentum
+            const projectedHeight = currentHeight - momentumOffset;
+            
+            // Determine snap target based on position and velocity
+            let targetHeight;
+            let targetClass = '';
+            
+            // Define snap thresholds
+            const collapseThreshold = MIN_HEIGHT + (DEFAULT_HEIGHT - MIN_HEIGHT) * 0.4;
+            const expandThreshold = DEFAULT_HEIGHT + (MAX_HEIGHT - DEFAULT_HEIGHT) * 0.4;
+            
+            if (projectedHeight <= collapseThreshold) {
+              // Snap to collapsed (minimum)
+              targetHeight = MIN_HEIGHT;
+              targetClass = 'collapsed';
+            } else if (projectedHeight >= expandThreshold) {
+              // Snap to expanded (full screen)
+              targetHeight = MAX_HEIGHT;
+              targetClass = 'expanded';
+            } else {
+              // Snap to default height
+              targetHeight = DEFAULT_HEIGHT;
+              targetClass = '';
+            }
+            
+            // Enable smooth transition for snap animation
+            infoContainer.style.transition = 'height 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+            infoContainer.style.height = `${targetHeight}px`;
+            
+            // Update classes
+            infoContainer.classList.remove('collapsed', 'expanded');
+            if (targetClass) {
+              infoContainer.classList.add(targetClass);
+            }
+            
+            // Update nav bar visibility
+            updateNavBarVisibility();
+            
+            // Reset after transition
+            setTimeout(() => {
+              infoContainer.style.transition = '';
+            }, 300);
+          });
+          
+          // Handle touch cancel
+          infoContainer.addEventListener('touchcancel', () => {
+            if (!isDragging) return;
+            isDragging = false;
+            infoContainer.classList.remove('dragging', 'swiping');
             infoContainer.style.transition = '';
-            isPointerDragging = false;
-            pointerStartScrollTop = 0;
+          });
+          
+          // Pointer-based drag (for mouse/pen in desktop/IDE preview)
+          // Uses same height-based system as touch for consistency
+          let ptrStartY = 0;
+          let ptrCurrentY = 0;
+          let ptrPanelStartHeight = 0;
+          let isPtrDragging = false;
+          let ptrLastVelocity = 0;
+          let ptrLastTime = 0;
+          let ptrLastY = 0;
+          
+          infoContainer.addEventListener('pointerdown', (e) => {
+            // Only for mouse/pen, not touch (touch is handled separately)
+            if (e.pointerType === 'touch') return;
+            
+            // Only act on primary button
+            if (e.button !== 0) return;
+            
+            const clientY = e.clientY;
+            const rect = infoContainer.getBoundingClientRect();
+            
+            // Check if in pull area (top 50px)
+            if (clientY >= rect.top + 50) {
+              const activePanel = infoContainer.querySelector('.content-panel.active');
+              const scrollContainer = activePanel?.querySelector('.background-info, .data-panel');
+              if (scrollContainer && scrollContainer.scrollTop > 0) {
+                return;
+              }
+            }
+            
+            ptrStartY = clientY;
+            ptrCurrentY = clientY;
+            ptrPanelStartHeight = infoContainer.offsetHeight;
+            isPtrDragging = true;
+            ptrLastTime = Date.now();
+            ptrLastY = clientY;
+            ptrLastVelocity = 0;
+            
+            infoContainer.style.transition = 'none';
+            infoContainer.classList.add('dragging');
+            infoContainer.setPointerCapture?.(e.pointerId);
+            e.preventDefault();
+          });
+          
+          infoContainer.addEventListener('pointermove', (e) => {
+            if (!isPtrDragging || e.pointerType === 'touch') return;
+            
+            const clientY = e.clientY;
+            const now = Date.now();
+            const dt = now - ptrLastTime;
+            
+            if (dt > 0) {
+              ptrLastVelocity = (clientY - ptrLastY) / dt;
+            }
+            ptrLastTime = now;
+            ptrLastY = clientY;
+            ptrCurrentY = clientY;
+            
+            // Calculate new height
+            const dragDistance = ptrStartY - clientY;
+            let newHeight = ptrPanelStartHeight + dragDistance;
+            newHeight = Math.max(MIN_HEIGHT, Math.min(MAX_HEIGHT, newHeight));
+            
+            infoContainer.style.height = `${newHeight}px`;
+            infoContainer.classList.add('swiping');
+            e.preventDefault();
+          });
+          
+          const endPtrDrag = (e) => {
+            if (!isPtrDragging) return;
+            if (e && e.pointerType === 'touch') return;
+            
+            isPtrDragging = false;
+            infoContainer.classList.remove('dragging', 'swiping');
+            
+            const currentHeight = infoContainer.offsetHeight;
+            const momentumOffset = ptrLastVelocity * 150;
+            const projectedHeight = currentHeight - momentumOffset;
+            
+            const collapseThreshold = MIN_HEIGHT + (DEFAULT_HEIGHT - MIN_HEIGHT) * 0.4;
+            const expandThreshold = DEFAULT_HEIGHT + (MAX_HEIGHT - DEFAULT_HEIGHT) * 0.4;
+            
+            let targetHeight;
+            let targetClass = '';
+            
+            if (projectedHeight <= collapseThreshold) {
+              targetHeight = MIN_HEIGHT;
+              targetClass = 'collapsed';
+            } else if (projectedHeight >= expandThreshold) {
+              targetHeight = MAX_HEIGHT;
+              targetClass = 'expanded';
+            } else {
+              targetHeight = DEFAULT_HEIGHT;
+              targetClass = '';
+            }
+            
+            infoContainer.style.transition = 'height 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+            infoContainer.style.height = `${targetHeight}px`;
+            
+            infoContainer.classList.remove('collapsed', 'expanded');
+            if (targetClass) {
+              infoContainer.classList.add(targetClass);
+            }
+            
+            updateNavBarVisibility();
+            
+            setTimeout(() => {
+              infoContainer.style.transition = '';
+            }, 300);
           };
           
-          infoContainer.addEventListener('pointerup', endPointerDrag);
-          infoContainer.addEventListener('pointercancel', endPointerDrag);
-          
-          // Also remove swiping class when touch is canceled
-          infoContainer.addEventListener('touchcancel', () => {
-            infoContainer.classList.remove('swiping');
-            infoContainer.style.transform = '';
-            touchStartY = 0;
-            touchEndY = 0;
-          });
+          infoContainer.addEventListener('pointerup', endPtrDrag);
+          infoContainer.addEventListener('pointercancel', endPtrDrag);
           
           // Close button event - explicitly binding the collapseSidebar function
           const closeButton = document.getElementById('close-sidebar');

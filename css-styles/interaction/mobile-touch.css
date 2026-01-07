@@ -196,9 +196,41 @@
   }
   
   /* Dragging state */
-  .is-dragging {
-    transition: none;
+  .is-dragging,
+  .info-container.dragging {
+    transition: none !important;
     cursor: grabbing;
+  }
+  
+  /* Swiping visual feedback */
+  .info-container.swiping {
+    box-shadow: 0 -8px 25px rgba(0, 0, 0, 0.4);
+  }
+  
+  /* Panel drag handle - visible on mobile */
+  .panel-drag-handle {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 8px 0 4px 0;
+    cursor: grab;
+    touch-action: none;
+    user-select: none;
+  }
+  
+  .panel-drag-handle .drag-bar {
+    width: 40px;
+    height: 5px;
+    background-color: rgba(255, 255, 255, 0.3);
+    border-radius: 3px;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+  }
+  
+  .panel-drag-handle:active .drag-bar,
+  .info-container.dragging .drag-bar,
+  .info-container.swiping .drag-bar {
+    background-color: var(--color-accent, #69b3a2);
+    transform: scaleX(1.2);
   }
   
   /* Gesture instruction hints */

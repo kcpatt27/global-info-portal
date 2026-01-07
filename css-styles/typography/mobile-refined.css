@@ -177,7 +177,7 @@
     font-size: 0.75rem; /* 12px */
     font-weight: 500;
     letter-spacing: 0.03em;
-    text-transform: uppercase;
+    text-transform: none; /* Keep labels as-is, not uppercase */
     opacity: 0.85;
   }
   

@@ -16,6 +16,11 @@
     will-change: transform, opacity;
 }
 
+/* Hide drag handle on desktop */
+.panel-drag-handle {
+    display: none;
+}
+
 .info-container.collapsed {
     transform: translateX(100%);
     opacity: 0;
