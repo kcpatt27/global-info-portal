@@ -1234,6 +1234,42 @@ function createGlobalLeaderboard(container, currentCountryCode) {
     }
   });
 
+  // Calculate PERCENTILE RANKS for each category
+  // This creates better visual differentiation in the color bars
+  const categories = ['people', 'money', 'reach', 'resources', 'quality'];
+  const totalCountries = uniqueEntries.length;
+  
+  categories.forEach(category => {
+    // Sort entries by this category's averageScore (higher = better)
+    const sortedByCategory = [...uniqueEntries]
+      .filter(e => e[category]?.averageScore != null && e[category].averageScore > 0)
+      .sort((a, b) => (b[category]?.averageScore || 0) - (a[category]?.averageScore || 0));
+    
+    // Assign percentile rank to each country for this category
+    sortedByCategory.forEach((entry, index) => {
+      // Percentile = how many countries you beat (0-100 scale)
+      // #1 rank = 100 percentile, last rank = 0 percentile
+      const percentile = sortedByCategory.length > 1 
+        ? ((sortedByCategory.length - 1 - index) / (sortedByCategory.length - 1)) * 100
+        : 50; // Single entry gets 50%
+      
+      // Find the original entry and add percentile
+      const originalEntry = uniqueEntries.find(e => e.code === entry.code);
+      if (originalEntry) {
+        if (!originalEntry.percentiles) originalEntry.percentiles = {};
+        originalEntry.percentiles[category] = percentile;
+      }
+    });
+    
+    // Set 0 percentile for countries missing this category data
+    uniqueEntries.forEach(entry => {
+      if (!entry.percentiles) entry.percentiles = {};
+      if (entry.percentiles[category] === undefined) {
+        entry.percentiles[category] = 0;
+      }
+    });
+  });
+
   // Show all countries (no limit)
   const topCountries = uniqueEntries;
 
@@ -1300,23 +1336,26 @@ function createGlobalLeaderboard(container, currentCountryCode) {
         ${topCountries.map((country, index) => {
           const isCurrent = country.code.toLowerCase() === currentCountryCode?.toLowerCase();
           
-          // Calculate breakdown bar widths based on SCORE CONTRIBUTION
-          // Each category's score as a percentage of total influence score
-          const peopleScore = country.people?.totalScore || 0;
-          const moneyScore = country.money?.totalScore || 0;
-          const reachScore = country.reach?.totalScore || 0;
-          const resourcesScore = country.resources?.totalScore || 0;
-          const qualityScore = country.quality?.totalScore || 0;
+          // Use PERCENTILE RANKS for visual differentiation
+          // This shows competitive position: 100 = #1 in category, 0 = last place
+          const peoplePerc = country.percentiles?.people || 0;
+          const moneyPerc = country.percentiles?.money || 0;
+          const reachPerc = country.percentiles?.reach || 0;
+          const resourcesPerc = country.percentiles?.resources || 0;
+          const qualityPerc = country.percentiles?.quality || 0;
           
-          const totalScore = peopleScore + moneyScore + reachScore + resourcesScore + qualityScore;
+          // Color bar shows RELATIVE STRENGTH by percentile
+          // Each segment's width = its share of total percentile score
+          // This creates visual variation: strong categories dominate
+          const totalPerc = peoplePerc + moneyPerc + reachPerc + resourcesPerc + qualityPerc;
+          const toWidth = (perc) => totalPerc > 0 ? (perc / totalPerc) * 100 : 20;
           
-          // Calculate percentage contribution of each category
-          const toPercent = (score) => totalScore > 0 ? (score / totalScore) * 100 : 0;
-          const peopleWidth = toPercent(peopleScore);
-          const moneyWidth = toPercent(moneyScore);
-          const reachWidth = toPercent(reachScore);
-          const resourcesWidth = toPercent(resourcesScore);
-          const qualityWidth = toPercent(qualityScore);
+          // Keep original scores for tooltip display
+          const peopleScore = ((country.people?.averageScore || 0) * 100).toFixed(0);
+          const moneyScore = ((country.money?.averageScore || 0) * 100).toFixed(0);
+          const reachScore = ((country.reach?.averageScore || 0) * 100).toFixed(0);
+          const resourcesScore = ((country.resources?.averageScore || 0) * 100).toFixed(0);
+          const qualityScore = ((country.quality?.averageScore || 0) * 100).toFixed(0);
           
           return `
             <div class="leaderboard-entry-wrapper">
@@ -1326,12 +1365,12 @@ function createGlobalLeaderboard(container, currentCountryCode) {
                   <div class="leaderboard-name">${country.name}</div>
                   <div class="leaderboard-score-row">
                     <span class="leaderboard-score">Influence: ${country.influenceScale.toFixed(1)}</span>
-                    <div class="breakdown-bar" title="People: ${peopleScore.toFixed(1)} | Money: ${moneyScore.toFixed(1)} | Reach: ${reachScore.toFixed(1)} | Resources: ${resourcesScore.toFixed(1)} | Quality: ${qualityScore.toFixed(1)}">
-                      <div class="breakdown-segment people" style="width: ${peopleWidth.toFixed(2)}%"></div>
-                      <div class="breakdown-segment money" style="width: ${moneyWidth.toFixed(2)}%"></div>
-                      <div class="breakdown-segment reach" style="width: ${reachWidth.toFixed(2)}%"></div>
-                      <div class="breakdown-segment resources" style="width: ${resourcesWidth.toFixed(2)}%"></div>
-                      <div class="breakdown-segment quality" style="width: ${qualityWidth.toFixed(2)}%"></div>
+                    <div class="breakdown-bar" title="Percentile Ranks - People: ${peoplePerc.toFixed(0)} | Money: ${moneyPerc.toFixed(0)} | Reach: ${reachPerc.toFixed(0)} | Resources: ${resourcesPerc.toFixed(0)} | Quality: ${qualityPerc.toFixed(0)}">
+                      <div class="breakdown-segment people" style="width: ${toWidth(peoplePerc).toFixed(2)}%"></div>
+                      <div class="breakdown-segment money" style="width: ${toWidth(moneyPerc).toFixed(2)}%"></div>
+                      <div class="breakdown-segment reach" style="width: ${toWidth(reachPerc).toFixed(2)}%"></div>
+                      <div class="breakdown-segment resources" style="width: ${toWidth(resourcesPerc).toFixed(2)}%"></div>
+                      <div class="breakdown-segment quality" style="width: ${toWidth(qualityPerc).toFixed(2)}%"></div>
                     </div>
                   </div>
                 </div>
@@ -1673,48 +1712,34 @@ function createExpandedCountryDetails(country, rank) {
     quality: 'Citizen wellbeing measured by health outcomes, education levels, and environmental sustainability.'
   };
   
-  // Debug: Log actual scores to console
-  console.log(`Spider chart data for ${country.name}:`, {
-    people: country.people?.totalScore,
-    money: country.money?.totalScore,
-    reach: country.reach?.totalScore,
-    resources: country.resources?.totalScore,
-    quality: country.quality?.totalScore,
-    total: country.influenceScale
-  });
+  // Use PERCENTILE RANKS for spider chart visualization
+  // This shows competitive position: 100 = #1 in category, 0 = last place
+  const peoplePercentile = (country.percentiles?.people || 0).toFixed(0);
+  const moneyPercentile = (country.percentiles?.money || 0).toFixed(0);
+  const reachPercentile = (country.percentiles?.reach || 0).toFixed(0);
+  const resourcesPercentile = (country.percentiles?.resources || 0).toFixed(0);
+  const qualityPercentile = (country.percentiles?.quality || 0).toFixed(0);
   
   return `
     <div class="expanded-country-details">
       <div class="expanded-header">
         <h3>${country.name} - Detailed Breakdown</h3>
         <p class="expanded-description">
-          Rank #${rank} with Influence Scale of ${country.influenceScale.toFixed(2)}. 
-          This composite score combines rankings across five categories: People, Money, Reach, Resources, and Quality.
+          Rank #${rank} with Influence Scale of ${country.influenceScale.toFixed(1)}. 
+          Percentile scores show competitive position (100 = top, 0 = bottom).
         </p>
       </div>
       
       <div class="spider-chart-container">
-        <h4 class="spider-chart-title">Influence Breakdown</h4>
+        <h4 class="spider-chart-title">Influence</h4>
         <canvas class="spider-chart-canvas" data-country="${country.code}" 
-                data-people="${country.people?.totalScore || 0}"
-                data-money="${country.money?.totalScore || 0}"
-                data-reach="${country.reach?.totalScore || 0}"
-                data-resources="${country.resources?.totalScore || 0}"
-                data-quality="${country.quality?.totalScore || 0}"
-                data-people-max="${country.people?.metricsCounted || 1}"
-                data-money-max="${country.money?.metricsCounted || 1}"
-                data-reach-max="${country.reach?.metricsCounted || 1}"
-                data-resources-max="${country.resources?.metricsCounted || 1}"
-                data-quality-max="${country.quality?.metricsCounted || 1}"
-                width="250" height="250">
+                data-people="${peoplePercentile}"
+                data-money="${moneyPercentile}"
+                data-reach="${reachPercentile}"
+                data-resources="${resourcesPercentile}"
+                data-quality="${qualityPercentile}"
+                width="300" height="300">
         </canvas>
-        <div class="spider-chart-legend">
-          <span class="legend-item people"><span class="legend-color"></span>People: ${(country.people?.totalScore || 0).toFixed(1)}</span>
-          <span class="legend-item money"><span class="legend-color"></span>Money: ${(country.money?.totalScore || 0).toFixed(1)}</span>
-          <span class="legend-item reach"><span class="legend-color"></span>Reach: ${(country.reach?.totalScore || 0).toFixed(1)}</span>
-          <span class="legend-item resources"><span class="legend-color"></span>Resources: ${(country.resources?.totalScore || 0).toFixed(1)}</span>
-          <span class="legend-item quality"><span class="legend-color"></span>Quality: ${(country.quality?.totalScore || 0).toFixed(1)}</span>
-        </div>
       </div>
       
       <div class="category-breakdowns">
@@ -1729,7 +1754,8 @@ function createExpandedCountryDetails(country, rank) {
 }
 
 /**
- * Draw spider chart on canvas using SCORES (not ranks)
+ * Draw spider chart on canvas with 0-100 percentile scale for each category
+ * Uses percentile ranks: 100 = top performer, 0 = lowest
  * @param {HTMLCanvasElement} canvas - The canvas element
  */
 function drawSpiderChart(canvas) {
@@ -1741,36 +1767,31 @@ function drawSpiderChart(canvas) {
   const width = canvas.width;
   const height = canvas.height;
   const centerX = width / 2;
-  const centerY = height / 2;
-  const radius = Math.min(width, height) / 2 - 30;
+  const centerY = height / 2 + 8; // Shift down for top label room
   
-  // Get SCORES from canvas attributes (totalScore for each category)
-  const people = parseFloat(canvas.dataset.people) || 0;
-  const money = parseFloat(canvas.dataset.money) || 0;
-  const reach = parseFloat(canvas.dataset.reach) || 0;
-  const resources = parseFloat(canvas.dataset.resources) || 0;
-  const quality = parseFloat(canvas.dataset.quality) || 0;
+  // Detect viewport width for responsive labels
+  const viewportWidth = window.innerWidth;
+  const isMobile = viewportWidth <= 480;
+  const isTablet = viewportWidth <= 768 && viewportWidth > 480;
   
-  // Get max possible scores (number of metrics in each category)
-  // Each metric can score 0-1, so max = number of metrics
-  const peopleMax = parseFloat(canvas.dataset.peopleMax) || 9;
-  const moneyMax = parseFloat(canvas.dataset.moneyMax) || 13;
-  const reachMax = parseFloat(canvas.dataset.reachMax) || 12;
-  const resourcesMax = parseFloat(canvas.dataset.resourcesMax) || 19;
-  const qualityMax = parseFloat(canvas.dataset.qualityMax) || 17;
+  // Calculate radius based on canvas size and display mode
+  const labelPadding = isMobile ? 35 : (isTablet ? 45 : 55);
+  const radius = Math.min(width, height) / 2 - labelPadding;
   
-  // Convert scores to percentages (score / max * 100)
-  // This shows how well the country performs relative to max possible
-  const toPercent = (score, max) => max > 0 ? Math.min(100, (score / max) * 100) : 0;
+  // Data is percentile ranks (0-100) from canvas attributes
   const data = [
-    toPercent(people, peopleMax),
-    toPercent(money, moneyMax),
-    toPercent(reach, reachMax),
-    toPercent(resources, resourcesMax),
-    toPercent(quality, qualityMax)
+    parseFloat(canvas.dataset.people) || 0,
+    parseFloat(canvas.dataset.money) || 0,
+    parseFloat(canvas.dataset.reach) || 0,
+    parseFloat(canvas.dataset.resources) || 0,
+    parseFloat(canvas.dataset.quality) || 0
   ];
   
-  const labels = ['People', 'Money', 'Reach', 'Resources', 'Quality'];
+  // Responsive labels: full names, abbreviated, or none
+  const fullLabels = ['People', 'Money', 'Reach', 'Resources', 'Quality'];
+  const shortLabels = ['Ppl', 'Mon', 'Rch', 'Res', 'Qlt'];
+  const labels = isMobile ? shortLabels : fullLabels;
+  
   const colors = ['#3498DB', '#2ECC71', '#F39C12', '#9B59B6', '#E74C3C'];
   const numPoints = data.length;
   const angleStep = (Math.PI * 2) / numPoints;
@@ -1779,8 +1800,8 @@ function drawSpiderChart(canvas) {
   // Clear canvas
   ctx.clearRect(0, 0, width, height);
   
-  // Draw grid circles (5 levels: 20%, 40%, 60%, 80%, 100%)
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+  // Draw grid circles (5 levels: 20, 40, 60, 80, 100 percentile)
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
   ctx.lineWidth = 1;
   for (let i = 1; i <= 5; i++) {
     ctx.beginPath();
@@ -1789,7 +1810,7 @@ function drawSpiderChart(canvas) {
   }
   
   // Draw axis lines
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)';
   for (let i = 0; i < numPoints; i++) {
     const angle = startAngle + i * angleStep;
     const x = centerX + Math.cos(angle) * radius;
@@ -1804,7 +1825,7 @@ function drawSpiderChart(canvas) {
   ctx.beginPath();
   for (let i = 0; i < numPoints; i++) {
     const angle = startAngle + i * angleStep;
-    const value = data[i] / 100;
+    const value = Math.max(0.08, data[i] / 100); // Min 8% so tiny values still show
     const x = centerX + Math.cos(angle) * radius * value;
     const y = centerY + Math.sin(angle) * radius * value;
     if (i === 0) {
@@ -1814,21 +1835,21 @@ function drawSpiderChart(canvas) {
     }
   }
   ctx.closePath();
-  ctx.fillStyle = 'rgba(105, 179, 162, 0.3)';
+  ctx.fillStyle = 'rgba(105, 179, 162, 0.35)';
   ctx.fill();
-  ctx.strokeStyle = 'rgba(105, 179, 162, 0.8)';
+  ctx.strokeStyle = 'rgba(105, 179, 162, 0.9)';
   ctx.lineWidth = 2;
   ctx.stroke();
   
   // Draw data points with category colors
   for (let i = 0; i < numPoints; i++) {
     const angle = startAngle + i * angleStep;
-    const value = data[i] / 100;
+    const value = Math.max(0.08, data[i] / 100);
     const x = centerX + Math.cos(angle) * radius * value;
     const y = centerY + Math.sin(angle) * radius * value;
     
     ctx.beginPath();
-    ctx.arc(x, y, 5, 0, Math.PI * 2);
+    ctx.arc(x, y, isMobile ? 4 : 5, 0, Math.PI * 2);
     ctx.fillStyle = colors[i];
     ctx.fill();
     ctx.strokeStyle = '#fff';
@@ -1836,16 +1857,50 @@ function drawSpiderChart(canvas) {
     ctx.stroke();
   }
   
-  // Draw labels
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-  ctx.font = '11px sans-serif';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
+  // Draw labels WITH percentile scores - positioned based on angle
+  const fontSize = isMobile ? 9 : (isTablet ? 10 : 11);
+  ctx.font = `bold ${fontSize}px sans-serif`;
+  
   for (let i = 0; i < numPoints; i++) {
     const angle = startAngle + i * angleStep;
-    const labelRadius = radius + 18;
-    const x = centerX + Math.cos(angle) * labelRadius;
-    const y = centerY + Math.sin(angle) * labelRadius;
-    ctx.fillText(labels[i], x, y);
+    const score = Math.round(data[i]);
+    const labelText = `${labels[i]} (${score})`;
+    
+    // Calculate label position with responsive offset
+    let labelRadius = radius + (isMobile ? 12 : (isTablet ? 16 : 22));
+    let xOffset = 0;
+    let yOffset = 0;
+    
+    // Adjust positioning based on which axis (0=top, 1=right, 2=bottom-right, 3=bottom-left, 4=left)
+    if (i === 0) { // Top - People
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'bottom';
+      yOffset = isMobile ? -2 : -5;
+    } else if (i === 1) { // Top-right - Money
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+      xOffset = isMobile ? 3 : 5;
+    } else if (i === 2) { // Bottom-right - Reach
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'top';
+      xOffset = isMobile ? 3 : 5;
+      yOffset = isMobile ? 2 : 3;
+    } else if (i === 3) { // Bottom-left - Resources
+      ctx.textAlign = 'right';
+      ctx.textBaseline = 'top';
+      xOffset = isMobile ? -3 : -5;
+      yOffset = isMobile ? 2 : 3;
+    } else if (i === 4) { // Top-left - Quality
+      ctx.textAlign = 'right';
+      ctx.textBaseline = 'middle';
+      xOffset = isMobile ? -3 : -5;
+    }
+    
+    const x = centerX + Math.cos(angle) * labelRadius + xOffset;
+    const y = centerY + Math.sin(angle) * labelRadius + yOffset;
+    
+    // Draw label in category color
+    ctx.fillStyle = colors[i];
+    ctx.fillText(labelText, x, y);
   }
 } 

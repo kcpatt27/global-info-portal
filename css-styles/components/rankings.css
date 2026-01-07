@@ -214,22 +214,30 @@
 }
 
 .breakdown-bar {
-  height: 8px;
-  background-color: rgba(0, 0, 0, 0.2);
-  border-radius: 4px;
+  height: 10px;
+  background-color: rgba(0, 0, 0, 0.3);
+  border-radius: 5px;
   overflow: hidden;
   display: flex;
-  width: 100px;
-  min-width: 80px;
-  max-width: 150px;
+  width: 120px;
+  min-width: 100px;
+  max-width: 180px;
   flex: 1 1 auto;
-  gap: 1px;
 }
 
 .breakdown-segment {
   height: 100%;
   flex: 0 0 auto;
-  border-radius: 2px;
+  /* No border-radius on segments - smooth continuous bar */
+}
+
+/* Round the ends of first and last segments */
+.breakdown-segment:first-child {
+  border-radius: 5px 0 0 5px;
+}
+
+.breakdown-segment:last-child {
+  border-radius: 0 5px 5px 0;
 }
 
 .breakdown-segment.people {
@@ -389,9 +397,10 @@
 
 .leaderboard-expanded-content {
   width: 100%;
-  padding: 20px;
+  padding: 16px;
   background-color: var(--color-surface);
-  border-top: 1px solid var(--color-border);
+  border: 1px solid var(--color-border);
+  border-top: none;
   margin: 0;
   box-sizing: border-box;
   animation: expandContent 0.3s ease;
@@ -400,6 +409,7 @@
   right: 0;
   align-self: stretch;
   border-radius: 0 0 var(--radius-small) var(--radius-small);
+  overflow-x: hidden;
 }
 
 @keyframes expandContent {
@@ -416,24 +426,27 @@
 .expanded-country-details {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 16px;
+  width: 100%;
 }
 
 .expanded-header {
-  margin-bottom: 8px;
+  margin-bottom: 4px;
+  text-align: center;
 }
 
 .expanded-header h3 {
-  font-size: 1.3rem;
+  font-size: 1.1rem;
   font-weight: 700;
   color: var(--color-text-primary);
-  margin: 0 0 8px 0;
+  margin: 0 0 6px 0;
+  word-wrap: break-word;
 }
 
 .expanded-description {
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   color: var(--color-text-secondary);
-  line-height: 1.6;
+  line-height: 1.5;
   margin: 0;
 }
 
@@ -572,51 +585,32 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 16px;
+  justify-content: center;
+  padding: 20px;
   background-color: rgba(0, 0, 0, 0.2);
   border-radius: var(--radius-small);
-  margin-top: 8px;
+  margin: 8px auto 16px;
+  min-height: 280px;
+  width: 100%;
+  max-width: 360px;
+  box-sizing: border-box;
 }
 
 .spider-chart-title {
   font-size: 1rem;
   font-weight: 600;
   color: var(--color-text-primary);
-  margin: 0 0 12px 0;
+  margin: 0 0 8px 0;
+  text-align: center;
 }
 
 .spider-chart-canvas {
   display: block;
   max-width: 100%;
+  height: auto;
 }
 
-.spider-chart-legend {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 12px;
-  margin-top: 12px;
-}
-
-.legend-item {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 0.75rem;
-  color: var(--color-text-secondary);
-}
-
-.legend-color {
-  width: 10px;
-  height: 10px;
-  border-radius: 2px;
-}
-
-.legend-item.people .legend-color { background-color: #3498DB; }
-.legend-item.money .legend-color { background-color: #2ECC71; }
-.legend-item.reach .legend-color { background-color: #F39C12; }
-.legend-item.resources .legend-color { background-color: #9B59B6; }
-.legend-item.quality .legend-color { background-color: #E74C3C; }
+/* Legend removed - scores now shown directly on spider chart labels */
 
 /* Backwards compatibility - remove later */
 .spider-chart-placeholder {
@@ -1672,6 +1666,35 @@
     grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
     gap: 8px;
   }
+  
+  /* Spider chart tablet styles */
+  .leaderboard-expanded-content {
+    padding: 12px;
+  }
+  
+  .spider-chart-container {
+    padding: 12px;
+    min-height: 240px;
+    max-width: 300px;
+  }
+  
+  .spider-chart-canvas {
+    width: 260px !important;
+    height: 260px !important;
+  }
+  
+  .expanded-header h3 {
+    font-size: 1rem;
+  }
+  
+  .category-breakdowns {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  
+  .category-breakdown {
+    padding: 12px;
+  }
 }
 
 @media (max-width: 480px) {
@@ -1734,5 +1757,67 @@
   .key-metrics-grid,
   .other-metrics-grid {
     grid-template-columns: 1fr;
+  }
+  
+  /* Spider chart mobile styles */
+  .leaderboard-expanded-content {
+    padding: 10px;
+  }
+  
+  .expanded-country-details {
+    gap: 12px;
+  }
+  
+  .spider-chart-container {
+    padding: 10px;
+    min-height: 200px;
+    max-width: 260px;
+  }
+  
+  .spider-chart-canvas {
+    width: 220px !important;
+    height: 220px !important;
+  }
+  
+  .spider-chart-title {
+    font-size: 0.9rem;
+    margin-bottom: 4px;
+  }
+  
+  .expanded-header h3 {
+    font-size: 0.95rem;
+  }
+  
+  .expanded-description {
+    font-size: 0.8rem;
+    line-height: 1.4;
+  }
+  
+  .category-breakdown {
+    padding: 10px;
+  }
+  
+  .category-title {
+    font-size: 0.95rem;
+  }
+  
+  .category-score {
+    font-size: 0.75rem;
+  }
+  
+  .category-metric-item {
+    padding: 6px 0;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  
+  .metric-name {
+    font-size: 0.8rem;
+    flex: 1 1 100%;
+  }
+  
+  .metric-details {
+    gap: 8px;
+    font-size: 0.8rem;
   }
 } 

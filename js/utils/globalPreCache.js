@@ -135,7 +135,7 @@ const SECONDARY_COUNTRIES = [
 const STORAGE_KEY = 'global_leaderboard_cache';
 const STORAGE_TIMESTAMP_KEY = 'global_cache_timestamp';
 const STORAGE_VERSION_KEY = 'global_cache_version';
-const CACHE_VERSION = 13; // Fixed reference scale IDs to match metric IDs
+const CACHE_VERSION = 14; // Use averageScore (0-1) for normalized category comparison
 const CACHE_DURATION_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 
 // Batch size for parallel fetching (balance between speed and API load)

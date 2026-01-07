@@ -152,11 +152,23 @@
 }
 
 /* 
- * Hamburger Menu - Secondary Navigation Pattern
+ * Hamburger Menu - HIDDEN on mobile (using info panel instead)
  * ========================================================================== 
  */
 
-/* Hamburger Menu Toggle Button */
+/* Hide all hamburger menu elements on mobile/tablet */
+@media (max-width: 768px) {
+  .hamburger-menu-toggle,
+  .hamburger-menu-panel,
+  .hamburger-menu-overlay,
+  .hamburger-icon {
+    display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+}
+
+/* Hamburger Menu Toggle Button - only shown on desktop if needed */
 .hamburger-menu-toggle {
   position: fixed;
   top: env(safe-area-inset-top, 16px);
@@ -166,7 +178,7 @@
   height: 48px; /* Increased size for better touch target */
   background-color: var(--color-nav-button-bg, rgba(28, 28, 28, 0.8));
   border-radius: 50%;
-  display: flex;
+  display: none; /* Hidden by default */
   align-items: center;
   justify-content: center;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);

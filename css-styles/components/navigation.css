@@ -271,25 +271,23 @@
 
 /* Grouped media queries */
 @media (max-width: 768px) {
+    /* Hide nav sidebar on mobile - info panel provides navigation */
     .nav-sidebar {
-        top: auto; /* Override desktop positioning */
-        right: auto; /* Override desktop positioning */
-        left: 50%; /* Center horizontally */
-        bottom: 10px; /* Position at bottom */
-        padding: 8px;
-        flex-direction: row; /* Horizontal layout on mobile */
+        display: none !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
     }
     
-    /* Override transform for mobile specifically */
     .nav-sidebar.visible {
-        transform: translateX(-50%); /* Restore mobile-specific transform */
+        display: none !important;
     }
     
+    /* Keep nav button styles for any future use */
     .nav-button {
         height: 28px;
         width: 36px;
-        border-radius: 50%; /* Make buttons round on mobile */
-        margin: 0 4px; /* Horizontal margins for row layout */
+        border-radius: 50%;
+        margin: 0 4px;
     }
     
     /* Override last-child margin for horizontal layout */

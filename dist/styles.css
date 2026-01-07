@@ -1843,25 +1843,23 @@ pre {
 
 /* Grouped media queries */
 @media (max-width: 768px) {
+    /* Hide nav sidebar on mobile - info panel provides navigation */
     .nav-sidebar {
-        top: auto; /* Override desktop positioning */
-        right: auto; /* Override desktop positioning */
-        left: 50%; /* Center horizontally */
-        bottom: 10px; /* Position at bottom */
-        padding: 8px;
-        flex-direction: row; /* Horizontal layout on mobile */
+        display: none !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
     }
     
-    /* Override transform for mobile specifically */
     .nav-sidebar.visible {
-        transform: translateX(-50%); /* Restore mobile-specific transform */
+        display: none !important;
     }
     
+    /* Keep nav button styles for any future use */
     .nav-button {
         height: 28px;
         width: 36px;
-        border-radius: 50%; /* Make buttons round on mobile */
-        margin: 0 4px; /* Horizontal margins for row layout */
+        border-radius: 50%;
+        margin: 0 4px;
     }
     
     /* Override last-child margin for horizontal layout */
@@ -1999,110 +1997,117 @@ pre {
   display: flex !important;
   flex-direction: column;
 }
-/* Data Tabs styling */
-.data-tabs {
-    display: flex;
-    margin-bottom: 0;
-    margin-top: 15px;
-    padding-top: 0;
-    border-bottom: none;
-    width: 100%;
-    position: relative;
-    flex-shrink: 0;
-    z-index: 10;
-    height: 40px;
-    /* Prevent layout shifts during animations */
-    overflow: visible;
+/* Data Tabs styling - Desktop only */
+@media (min-width: 769px) {
+  .data-tabs {
+      display: flex;
+      margin-bottom: 0;
+      margin-top: 15px;
+      padding-top: 0;
+      border-bottom: none;
+      width: 100%;
+      position: relative;
+      flex-shrink: 0;
+      z-index: 10;
+      height: 40px;
+      /* Prevent layout shifts during animations */
+      overflow: visible;
+  }
+
+  .data-tabs::after {
+      content: "";
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 0;
+      background-color: transparent;
+      z-index: 1;
+  }
+
+  .data-tab {
+      padding: 8px 15px;
+      cursor: pointer;
+      transition: background-color var(--transition-fast) var(--easing-standard),
+                  transform var(--transition-fast) var(--easing-standard),
+                  box-shadow var(--transition-fast) var(--easing-standard);
+      border: 1px solid var(--color-border);
+      border-bottom: 3px solid var(--color-border);
+      border-top-left-radius: 8px;
+      border-top-right-radius: 8px;
+      margin-right: -5px;
+      position: relative;
+      background-color: var(--color-surface-lighter);
+      flex: 1;
+      min-width: 0;
+      text-align: center;
+      font-size: 0.9rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      transform-origin: bottom center;
+      box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.2);
+  }
+
+  .data-tab:last-child {
+      margin-right: 0;
+  }
+
+  .data-tab.active {
+      background-color: var(--color-border);
+      border-color: var(--color-inactive-text);
+      border-bottom: none !important;
+      font-weight: bold;
+      z-index: 10;
+      box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.3);
+      transform: translateY(-2px);
+      height: 42px;
+      /* Add will-change only to active tab for better performance */
+      will-change: transform, box-shadow;
+  }
+
+  .data-tab:hover:not(.active) {
+      background-color: var(--color-border);
+      transform: translateY(-1px);
+      /* Add will-change only during hover */
+      will-change: transform, background-color;
+  }
+
+  .data-tab.active ~ .data-tab {
+      border-left-color: var(--color-surface-lighter);
+  }
+
+  .data-tab:not(.active):not(.active ~ .data-tab) {
+      border-right-color: var(--color-surface-lighter);
+  }
+
+  /* Z-index stacking for cascade effect - now only need for 2 tabs */
+  .data-tab:nth-child(1) { z-index: 4; }
+  .data-tab:nth-child(2) { z-index: 3; }
+  /* Removed: .data-tab:nth-child(3) and .data-tab:nth-child(4) */
+
+  /* When active, the tab should be on top of all others */
+  .data-tab.active { z-index: 10; }
+
+  /* Hover effect for inactive tabs */
+  .data-tab:hover:not(.active) {
+      background-color: #444;
+  }
+
+  /* Tabs after the active one */
+  .data-tab.active ~ .data-tab {
+      border-left-color: #333;
+  }
+
+  /* Tabs before the active one */
+  .data-tab:not(.active):not(.active ~ .data-tab) {
+      border-right-color: #333;
+  }
 }
 
-.data-tabs::after {
-    content: "";
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 0;
-    background-color: transparent;
-    z-index: 1;
-}
-
-.data-tab {
-    padding: 8px 15px;
-    cursor: pointer;
-    transition: background-color var(--transition-fast) var(--easing-standard),
-                transform var(--transition-fast) var(--easing-standard),
-                box-shadow var(--transition-fast) var(--easing-standard);
-    border: 1px solid var(--color-border);
-    border-bottom: 3px solid var(--color-border);
-    border-top-left-radius: 8px;
-    border-top-right-radius: 8px;
-    margin-right: -5px;
-    position: relative;
-    background-color: var(--color-surface-lighter);
-    flex: 1;
-    min-width: 0;
-    text-align: center;
-    font-size: 0.9rem;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    transform-origin: bottom center;
-    box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.2);
-}
-
-.data-tab:last-child {
-    margin-right: 0;
-}
-
-.data-tab.active {
-    background-color: var(--color-border);
-    border-color: var(--color-inactive-text);
-    border-bottom: none !important;
-    font-weight: bold;
-    z-index: 10;
-    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.3);
-    transform: translateY(-2px);
-    height: 42px;
-    /* Add will-change only to active tab for better performance */
-    will-change: transform, box-shadow;
-}
-
-.data-tab:hover:not(.active) {
-    background-color: var(--color-border);
-    transform: translateY(-1px);
-    /* Add will-change only during hover */
-    will-change: transform, background-color;
-}
-
-.data-tab.active ~ .data-tab {
-    border-left-color: var(--color-surface-lighter);
-}
-
-.data-tab:not(.active):not(.active ~ .data-tab) {
-    border-right-color: var(--color-surface-lighter);
-}
-
-/* Z-index stacking for cascade effect - now only need for 2 tabs */
-.data-tab:nth-child(1) { z-index: 4; }
-.data-tab:nth-child(2) { z-index: 3; }
-/* Removed: .data-tab:nth-child(3) and .data-tab:nth-child(4) */
-
-/* When active, the tab should be on top of all others */
-.data-tab.active { z-index: 10; }
-
-/* Hover effect for inactive tabs */
-.data-tab:hover:not(.active) {
-    background-color: #444;
-}
-
-/* Tabs after the active one */
-.data-tab.active ~ .data-tab {
-    border-left-color: #333;
-}
-
-/* Tabs before the active one */
-.data-tab:not(.active):not(.active ~ .data-tab) {
-    border-right-color: #333;
+/* Mobile and tablet styles - in panels-mobile.css */
+@media (max-width: 768px) {
+  /* Mobile tab styles are defined in panels-mobile.css */
 }
 
 /* Prefers-reduced-motion support */
@@ -2120,7 +2125,7 @@ pre {
     }
 }
 
-/* Mobile optimizations */
+/* Mobile optimizations - override for very small screens */
 @media (max-width: 500px) {
     .data-tabs {
         height: 36px;
@@ -2615,22 +2620,30 @@ pre {
 }
 
 .breakdown-bar {
-  height: 8px;
-  background-color: rgba(0, 0, 0, 0.2);
-  border-radius: 4px;
+  height: 10px;
+  background-color: rgba(0, 0, 0, 0.3);
+  border-radius: 5px;
   overflow: hidden;
   display: flex;
-  width: 100px;
-  min-width: 80px;
-  max-width: 150px;
+  width: 120px;
+  min-width: 100px;
+  max-width: 180px;
   flex: 1 1 auto;
-  gap: 1px;
 }
 
 .breakdown-segment {
   height: 100%;
   flex: 0 0 auto;
-  border-radius: 2px;
+  /* No border-radius on segments - smooth continuous bar */
+}
+
+/* Round the ends of first and last segments */
+.breakdown-segment:first-child {
+  border-radius: 5px 0 0 5px;
+}
+
+.breakdown-segment:last-child {
+  border-radius: 0 5px 5px 0;
 }
 
 .breakdown-segment.people {
@@ -2790,9 +2803,10 @@ pre {
 
 .leaderboard-expanded-content {
   width: 100%;
-  padding: 20px;
+  padding: 16px;
   background-color: var(--color-surface);
-  border-top: 1px solid var(--color-border);
+  border: 1px solid var(--color-border);
+  border-top: none;
   margin: 0;
   box-sizing: border-box;
   animation: expandContent 0.3s ease;
@@ -2801,6 +2815,7 @@ pre {
   right: 0;
   align-self: stretch;
   border-radius: 0 0 var(--radius-small) var(--radius-small);
+  overflow-x: hidden;
 }
 
 @keyframes expandContent {
@@ -2817,24 +2832,27 @@ pre {
 .expanded-country-details {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 16px;
+  width: 100%;
 }
 
 .expanded-header {
-  margin-bottom: 8px;
+  margin-bottom: 4px;
+  text-align: center;
 }
 
 .expanded-header h3 {
-  font-size: 1.3rem;
+  font-size: 1.1rem;
   font-weight: 700;
   color: var(--color-text-primary);
-  margin: 0 0 8px 0;
+  margin: 0 0 6px 0;
+  word-wrap: break-word;
 }
 
 .expanded-description {
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   color: var(--color-text-secondary);
-  line-height: 1.6;
+  line-height: 1.5;
   margin: 0;
 }
 
@@ -2973,51 +2991,32 @@ pre {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 16px;
+  justify-content: center;
+  padding: 20px;
   background-color: rgba(0, 0, 0, 0.2);
   border-radius: var(--radius-small);
-  margin-top: 8px;
+  margin: 8px auto 16px;
+  min-height: 280px;
+  width: 100%;
+  max-width: 360px;
+  box-sizing: border-box;
 }
 
 .spider-chart-title {
   font-size: 1rem;
   font-weight: 600;
   color: var(--color-text-primary);
-  margin: 0 0 12px 0;
+  margin: 0 0 8px 0;
+  text-align: center;
 }
 
 .spider-chart-canvas {
   display: block;
   max-width: 100%;
+  height: auto;
 }
 
-.spider-chart-legend {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 12px;
-  margin-top: 12px;
-}
-
-.legend-item {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 0.75rem;
-  color: var(--color-text-secondary);
-}
-
-.legend-color {
-  width: 10px;
-  height: 10px;
-  border-radius: 2px;
-}
-
-.legend-item.people .legend-color { background-color: #3498DB; }
-.legend-item.money .legend-color { background-color: #2ECC71; }
-.legend-item.reach .legend-color { background-color: #F39C12; }
-.legend-item.resources .legend-color { background-color: #9B59B6; }
-.legend-item.quality .legend-color { background-color: #E74C3C; }
+/* Legend removed - scores now shown directly on spider chart labels */
 
 /* Backwards compatibility - remove later */
 .spider-chart-placeholder {
@@ -4073,6 +4072,35 @@ pre {
     grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
     gap: 8px;
   }
+  
+  /* Spider chart tablet styles */
+  .leaderboard-expanded-content {
+    padding: 12px;
+  }
+  
+  .spider-chart-container {
+    padding: 12px;
+    min-height: 240px;
+    max-width: 300px;
+  }
+  
+  .spider-chart-canvas {
+    width: 260px !important;
+    height: 260px !important;
+  }
+  
+  .expanded-header h3 {
+    font-size: 1rem;
+  }
+  
+  .category-breakdowns {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  
+  .category-breakdown {
+    padding: 12px;
+  }
 }
 
 @media (max-width: 480px) {
@@ -4135,6 +4163,68 @@ pre {
   .key-metrics-grid,
   .other-metrics-grid {
     grid-template-columns: 1fr;
+  }
+  
+  /* Spider chart mobile styles */
+  .leaderboard-expanded-content {
+    padding: 10px;
+  }
+  
+  .expanded-country-details {
+    gap: 12px;
+  }
+  
+  .spider-chart-container {
+    padding: 10px;
+    min-height: 200px;
+    max-width: 260px;
+  }
+  
+  .spider-chart-canvas {
+    width: 220px !important;
+    height: 220px !important;
+  }
+  
+  .spider-chart-title {
+    font-size: 0.9rem;
+    margin-bottom: 4px;
+  }
+  
+  .expanded-header h3 {
+    font-size: 0.95rem;
+  }
+  
+  .expanded-description {
+    font-size: 0.8rem;
+    line-height: 1.4;
+  }
+  
+  .category-breakdown {
+    padding: 10px;
+  }
+  
+  .category-title {
+    font-size: 0.95rem;
+  }
+  
+  .category-score {
+    font-size: 0.75rem;
+  }
+  
+  .category-metric-item {
+    padding: 6px 0;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  
+  .metric-name {
+    font-size: 0.8rem;
+    flex: 1 1 100%;
+  }
+  
+  .metric-details {
+    gap: 8px;
+    font-size: 0.8rem;
   }
 } 
 /* 
@@ -5439,11 +5529,23 @@ svg .tick text {
 }
 
 /* 
- * Hamburger Menu - Secondary Navigation Pattern
+ * Hamburger Menu - HIDDEN on mobile (using info panel instead)
  * ========================================================================== 
  */
 
-/* Hamburger Menu Toggle Button */
+/* Hide all hamburger menu elements on mobile/tablet */
+@media (max-width: 768px) {
+  .hamburger-menu-toggle,
+  .hamburger-menu-panel,
+  .hamburger-menu-overlay,
+  .hamburger-icon {
+    display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+}
+
+/* Hamburger Menu Toggle Button - only shown on desktop if needed */
 .hamburger-menu-toggle {
   position: fixed;
   top: env(safe-area-inset-top, 16px);
@@ -5453,7 +5555,7 @@ svg .tick text {
   height: 48px; /* Increased size for better touch target */
   background-color: var(--color-nav-button-bg, rgba(28, 28, 28, 0.8));
   border-radius: 50%;
-  display: flex;
+  display: none; /* Hidden by default */
   align-items: center;
   justify-content: center;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
@@ -5840,7 +5942,7 @@ svg .tick text {
     padding: 15px;
     overflow: hidden;
     height: 40vh; /* Default height */
-    max-height: calc(100vh - 20px); /* Can't exceed viewport */
+    max-height: 100vh; /* Can expand to full viewport */
     min-height: 100px; /* Minimum height to always show flag and country name */
     /* Enable smooth inertial scrolling on iOS */
     -webkit-overflow-scrolling: touch;
@@ -5850,36 +5952,16 @@ svg .tick text {
     will-change: height;
   }
 
-  /* Pull handle for expanding the info container */
-  .info-container::before {
-    content: '';
-    position: absolute;
-    top: 8px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 36px;
-    height: 4px;
-    background-color: rgba(255, 255, 255, 0.3);
-    border-radius: 4px;
-    /* Add animation to indicate swipeable */
-    transition: width 0.3s ease, opacity 0.3s ease;
-  }
-
-  /* Handle animation on touch */
-  .info-container.swiping::before {
-    width: 50px;
-    opacity: 0.8;
-    background-color: rgba(255, 255, 255, 0.5);
-  }
-
-  /* Additional visual feedback for swiping */
+  /* Pull handle now uses .panel-drag-handle element - see mobile-touch.css */
+  
+  /* Visual feedback for swiping/dragging */
   .info-container.swiping {
     box-shadow: 0 -8px 20px rgba(0, 0, 0, 0.4);
   }
 
-  /* Add extra spacing to account for pull handle */
+  /* No extra margin needed - drag handle element handles spacing */
   .info-header {
-    margin-top: 10px;
+    margin-top: 0;
   }
   
   /* Fix for proper scrolling within content panels */
@@ -5934,17 +6016,28 @@ svg .tick text {
 /* Define expanded state for info panel */
 @media (max-width: 768px) {
   .info-container.expanded {
-    /* Full screen mode */
-    height: calc(100vh - 20px); /* Almost full viewport */
+    /* Full screen mode - fills entire viewport */
+    height: 100vh !important;
+    max-height: 100vh !important;
     min-height: 100px;
     z-index: 30;
-    border-radius: 16px 16px 0 0;
-    box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.4);
+    border-radius: 0; /* No rounded corners when full screen */
+    box-shadow: none;
   }
   
   /* Update content panel height when expanded */
   .info-container.expanded .content-panel {
-    height: calc(80vh - 60px); /* Account for header and padding */
+    height: calc(100vh - 120px); /* Account for header and padding */
+    max-height: calc(100vh - 120px);
+  }
+  
+  /* Hide nav sidebar and hamburger menu on mobile */
+  .nav-sidebar,
+  .hamburger-menu-toggle,
+  .hamburger-menu-panel,
+  .hamburger-menu-overlay {
+    display: none !important;
+    visibility: hidden !important;
   }
 
   /* When info container is expanded, adjust the map container */
@@ -6001,14 +6094,9 @@ svg .tick text {
     box-shadow: -5px 0 15px rgba(0, 0, 0, 0.3);
   }
 
-  /* Remove pull handle in landscape mode */
-  .info-container::before {
+  /* Hide drag handle in landscape mode */
+  .panel-drag-handle {
     display: none;
-  }
-
-  /* Reset top margin for header in landscape */
-  .info-header {
-    margin-top: 0;
   }
 
   /* Expanded state doesn't make sense in landscape, reset it */
@@ -6057,11 +6145,10 @@ svg .tick text {
     height: calc(85vh - 60px);
   }
 
-  /* Optimize handle for smaller screens */
-  .info-container::before {
+  /* Optimize drag handle for smaller screens */
+  .panel-drag-handle .drag-bar {
     width: 30px;
-    height: 3px;
-    top: 6px;
+    height: 4px;
   }
 
   /* Smaller initial height for compact screens */
@@ -6473,15 +6560,20 @@ svg .tick text {
     box-shadow: 0 -8px 25px rgba(0, 0, 0, 0.4);
   }
   
-  /* Panel drag handle - visible on mobile */
+  /* Panel drag handle - positioned at very top of panel */
   .panel-drag-handle {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 8px 0 4px 0;
+    padding: 10px 0;
     cursor: grab;
     touch-action: none;
     user-select: none;
+    z-index: 10;
   }
   
   .panel-drag-handle .drag-bar {
@@ -6497,6 +6589,11 @@ svg .tick text {
   .info-container.swiping .drag-bar {
     background-color: var(--color-accent, #69b3a2);
     transform: scaleX(1.2);
+  }
+  
+  /* Add top padding to info-container to account for drag handle */
+  .info-container {
+    padding-top: 30px !important;
   }
   
   /* Gesture instruction hints */
@@ -7459,6 +7556,21 @@ svg .tick text {
   .data-tab:nth-child(1) { z-index: 4; }
   .data-tab:nth-child(2) { z-index: 3; }
   .data-tab.active { z-index: 10; }
+  
+  /* Hover effect for tablets with mouse/trackpad */
+  @media (hover: hover) {
+    .data-tab:hover:not(.active) {
+      background-color: rgba(255, 255, 255, 0.05);
+      transform: translateY(-1px);
+    }
+  }
+  
+  /* No hover effects on touch devices */
+  @media (hover: none) {
+    .data-tab:active:not(.active) {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+  }
 }
 
 /* 
@@ -8085,11 +8197,23 @@ svg .tick text {
 }
 
 /* 
- * Hamburger Menu - Secondary Navigation Pattern
+ * Hamburger Menu - HIDDEN on mobile (using info panel instead)
  * ========================================================================== 
  */
 
-/* Hamburger Menu Toggle Button */
+/* Hide all hamburger menu elements on mobile/tablet */
+@media (max-width: 768px) {
+  .hamburger-menu-toggle,
+  .hamburger-menu-panel,
+  .hamburger-menu-overlay,
+  .hamburger-icon {
+    display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+}
+
+/* Hamburger Menu Toggle Button - only shown on desktop if needed */
 .hamburger-menu-toggle {
   position: fixed;
   top: env(safe-area-inset-top, 16px);
@@ -8099,7 +8223,7 @@ svg .tick text {
   height: 48px; /* Increased size for better touch target */
   background-color: var(--color-nav-button-bg, rgba(28, 28, 28, 0.8));
   border-radius: 50%;
-  display: flex;
+  display: none; /* Hidden by default */
   align-items: center;
   justify-content: center;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);

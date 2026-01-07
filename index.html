@@ -310,9 +310,9 @@
           let lastTouchY = 0;
           
           // Height constants
-          const MIN_HEIGHT = 100; // Collapsed - just header
+          const MIN_HEIGHT = 100; // Collapsed - just header (flag + country name visible)
           const DEFAULT_HEIGHT = window.innerHeight * 0.4; // Default 40vh
-          const MAX_HEIGHT = window.innerHeight - 20; // Full screen (with small margin)
+          const MAX_HEIGHT = window.innerHeight; // Full screen - no margin
           
           // Get the pull handle area (top 50px of panel)
           const isPullArea = (touchY) => {

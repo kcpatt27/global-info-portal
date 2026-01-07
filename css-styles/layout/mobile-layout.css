@@ -60,7 +60,7 @@
     padding: 15px;
     overflow: hidden;
     height: 40vh; /* Default height */
-    max-height: calc(100vh - 20px); /* Can't exceed viewport */
+    max-height: 100vh; /* Can expand to full viewport */
     min-height: 100px; /* Minimum height to always show flag and country name */
     /* Enable smooth inertial scrolling on iOS */
     -webkit-overflow-scrolling: touch;
@@ -70,36 +70,16 @@
     will-change: height;
   }
 
-  /* Pull handle for expanding the info container */
-  .info-container::before {
-    content: '';
-    position: absolute;
-    top: 8px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 36px;
-    height: 4px;
-    background-color: rgba(255, 255, 255, 0.3);
-    border-radius: 4px;
-    /* Add animation to indicate swipeable */
-    transition: width 0.3s ease, opacity 0.3s ease;
-  }
-
-  /* Handle animation on touch */
-  .info-container.swiping::before {
-    width: 50px;
-    opacity: 0.8;
-    background-color: rgba(255, 255, 255, 0.5);
-  }
-
-  /* Additional visual feedback for swiping */
+  /* Pull handle now uses .panel-drag-handle element - see mobile-touch.css */
+  
+  /* Visual feedback for swiping/dragging */
   .info-container.swiping {
     box-shadow: 0 -8px 20px rgba(0, 0, 0, 0.4);
   }
 
-  /* Add extra spacing to account for pull handle */
+  /* No extra margin needed - drag handle element handles spacing */
   .info-header {
-    margin-top: 10px;
+    margin-top: 0;
   }
   
   /* Fix for proper scrolling within content panels */
@@ -154,17 +134,28 @@
 /* Define expanded state for info panel */
 @media (max-width: 768px) {
   .info-container.expanded {
-    /* Full screen mode */
-    height: calc(100vh - 20px); /* Almost full viewport */
+    /* Full screen mode - fills entire viewport */
+    height: 100vh !important;
+    max-height: 100vh !important;
     min-height: 100px;
     z-index: 30;
-    border-radius: 16px 16px 0 0;
-    box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.4);
+    border-radius: 0; /* No rounded corners when full screen */
+    box-shadow: none;
   }
   
   /* Update content panel height when expanded */
   .info-container.expanded .content-panel {
-    height: calc(80vh - 60px); /* Account for header and padding */
+    height: calc(100vh - 120px); /* Account for header and padding */
+    max-height: calc(100vh - 120px);
+  }
+  
+  /* Hide nav sidebar and hamburger menu on mobile */
+  .nav-sidebar,
+  .hamburger-menu-toggle,
+  .hamburger-menu-panel,
+  .hamburger-menu-overlay {
+    display: none !important;
+    visibility: hidden !important;
   }
 
   /* When info container is expanded, adjust the map container */
@@ -221,14 +212,9 @@
     box-shadow: -5px 0 15px rgba(0, 0, 0, 0.3);
   }
 
-  /* Remove pull handle in landscape mode */
-  .info-container::before {
+  /* Hide drag handle in landscape mode */
+  .panel-drag-handle {
     display: none;
-  }
-
-  /* Reset top margin for header in landscape */
-  .info-header {
-    margin-top: 0;
   }
 
   /* Expanded state doesn't make sense in landscape, reset it */
@@ -277,11 +263,10 @@
     height: calc(85vh - 60px);
   }
 
-  /* Optimize handle for smaller screens */
-  .info-container::before {
+  /* Optimize drag handle for smaller screens */
+  .panel-drag-handle .drag-bar {
     width: 30px;
-    height: 3px;
-    top: 6px;
+    height: 4px;
   }
 
   /* Smaller initial height for compact screens */

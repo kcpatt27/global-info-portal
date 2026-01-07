@@ -137,6 +137,21 @@
   .data-tab:nth-child(1) { z-index: 4; }
   .data-tab:nth-child(2) { z-index: 3; }
   .data-tab.active { z-index: 10; }
+  
+  /* Hover effect for tablets with mouse/trackpad */
+  @media (hover: hover) {
+    .data-tab:hover:not(.active) {
+      background-color: rgba(255, 255, 255, 0.05);
+      transform: translateY(-1px);
+    }
+  }
+  
+  /* No hover effects on touch devices */
+  @media (hover: none) {
+    .data-tab:active:not(.active) {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+  }
 }
 
 /* 

@@ -207,15 +207,20 @@
     box-shadow: 0 -8px 25px rgba(0, 0, 0, 0.4);
   }
   
-  /* Panel drag handle - visible on mobile */
+  /* Panel drag handle - positioned at very top of panel */
   .panel-drag-handle {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 8px 0 4px 0;
+    padding: 10px 0;
     cursor: grab;
     touch-action: none;
     user-select: none;
+    z-index: 10;
   }
   
   .panel-drag-handle .drag-bar {
@@ -231,6 +236,11 @@
   .info-container.swiping .drag-bar {
     background-color: var(--color-accent, #69b3a2);
     transform: scaleX(1.2);
+  }
+  
+  /* Add top padding to info-container to account for drag handle */
+  .info-container {
+    padding-top: 30px !important;
   }
   
   /* Gesture instruction hints */
