@@ -229,6 +229,8 @@
   height: 100%;
   flex: 0 0 auto;
   /* No border-radius on segments - smooth continuous bar */
+  border-right: 1px solid rgba(0, 0, 0, 0.2);
+  box-sizing: border-box;
 }
 
 /* Round the ends of first and last segments */
@@ -238,6 +240,7 @@
 
 .breakdown-segment:last-child {
   border-radius: 0 5px 5px 0;
+  border-right: none;
 }
 
 .breakdown-segment.people {

@@ -8,6 +8,10 @@ import { addStatSection, extractStats, highlightText, extractNumber, formatLabel
 import { detectTimeSeriesData, processText } from '../utils/dataFetcher.js';
 import { appState, globalDataIndex } from '../state.js';
 
+// Minimum countries required for meaningful ranking display
+// Without this, rankings are misleading (e.g., always #1 with sparse data)
+const MIN_COUNTRIES_FOR_RANKING = 10;
+
 // Function to add a stat section with rankings
 function addStatSectionWithRankings(container, title, stats, countryCode) {
   if (!stats || stats.length === 0) return;
@@ -21,9 +25,15 @@ function addStatSectionWithRankings(container, title, stats, countryCode) {
       // Get ranking from global data index
       const ranking = globalDataIndex.getRanking(metricId, countryCode, stat.numericValue);
 
+      // Only show ranking if we have meaningful data (at least MIN_COUNTRIES_FOR_RANKING countries)
+      const hasValidRanking = ranking && 
+                              ranking.rank > 0 && 
+                              ranking.total >= MIN_COUNTRIES_FOR_RANKING;
+
       return {
         ...stat,
-        ranking: ranking && ranking.rank > 0 ? ranking.rank : null
+        ranking: hasValidRanking ? ranking.rank : null,
+        rankTotal: hasValidRanking ? ranking.total : null
       };
     }
     return stat;

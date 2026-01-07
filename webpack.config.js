@@ -6,8 +6,8 @@ const { WebpackManifestPlugin } = require('webpack-manifest-plugin');
 const CompressionPlugin = require('compression-webpack-plugin');
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
-module.exports = (env = {}) => {
-  const isProd = env.production || process.env.NODE_ENV === 'production';
+module.exports = (env = {}, argv) => {
+  const isProd = argv.mode === 'production' || env.production || process.env.NODE_ENV === 'production';
   const analyze = env.analyze === 'true';
   
   return {
@@ -21,10 +21,12 @@ module.exports = (env = {}) => {
     },
     output: {
       path: path.resolve(__dirname, 'dist'),
-      filename: isProd ? '[name].[contenthash].js' : '[name].js',
-      chunkFilename: isProd ? '[name].[contenthash].chunk.js' : '[name].chunk.js',
+      // Use simple filenames for both dev/prod to match index.html references
+      // GitHub Pages can use asset-manifest.json if cache-busting is needed
+      filename: '[name].js',
+      chunkFilename: '[name].chunk.js',
       clean: true,
-      publicPath: isProd ? '/global-info-portal/dist/' : '/dist/',
+      publicPath: '/dist/',
     },
     optimization: {
       moduleIds: 'deterministic',
@@ -145,8 +147,9 @@ module.exports = (env = {}) => {
     },
     plugins: [
       new MiniCssExtractPlugin({
-        filename: isProd ? '[name].[contenthash].css' : '[name].css',
-        chunkFilename: isProd ? '[name].[contenthash].chunk.css' : '[name].chunk.css',
+        // Use simple filenames for both dev/prod to match index.html references
+        filename: '[name].css',
+        chunkFilename: '[name].chunk.css',
       }),
       new WebpackManifestPlugin({
         fileName: 'asset-manifest.json',

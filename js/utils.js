@@ -128,7 +128,9 @@ export function addStatSection(container, title, stats) {
     // Create stat ranking element if ranking data is available
     let rankingHtml = '';
     if (stat.ranking) {
-      rankingHtml = `<div class="stat-ranking">#${stat.ranking}</div>`;
+      // Show rank with total for context (e.g., "#5 / 195")
+      const totalText = stat.rankTotal ? ` <span class="rank-total">/ ${stat.rankTotal}</span>` : '';
+      rankingHtml = `<div class="stat-ranking">#${stat.ranking}${totalText}</div>`;
     }
 
     // Render header (title + ranking) and data below

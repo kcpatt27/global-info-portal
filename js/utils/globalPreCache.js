@@ -26,7 +26,7 @@ const PRIORITY_COUNTRIES = [
   // Major Powers (5)
   { code: 'us', name: 'United States', folder: 'north-america' },
   { code: 'ch', name: 'China', folder: 'east-n-southeast-asia' },  // FIPS code 'ch' -> ISO 'cn'
-  { code: 'rs', name: 'Russia', folder: 'russia' },  // FIPS code 'rs' -> ISO 'ru'
+  { code: 'rs', name: 'Russia', folder: 'central-asia' },  // folder 'russia' -> 'central-asia'
   { code: 'uk', name: 'United Kingdom', folder: 'europe' },  // FIPS 'uk' -> ISO 'gb'
   { code: 'fr', name: 'France', folder: 'europe' },
   
@@ -102,13 +102,14 @@ const SECONDARY_COUNTRIES = [
   { code: 'ee', name: 'Estonia', folder: 'europe' },
   { code: 'rs', name: 'Serbia', folder: 'europe' },
   { code: 'lu', name: 'Luxembourg', folder: 'europe' },
-  { code: 'is', name: 'Iceland', folder: 'europe' },
+  { code: 'ic', name: 'Iceland', folder: 'europe' },
   
   // More Middle East
   { code: 'om', name: 'Oman', folder: 'middle-east' },
   { code: 'jo', name: 'Jordan', folder: 'middle-east' },
   { code: 'lb', name: 'Lebanon', folder: 'middle-east' },
   { code: 'bh', name: 'Bahrain', folder: 'middle-east' },
+  { code: 'ym', name: 'Yemen', folder: 'middle-east' },
   
   // More Africa
   { code: 'ma', name: 'Morocco', folder: 'africa' },
