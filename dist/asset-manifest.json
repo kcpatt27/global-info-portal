@@ -1,15 +1,15 @@
 {
-  "main.js": "/dist/main.js",
-  "styles.css": "/dist/styles.css",
-  "styles.js": "/dist/styles.js",
-  "runtime.js": "/dist/runtime.js",
-  "144.chunk.js": "/dist/144.chunk.js",
-  "320.chunk.js": "/dist/320.chunk.js",
-  "vendors.js": "/dist/vendors.js",
-  "main.js.map": "/dist/main.js.map",
-  "styles.css.map": "/dist/styles.css.map",
-  "runtime.js.map": "/dist/runtime.js.map",
-  "144.chunk.js.map": "/dist/144.chunk.js.map",
-  "320.chunk.js.map": "/dist/320.chunk.js.map",
-  "vendors.js.map": "/dist/vendors.js.map"
+  "main.js": "dist/main.js",
+  "styles.css": "dist/styles.css",
+  "styles.js": "dist/styles.js",
+  "runtime.js": "dist/runtime.js",
+  "144.chunk.js": "dist/144.chunk.js",
+  "320.chunk.js": "dist/320.chunk.js",
+  "vendors.js": "dist/vendors.js",
+  "main.js.map": "dist/main.js.map",
+  "styles.css.map": "dist/styles.css.map",
+  "runtime.js.map": "dist/runtime.js.map",
+  "144.chunk.js.map": "dist/144.chunk.js.map",
+  "320.chunk.js.map": "dist/320.chunk.js.map",
+  "vendors.js.map": "dist/vendors.js.map"
 }

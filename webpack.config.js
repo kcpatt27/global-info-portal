@@ -22,11 +22,12 @@ module.exports = (env = {}, argv) => {
     output: {
       path: path.resolve(__dirname, 'dist'),
       // Use simple filenames for both dev/prod to match index.html references
-      // GitHub Pages can use asset-manifest.json if cache-busting is needed
       filename: '[name].js',
       chunkFilename: '[name].chunk.js',
       clean: true,
-      publicPath: '/dist/',
+      // Relative path (no leading slash) so chunks load relative to HTML location
+      // Works for both local dev AND GitHub Pages (hosted at /global-info-portal/)
+      publicPath: 'dist/',
     },
     optimization: {
       moduleIds: 'deterministic',
