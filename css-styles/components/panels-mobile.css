@@ -79,8 +79,9 @@
     top: 0;
     z-index: 10;
     display: flex;
-    justify-content: flex-start;
-    overflow-x: auto;
+    justify-content: stretch;
+    /* Two tabs should span full width; avoid horizontal scrolling */
+    overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none; /* Hide scrollbar on Firefox */
     -ms-overflow-style: none; /* Hide scrollbar on IE/Edge */
@@ -95,10 +96,11 @@
 
   /* Individual tabs - proper tab appearance */
   .data-tab {
-    flex: 0 0 auto;
+    /* Fill available width evenly */
+    flex: 1 1 0;
     padding: 10px 16px;
-    margin-right: -5px;
-    min-width: 100px;
+    margin-right: 0;
+    min-width: 0;
     text-align: center;
     position: relative;
     border-radius: 8px 8px 0 0;

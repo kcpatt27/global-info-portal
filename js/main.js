@@ -45,7 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 sessionId: 'debug-session',
-                runId: 'layout-debug-1',
+                runId: 'layout-debug-2',
                 hypothesisId,
                 location: 'js/main.js:DOMContentLoaded',
                 message,
@@ -171,14 +171,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const input = searchEl.querySelector('input.search-input');
         if (!input) return;
 
-        // Use native datalist suggestions for minimal UI/CSS impact
-        const datalistId = 'country-search-datalist';
-        input.setAttribute('list', datalistId);
+        // Custom suggestions dropdown (native <datalist> is browser-controlled and can render misaligned)
         input.setAttribute('aria-label', 'Search countries');
         input.setAttribute('autocomplete', 'off');
-
-        const dl = document.createElement('datalist');
-        dl.id = datalistId;
 
         // Build searchable options from rendered map paths and titles
         const all = Array.from(document.querySelectorAll('path.country'))
@@ -192,19 +187,46 @@ document.addEventListener('DOMContentLoaded', () => {
             })
             .filter(x => x.code && x.name);
 
-        const fillDatalist = (query) => {
+        const suggestionsEl = document.createElement('div');
+        suggestionsEl.className = 'search-suggestions';
+        suggestionsEl.setAttribute('role', 'listbox');
+        suggestionsEl.style.display = 'none';
+
+        const fillSuggestions = (query) => {
             const q = (query || '').toLowerCase().trim();
-            dl.innerHTML = '';
-            if (!q) return;
+            suggestionsEl.innerHTML = '';
+            if (!q) {
+                suggestionsEl.style.display = 'none';
+                return;
+            }
             const matches = all
                 .filter(c => c.name.toLowerCase().includes(q))
                 .slice(0, 12);
-            for (const m of matches) {
-                const opt = document.createElement('option');
-                opt.value = m.name;
-                opt.setAttribute('data-code', m.code);
-                dl.appendChild(opt);
+            if (!matches.length) {
+                suggestionsEl.style.display = 'none';
+                return;
             }
+            for (const m of matches) {
+                const item = document.createElement('button');
+                item.type = 'button';
+                item.className = 'search-suggestion';
+                item.setAttribute('role', 'option');
+                item.textContent = m.name;
+                item.addEventListener('click', () => {
+                    input.value = m.name;
+                    suggestionsEl.style.display = 'none';
+                    const ok = window.mapInstance?.selectCountry?.(m.code);
+                    // #region agent log - search select
+                    __geeLog('H6', 'Country search suggestion clicked', {
+                        value: m.name,
+                        code: m.code,
+                        selected: !!ok
+                    });
+                    // #endregion
+                });
+                suggestionsEl.appendChild(item);
+            }
+            suggestionsEl.style.display = 'block';
         };
 
         const selectBestMatch = () => {
@@ -217,21 +239,35 @@ document.addEventListener('DOMContentLoaded', () => {
             return true;
         };
 
-        input.addEventListener('input', () => fillDatalist(input.value), { passive: true });
+        input.addEventListener('input', () => fillSuggestions(input.value), { passive: true });
+        input.addEventListener('change', () => {
+            const ok = selectBestMatch();
+            // #region agent log - search select
+            __geeLog('H6', 'Country search change event', {
+                value: input.value,
+                selected: ok
+            });
+            // #endregion
+        }, { passive: true });
         input.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
                 const ok = selectBestMatch();
                 // #region agent log - search select
-                __geeLog('H2', 'Country search enter pressed', {
+                __geeLog('H6', 'Country search enter pressed', {
                     value: input.value,
                     selected: ok
                 });
                 // #endregion
+                suggestionsEl.style.display = 'none';
             }
+        });
+        input.addEventListener('blur', () => {
+            // Let click events on suggestions win
+            setTimeout(() => { suggestionsEl.style.display = 'none'; }, 120);
         });
 
         host.appendChild(searchEl);
-        host.appendChild(dl);
+        searchEl.appendChild(suggestionsEl);
 
         // Snapshot after insertion
         requestAnimationFrame(() => __logLayoutState('search-inserted'));

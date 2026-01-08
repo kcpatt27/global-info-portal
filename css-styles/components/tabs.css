@@ -130,16 +130,18 @@
 
 /* Mobile optimizations - override for very small screens */
 @media (max-width: 500px) {
+    /* Don't force a fixed height on the tab strip on mobile; it clips 44px touch targets */
     .data-tabs {
-        height: 36px;
+        height: auto;
+        min-height: 44px;
     }
-    
+
     .data-tab {
         padding: 6px 10px;
         font-size: 0.8rem;
     }
-    
+
     .data-tab.active {
-        height: 38px;
+        height: auto;
     }
 } 
