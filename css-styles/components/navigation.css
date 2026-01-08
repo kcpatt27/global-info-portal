@@ -164,7 +164,8 @@
 
     .search-bar-container .search-input {
         font-size: 16px; /* Prevents zoom on iOS */
-        padding: 14px 40px 14px 44px;
+        /* Slightly slimmer height on mobile */
+        padding: 10px 40px 10px 44px;
     }
 
     .search-bar-container .search-icon svg {
