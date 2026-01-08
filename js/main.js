@@ -16,6 +16,7 @@ import { initMobileNav } from './components/navigation/MobileNav.js';
 import { initMobilePanels } from './components/panels/PanelMobileManager.js';
 import { initMobileInteractions } from './utils/mobile-interactions.js';
 import { initMobileTypography } from './utils/typography-enhancements.js';
+import { createSearchInput } from './utils/search.js';
 
 // Cache for resolved flag URLs by ISO A2 code
 const flagUrlCache = {};
@@ -36,6 +37,104 @@ window.countriesList = countriesList;
 // Initialize the application when the DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
     console.log('Main script loaded, initializing application...');
+
+    // #region agent log - layout/search/tab diagnostics
+    const __geeLog = (hypothesisId, message, data) => {
+        fetch('http://127.0.0.1:7242/ingest/76a8a506-20d1-4901-a0b1-4cf77e091d37', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                sessionId: 'debug-session',
+                runId: 'layout-debug-1',
+                hypothesisId,
+                location: 'js/main.js:DOMContentLoaded',
+                message,
+                data,
+                timestamp: Date.now()
+            })
+        }).catch(() => {});
+    };
+
+    const __elInfo = (selector) => {
+        const el = document.querySelector(selector);
+        if (!el) return { selector, exists: false };
+        const cs = window.getComputedStyle(el);
+        const r = el.getBoundingClientRect();
+        return {
+            selector,
+            exists: true,
+            tag: el.tagName,
+            id: el.id || null,
+            className: el.className || null,
+            rect: { x: r.x, y: r.y, w: r.width, h: r.height },
+            style: {
+                display: cs.display,
+                position: cs.position,
+                zIndex: cs.zIndex,
+                opacity: cs.opacity,
+                visibility: cs.visibility,
+                overflowX: cs.overflowX,
+                overflowY: cs.overflowY,
+                borderTopWidth: cs.borderTopWidth,
+                borderRightWidth: cs.borderRightWidth,
+                borderBottomWidth: cs.borderBottomWidth,
+                borderLeftWidth: cs.borderLeftWidth,
+                fontSize: cs.fontSize,
+                paddingTop: cs.paddingTop,
+                paddingRight: cs.paddingRight,
+                paddingBottom: cs.paddingBottom,
+                paddingLeft: cs.paddingLeft
+            }
+        };
+    };
+
+    const __logLayoutState = (phase) => {
+        const viewport = { w: window.innerWidth, h: window.innerHeight, dpr: window.devicePixelRatio };
+        const path = window.location.pathname;
+
+        const searchHost = document.querySelector('#country-search-container');
+        const searchChildren = searchHost ? searchHost.children.length : null;
+        const hasSearchInput = !!document.querySelector('#country-search-container .search-container .search-input');
+
+        __geeLog('H1', 'Search container presence', {
+            phase,
+            path,
+            viewport,
+            searchChildren,
+            hasSearchInput,
+            searchBarContainer: __elInfo('.search-bar-container'),
+            countrySearchContainer: __elInfo('#country-search-container')
+        });
+
+        __geeLog('H3', 'Data tabs computed style snapshot', {
+            phase,
+            path,
+            viewport,
+            dataPanel: __elInfo('#data-panel'),
+            dataTabs: __elInfo('#data-panel .data-tabs'),
+            dataTabActive: __elInfo('#data-panel .data-tab.active'),
+            dataTabInactive: __elInfo('#data-panel .data-tab:not(.active)'),
+            dataPanels: __elInfo('#data-panel .data-panels')
+        });
+    };
+
+    __logLayoutState('domcontentloaded');
+    requestAnimationFrame(() => __logLayoutState('raf1'));
+    window.addEventListener('resize', () => __logLayoutState('resize'));
+
+    // Log when switching to the Data panel / clicking data tabs (captures the "broken tabs" state)
+    document.addEventListener('click', (evt) => {
+        const t = evt.target;
+        if (!(t instanceof Element)) return;
+        if (t.closest('.sidebar-button[data-panel="data"]')) {
+            requestAnimationFrame(() => __logLayoutState('data-panel-open'));
+            return;
+        }
+        if (t.closest('#data-panel .data-tab')) {
+            requestAnimationFrame(() => __logLayoutState('data-tab-click'));
+        }
+    }, { capture: true });
+    // #endregion
     
     // Initialize the map
     const map = initMap({
@@ -46,6 +145,97 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Make map instance available globally for gesture handling
     window.mapInstance = map;
+
+    // Initialize Country Search UI once the map is ready (paths rendered)
+    map.ready?.then(() => {
+        // #region agent log - search init
+        __geeLog('H2', 'Map ready - initializing country search UI', {
+            path: window.location.pathname,
+            viewport: { w: window.innerWidth, h: window.innerHeight, dpr: window.devicePixelRatio }
+        });
+        // #endregion
+
+        const host = document.getElementById('country-search-container');
+        if (!host) return;
+
+        // Avoid duplicates if re-initialized
+        if (host.querySelector('.search-container')) return;
+
+        const searchEl = createSearchInput({
+            placeholder: 'Search countries...',
+            debounceTime: 120,
+            clearButton: true,
+            callback: () => { /* handled below */ }
+        });
+
+        const input = searchEl.querySelector('input.search-input');
+        if (!input) return;
+
+        // Use native datalist suggestions for minimal UI/CSS impact
+        const datalistId = 'country-search-datalist';
+        input.setAttribute('list', datalistId);
+        input.setAttribute('aria-label', 'Search countries');
+        input.setAttribute('autocomplete', 'off');
+
+        const dl = document.createElement('datalist');
+        dl.id = datalistId;
+
+        // Build searchable options from rendered map paths and titles
+        const all = Array.from(document.querySelectorAll('path.country'))
+            .map(p => {
+                const id = p.getAttribute('id') || '';
+                const code = id.startsWith('country-') ? id.slice('country-'.length) : '';
+                const title = p.querySelector('title')?.textContent || '';
+                // title format: "Name (xx)"
+                const name = title.replace(/\s*\([a-z]{2}\)\s*$/i, '').trim();
+                return { code, name };
+            })
+            .filter(x => x.code && x.name);
+
+        const fillDatalist = (query) => {
+            const q = (query || '').toLowerCase().trim();
+            dl.innerHTML = '';
+            if (!q) return;
+            const matches = all
+                .filter(c => c.name.toLowerCase().includes(q))
+                .slice(0, 12);
+            for (const m of matches) {
+                const opt = document.createElement('option');
+                opt.value = m.name;
+                opt.setAttribute('data-code', m.code);
+                dl.appendChild(opt);
+            }
+        };
+
+        const selectBestMatch = () => {
+            const q = (input.value || '').toLowerCase().trim();
+            if (!q) return false;
+            const exact = all.find(c => c.name.toLowerCase() === q);
+            const best = exact || all.find(c => c.name.toLowerCase().includes(q));
+            if (!best) return false;
+            window.mapInstance?.selectCountry?.(best.code);
+            return true;
+        };
+
+        input.addEventListener('input', () => fillDatalist(input.value), { passive: true });
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                const ok = selectBestMatch();
+                // #region agent log - search select
+                __geeLog('H2', 'Country search enter pressed', {
+                    value: input.value,
+                    selected: ok
+                });
+                // #endregion
+            }
+        });
+
+        host.appendChild(searchEl);
+        host.appendChild(dl);
+
+        // Snapshot after insertion
+        requestAnimationFrame(() => __logLayoutState('search-inserted'));
+    }).catch(() => {});
     
     // Initialize touch interactions
     if (isTouchDevice()) {

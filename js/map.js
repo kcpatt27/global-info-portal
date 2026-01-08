@@ -52,7 +52,7 @@ export function initMap(options = {}) {
     setupMapEvents(options);
     
     // Load and render map data
-    loadMapData(config);
+    const ready = loadMapData(config);
     
     return {
         selectCountry: selectCountryById,
@@ -60,7 +60,9 @@ export function initMap(options = {}) {
         resetZoom,
         zoomTo,
         zoomBy,
-        panBy
+        panBy,
+        // Promise that resolves when map data is loaded and paths are rendered
+        ready
     };
 }
 

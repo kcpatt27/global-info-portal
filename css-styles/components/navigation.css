@@ -151,7 +151,9 @@
 /* Mobile Search Adjustments */
 @media (max-width: 768px) {
     .search-bar-container {
-        bottom: 15px;
+        /* Move search to top on mobile/tablet (keeps it out of the way of bottom gestures) */
+        top: 12px;
+        bottom: auto;
         width: 85%;
         max-width: none;
     }
