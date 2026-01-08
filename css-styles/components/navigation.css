@@ -88,7 +88,9 @@
     position: absolute;
     left: 0;
     right: 0;
-    top: calc(100% + 6px);
+    /* Default: open upward (desktop search bar sits near bottom) */
+    top: auto;
+    bottom: calc(100% + 6px);
     background: rgba(18, 18, 18, 0.98);
     border: 1px solid rgba(105, 179, 162, 0.35);
     border-radius: 12px;
@@ -96,6 +98,14 @@
     z-index: 999;
     overflow: hidden;
     max-height: 40vh;
+}
+
+/* On mobile/tablet the search bar is at the top, so open suggestions downward */
+@media (max-width: 768px) {
+  .search-suggestions {
+    top: calc(100% + 6px);
+    bottom: auto;
+  }
 }
 
 .search-suggestion {

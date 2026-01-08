@@ -191,6 +191,8 @@
   transform: translateY(-50%);
   width: 20px;
   height: 20px;
+  min-width: 20px;
+  min-height: 20px;
   border-radius: 50%;
   background-color: var(--color-border);
   color: var(--color-text-primary);
@@ -199,9 +201,20 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  font-size: 16px;
+  font-size: 14px;
   line-height: 1;
   transition: all var(--transition-chart) var(--easing-standard);
+}
+
+/* Override global 44px mobile button touch-target rule for this small clear button */
+@media (max-width: 768px) {
+  .stats-search-clear {
+    width: 22px;
+    height: 22px;
+    min-width: 22px;
+    min-height: 22px;
+    font-size: 12px;
+  }
 }
 
 .stats-search-clear:hover {
