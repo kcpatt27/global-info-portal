@@ -74,7 +74,8 @@
     border-radius: 0;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
     background-color: var(--color-sidebar-bg);
-    padding: 8px 8px 0;
+    /* Full-width tab bar (no inset padding) */
+    padding: 0;
     position: sticky;
     top: 0;
     z-index: 10;
@@ -82,6 +83,7 @@
     justify-content: stretch;
     /* Two tabs should span full width; avoid horizontal scrolling */
     overflow-x: hidden;
+    overflow-y: hidden;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none; /* Hide scrollbar on Firefox */
     -ms-overflow-style: none; /* Hide scrollbar on IE/Edge */
@@ -103,7 +105,7 @@
     min-width: 0;
     text-align: center;
     position: relative;
-    border-radius: 8px 8px 0 0;
+    border-radius: 0;
     white-space: nowrap;
     font-size: 14px;
     font-weight: 500;
@@ -114,6 +116,20 @@
     border-width: 1px 1px 3px 1px;
     color: var(--color-text-secondary, #888);
     transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  /* Rounded outer corners for the two-tab strip */
+  .data-tab:first-child {
+    border-top-left-radius: 12px;
+  }
+
+  .data-tab:last-child {
+    border-top-right-radius: 12px;
+  }
+
+  /* Avoid double border in the middle */
+  .data-tab + .data-tab {
+    border-left-width: 0;
   }
   
   .data-tab:last-child {
