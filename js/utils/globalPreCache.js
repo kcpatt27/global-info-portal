@@ -22,6 +22,7 @@ import { getMetricById } from './leaderboardMetrics.js';
 
 // TOP 50 Priority Countries - loaded immediately on page load
 // These are the most significant countries for the leaderboard
+// im pretty sure some of these codes should be different, they should be synced with whatever is coming from the world-factbook repo. its a bit of a mess, some of the middle east, europe and africa countries arent synced up and so they dont show on the leaderboard until clicked (bc a click pulls the data from the world-factbook repo).
 const PRIORITY_COUNTRIES = [
   // Major Powers (5)
   { code: 'us', name: 'United States', folder: 'north-america' },
@@ -100,7 +101,7 @@ const SECONDARY_COUNTRIES = [
   { code: 'lt', name: 'Lithuania', folder: 'europe' },
   { code: 'lv', name: 'Latvia', folder: 'europe' },
   { code: 'ee', name: 'Estonia', folder: 'europe' },
-  { code: 'rs', name: 'Serbia', folder: 'europe' },
+  { code: 'ri', name: 'Serbia', folder: 'europe' },
   { code: 'lu', name: 'Luxembourg', folder: 'europe' },
   { code: 'ic', name: 'Iceland', folder: 'europe' },
   
@@ -108,7 +109,7 @@ const SECONDARY_COUNTRIES = [
   { code: 'om', name: 'Oman', folder: 'middle-east' },
   { code: 'jo', name: 'Jordan', folder: 'middle-east' },
   { code: 'lb', name: 'Lebanon', folder: 'middle-east' },
-  { code: 'bh', name: 'Bahrain', folder: 'middle-east' },
+  { code: 'ba', name: 'Bahrain', folder: 'middle-east' },
   { code: 'ym', name: 'Yemen', folder: 'middle-east' },
   
   // More Africa
