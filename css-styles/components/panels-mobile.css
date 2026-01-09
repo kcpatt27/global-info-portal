@@ -74,8 +74,9 @@
     border-radius: 0;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
     background-color: var(--color-sidebar-bg);
-    /* Full-width tab bar (no inset padding) */
+    /* Full-width tab bar (no inset padding, no gaps) */
     padding: 0;
+    gap: 0;
     position: sticky;
     top: 0;
     z-index: 10;
@@ -121,16 +122,18 @@
   /* Rounded outer corners for the two-tab strip */
   .data-tab:first-child {
     border-top-left-radius: 12px;
+    /* Avoid double border in the middle: left tab owns outer border, not divider */
+    border-right-width: 0;
   }
 
   .data-tab:last-child {
     border-top-right-radius: 12px;
+    /* Ensure the center divider exists */
+    border-left-width: 1px;
   }
 
   /* Avoid double border in the middle */
-  .data-tab + .data-tab {
-    border-left-width: 0;
-  }
+  .data-tab + .data-tab { border-left-width: 1px; }
   
   .data-tab:last-child {
     margin-right: 0;
@@ -138,14 +141,16 @@
 
   /* Active tab styling */
   .data-tab.active {
-    background-color: var(--color-sidebar-bg, #1c1c1c);
+    /* Active tab should visually merge into the panel below */
+    background-color: var(--color-chart-bg, #2d2d2d);
     border-color: var(--color-inactive-text, #666);
     border-bottom: none !important;
     color: var(--color-text-primary, #fff);
     font-weight: bold;
     z-index: 10;
-    transform: translateY(-2px);
-    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.3);
+    /* Keep tabs stable (no vertical shift) */
+    transform: none;
+    box-shadow: none;
   }
   
   /* Remove the after indicator since we're using border-bottom style */
