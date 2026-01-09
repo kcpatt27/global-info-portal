@@ -38,264 +38,7 @@ window.countriesList = countriesList;
 document.addEventListener('DOMContentLoaded', () => {
     console.log('Main script loaded, initializing application...');
 
-    // #region agent log - layout/search/tab diagnostics
-    const __geeLog = (hypothesisId, message, data) => {
-        fetch('http://127.0.0.1:7242/ingest/76a8a506-20d1-4901-a0b1-4cf77e091d37', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                sessionId: 'debug-session',
-                runId: 'layout-debug-5',
-                hypothesisId,
-                location: 'js/main.js:DOMContentLoaded',
-                message,
-                data,
-                timestamp: Date.now()
-            })
-        }).catch(() => {});
-    };
-
-    const __elInfo = (selector) => {
-        const el = document.querySelector(selector);
-        if (!el) return { selector, exists: false };
-        const cs = window.getComputedStyle(el);
-        const r = el.getBoundingClientRect();
-        return {
-            selector,
-            exists: true,
-            tag: el.tagName,
-            id: el.id || null,
-            className: el.className || null,
-            rect: { x: r.x, y: r.y, w: r.width, h: r.height },
-            style: {
-                display: cs.display,
-                position: cs.position,
-                zIndex: cs.zIndex,
-                opacity: cs.opacity,
-                visibility: cs.visibility,
-                overflowX: cs.overflowX,
-                overflowY: cs.overflowY,
-                backgroundColor: cs.backgroundColor,
-                color: cs.color,
-                borderTopColor: cs.borderTopColor,
-                borderRightColor: cs.borderRightColor,
-                borderBottomColor: cs.borderBottomColor,
-                borderLeftColor: cs.borderLeftColor,
-                borderTopWidth: cs.borderTopWidth,
-                borderRightWidth: cs.borderRightWidth,
-                borderBottomWidth: cs.borderBottomWidth,
-                borderLeftWidth: cs.borderLeftWidth,
-                borderTopLeftRadius: cs.borderTopLeftRadius,
-                borderTopRightRadius: cs.borderTopRightRadius,
-                borderBottomLeftRadius: cs.borderBottomLeftRadius,
-                borderBottomRightRadius: cs.borderBottomRightRadius,
-                boxShadow: cs.boxShadow,
-                transform: cs.transform,
-                fontSize: cs.fontSize,
-                paddingTop: cs.paddingTop,
-                paddingRight: cs.paddingRight,
-                paddingBottom: cs.paddingBottom,
-                paddingLeft: cs.paddingLeft
-            }
-        };
-    };
-
-    const __logLayoutState = (phase) => {
-        const viewport = { w: window.innerWidth, h: window.innerHeight, dpr: window.devicePixelRatio };
-        const path = window.location.pathname;
-
-        const searchHost = document.querySelector('#country-search-container');
-        const searchChildren = searchHost ? searchHost.children.length : null;
-        const hasSearchInput = !!document.querySelector('#country-search-container .search-container .search-input');
-
-        __geeLog('H1', 'Search container presence', {
-            phase,
-            path,
-            viewport,
-            searchChildren,
-            hasSearchInput,
-            searchBarContainer: __elInfo('.search-bar-container'),
-            countrySearchContainer: __elInfo('#country-search-container')
-        });
-
-        __geeLog('H3', 'Data tabs computed style snapshot', {
-            phase,
-            path,
-            viewport,
-            dataPanel: __elInfo('#data-panel'),
-            dataTabs: __elInfo('#data-panel .data-tabs'),
-            dataTabActive: __elInfo('#data-panel .data-tab.active'),
-            dataTabInactive: __elInfo('#data-panel .data-tab:not(.active)'),
-            dataPanels: __elInfo('#data-panel .data-panels')
-        });
-    };
-
-    __logLayoutState('domcontentloaded');
-    requestAnimationFrame(() => __logLayoutState('raf1'));
-    window.addEventListener('resize', () => __logLayoutState('resize'));
-
-    // Log when switching to the Data panel / clicking data tabs (captures the "broken tabs" state)
-    document.addEventListener('click', (evt) => {
-        const t = evt.target;
-        if (!(t instanceof Element)) return;
-        if (t.closest('.sidebar-button[data-panel="data"]')) {
-            requestAnimationFrame(() => __logLayoutState('data-panel-open'));
-            return;
-        }
-        if (t.closest('#data-panel .data-tab')) {
-            requestAnimationFrame(() => __logLayoutState('data-tab-click'));
-        }
-    }, { capture: true });
-
-    // Capture hover state on devices that support hover (desktop / trackpad) for the data tabs
-    document.addEventListener('pointerover', (evt) => {
-        const t = evt.target;
-        if (!(t instanceof Element)) return;
-        const tab = t.closest('#data-panel .data-tab');
-        if (!tab) return;
-        requestAnimationFrame(() => {
-            __geeLog('H7', 'Data tab pointerover snapshot', {
-                viewport: { w: window.innerWidth, h: window.innerHeight, dpr: window.devicePixelRatio },
-                active: tab.classList.contains('active'),
-                hovered: {
-                    className: tab.className,
-                    rect: tab.getBoundingClientRect(),
-                    style: (() => {
-                        const cs = window.getComputedStyle(tab);
-                        return {
-                            backgroundColor: cs.backgroundColor,
-                            color: cs.color,
-                            boxShadow: cs.boxShadow,
-                            transform: cs.transform,
-                            borderTopColor: cs.borderTopColor,
-                            borderBottomColor: cs.borderBottomColor,
-                            borderTopWidth: cs.borderTopWidth,
-                            borderBottomWidth: cs.borderBottomWidth
-                        };
-                    })()
-                },
-                activeTab: __elInfo('#data-panel .data-tab.active'),
-                inactiveTab: __elInfo('#data-panel .data-tab:not(.active)')
-            });
-        });
-    }, { capture: true });
-
-    document.addEventListener('pointerout', (evt) => {
-        const t = evt.target;
-        if (!(t instanceof Element)) return;
-        const tab = t.closest('#data-panel .data-tab');
-        if (!tab) return;
-        requestAnimationFrame(() => {
-            __geeLog('H7', 'Data tab pointerout snapshot', {
-                viewport: { w: window.innerWidth, h: window.innerHeight, dpr: window.devicePixelRatio },
-                active: tab.classList.contains('active'),
-                tabActive: __elInfo('#data-panel .data-tab.active'),
-                tabInactive: __elInfo('#data-panel .data-tab:not(.active)')
-            });
-        });
-    }, { capture: true });
-
-    // Extra: log seam/clip diagnostics on tab click (right-edge cutoff + stacking order)
-    document.addEventListener('click', (evt) => {
-        const t = evt.target;
-        if (!(t instanceof Element)) return;
-        const clickedTab = t.closest('#data-panel .data-tab');
-        if (!clickedTab) return;
-
-        requestAnimationFrame(() => {
-            const dataPanel = document.querySelector('#data-panel');
-            const dataTabs = document.querySelector('#data-panel .data-tabs');
-            const tab1 = document.querySelector('#data-panel .data-tab:nth-child(1)');
-            const tab2 = document.querySelector('#data-panel .data-tab:nth-child(2)');
-            const active = document.querySelector('#data-panel .data-tab.active');
-            const panelRankings = document.querySelector('#data-panel .data-panel[data-panel="1"]');
-            const panelStats = document.querySelector('#data-panel .data-panel[data-panel="0"]');
-            const leaderboardBox = document.querySelector('#data-panel .data-panel[data-panel="1"] #global-leaderboard-container');
-            const leaderboardInner = document.querySelector('#data-panel .data-panel[data-panel="1"] .global-leaderboard');
-
-            const elDiag = (el) => {
-                if (!(el instanceof Element)) return { exists: false };
-                const r = el.getBoundingClientRect();
-                const cs = window.getComputedStyle(el);
-                return {
-                    exists: true,
-                    className: el.className,
-                    rect: { left: r.left, right: r.right, top: r.top, bottom: r.bottom, w: r.width, h: r.height },
-                    style: {
-                        display: cs.display,
-                        position: cs.position,
-                        zIndex: cs.zIndex,
-                        overflowX: cs.overflowX,
-                        overflowY: cs.overflowY,
-                        clipPath: cs.clipPath,
-                        borderTopLeftRadius: cs.borderTopLeftRadius,
-                        borderTopRightRadius: cs.borderTopRightRadius,
-                        borderRightWidth: cs.borderRightWidth,
-                        borderLeftWidth: cs.borderLeftWidth,
-                        borderRightColor: cs.borderRightColor,
-                        borderLeftColor: cs.borderLeftColor,
-                        backgroundColor: cs.backgroundColor,
-                        boxShadow: cs.boxShadow,
-                        transform: cs.transform,
-                    }
-                };
-            };
-
-            __geeLog('H8', 'Data tabs seam/clip snapshot', {
-                viewport: { w: window.innerWidth, h: window.innerHeight, dpr: window.devicePixelRatio },
-                clicked: elDiag(clickedTab),
-                dataPanel: elDiag(dataPanel),
-                dataTabs: elDiag(dataTabs),
-                tab1: elDiag(tab1),
-                tab2: elDiag(tab2),
-                activeTab: elDiag(active),
-                // quick numeric check: does tab2 reach the container right edge?
-                rightEdge: (() => {
-                    const dt = dataTabs instanceof Element ? dataTabs.getBoundingClientRect() : null;
-                    const t2 = tab2 instanceof Element ? tab2.getBoundingClientRect() : null;
-                    if (!dt || !t2) return { ok: null };
-                    return { ok: Math.abs(dt.right - t2.right) < 0.75, delta: (dt.right - t2.right) };
-                })(),
-                // seam overlap: positive means tabs overlap (active can sit “in front”)
-                seamOverlap: (() => {
-                    const t1r = tab1 instanceof Element ? tab1.getBoundingClientRect() : null;
-                    const t2r = tab2 instanceof Element ? tab2.getBoundingClientRect() : null;
-                    if (!t1r || !t2r) return { ok: null };
-                    const overlap = (t1r.right - t2r.left);
-                    return { ok: overlap > 0.25, overlap };
-                })(),
-            });
-
-            __geeLog('H12', 'Rankings leaderboard alignment snapshot', {
-                viewport: { w: window.innerWidth, h: window.innerHeight, dpr: window.devicePixelRatio },
-                activeTabText: clickedTab.textContent?.trim() || null,
-                dataPanel: elDiag(dataPanel),
-                panelRankings: elDiag(panelRankings),
-                panelStats: elDiag(panelStats),
-                leaderboardContainer: elDiag(leaderboardBox),
-                leaderboardInner: elDiag(leaderboardInner),
-            });
-        });
-    }, { capture: true });
-
-    // Log when panel transitions end (to see if stats click leaves rankings shifted)
-    document.addEventListener('transitionend', (evt) => {
-        const t = evt.target;
-        if (!(t instanceof Element)) return;
-        if (!t.matches('#data-panel .data-panels .data-panel')) return;
-        if (evt.propertyName !== 'transform' && evt.propertyName !== 'opacity') return;
-        const cs = window.getComputedStyle(t);
-        __geeLog('H12', 'Data panel transitionend', {
-            viewport: { w: window.innerWidth, h: window.innerHeight, dpr: window.devicePixelRatio },
-            propertyName: evt.propertyName,
-            className: t.className,
-            dataPanelAttr: t.getAttribute('data-panel'),
-            transform: cs.transform,
-            opacity: cs.opacity
-        });
-    }, { capture: true });
-    // #endregion
-    
+        
     // Initialize the map
     const map = initMap({
         svgSelector: 'svg',
@@ -308,13 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initialize Country Search UI once the map is ready (paths rendered)
     map.ready?.then(() => {
-        // #region agent log - search init
-        __geeLog('H2', 'Map ready - initializing country search UI', {
-            path: window.location.pathname,
-            viewport: { w: window.innerWidth, h: window.innerHeight, dpr: window.devicePixelRatio }
-        });
-        // #endregion
-
+        
         const host = document.getElementById('country-search-container');
         if (!host) return;
 
@@ -376,14 +113,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     input.value = m.name;
                     suggestionsEl.style.display = 'none';
                     const ok = window.mapInstance?.selectCountry?.(m.code);
-                    // #region agent log - search select
-                    __geeLog('H6', 'Country search suggestion clicked', {
-                        value: m.name,
-                        code: m.code,
-                        selected: !!ok
-                    });
-                    // #endregion
-                });
+                                    });
                 suggestionsEl.appendChild(item);
             }
             suggestionsEl.style.display = 'block';
@@ -402,23 +132,11 @@ document.addEventListener('DOMContentLoaded', () => {
         input.addEventListener('input', () => fillSuggestions(input.value), { passive: true });
         input.addEventListener('change', () => {
             const ok = selectBestMatch();
-            // #region agent log - search select
-            __geeLog('H6', 'Country search change event', {
-                value: input.value,
-                selected: ok
-            });
-            // #endregion
-        }, { passive: true });
+                    }, { passive: true });
         input.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
                 const ok = selectBestMatch();
-                // #region agent log - search select
-                __geeLog('H6', 'Country search enter pressed', {
-                    value: input.value,
-                    selected: ok
-                });
-                // #endregion
-                suggestionsEl.style.display = 'none';
+                                suggestionsEl.style.display = 'none';
             }
         });
         input.addEventListener('blur', () => {

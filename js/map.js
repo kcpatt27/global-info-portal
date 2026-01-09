@@ -255,25 +255,6 @@ function initZoom(config) {
  * Select a country by its ID
  */
 export function selectCountryById(countryId) {
-    // #region agent log - programmatic select diagnostics
-    fetch('http://127.0.0.1:7242/ingest/76a8a506-20d1-4901-a0b1-4cf77e091d37', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            sessionId: 'debug-session',
-            runId: 'layout-debug-2',
-            hypothesisId: 'H5',
-            location: 'js/map.js:selectCountryById',
-            message: 'Programmatic selectCountryById called',
-            data: {
-                countryId,
-                hasConfig: !!mapState.config,
-                hasOnCountrySelect: !!mapState.config?.onCountrySelect
-            },
-            timestamp: Date.now()
-        })
-    }).catch(() => {});
-    // #endregion
 
     const countryElement = mapState.mapElement.select(`#country-${countryId.toLowerCase()}`);
     if (!countryElement.empty()) {
