@@ -45,7 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 sessionId: 'debug-session',
-                runId: 'layout-debug-4',
+                runId: 'layout-debug-5',
                 hypothesisId,
                 location: 'js/main.js:DOMContentLoaded',
                 message,
@@ -191,6 +191,67 @@ document.addEventListener('DOMContentLoaded', () => {
                 active: tab.classList.contains('active'),
                 tabActive: __elInfo('#data-panel .data-tab.active'),
                 tabInactive: __elInfo('#data-panel .data-tab:not(.active)')
+            });
+        });
+    }, { capture: true });
+
+    // Extra: log seam/clip diagnostics on tab click (right-edge cutoff + stacking order)
+    document.addEventListener('click', (evt) => {
+        const t = evt.target;
+        if (!(t instanceof Element)) return;
+        const clickedTab = t.closest('#data-panel .data-tab');
+        if (!clickedTab) return;
+
+        requestAnimationFrame(() => {
+            const dataPanel = document.querySelector('#data-panel');
+            const dataTabs = document.querySelector('#data-panel .data-tabs');
+            const tab1 = document.querySelector('#data-panel .data-tab:nth-child(1)');
+            const tab2 = document.querySelector('#data-panel .data-tab:nth-child(2)');
+            const active = document.querySelector('#data-panel .data-tab.active');
+
+            const elDiag = (el) => {
+                if (!(el instanceof Element)) return { exists: false };
+                const r = el.getBoundingClientRect();
+                const cs = window.getComputedStyle(el);
+                return {
+                    exists: true,
+                    className: el.className,
+                    rect: { left: r.left, right: r.right, top: r.top, bottom: r.bottom, w: r.width, h: r.height },
+                    style: {
+                        display: cs.display,
+                        position: cs.position,
+                        zIndex: cs.zIndex,
+                        overflowX: cs.overflowX,
+                        overflowY: cs.overflowY,
+                        clipPath: cs.clipPath,
+                        borderTopLeftRadius: cs.borderTopLeftRadius,
+                        borderTopRightRadius: cs.borderTopRightRadius,
+                        borderRightWidth: cs.borderRightWidth,
+                        borderLeftWidth: cs.borderLeftWidth,
+                        borderRightColor: cs.borderRightColor,
+                        borderLeftColor: cs.borderLeftColor,
+                        backgroundColor: cs.backgroundColor,
+                        boxShadow: cs.boxShadow,
+                        transform: cs.transform,
+                    }
+                };
+            };
+
+            __geeLog('H8', 'Data tabs seam/clip snapshot', {
+                viewport: { w: window.innerWidth, h: window.innerHeight, dpr: window.devicePixelRatio },
+                clicked: elDiag(clickedTab),
+                dataPanel: elDiag(dataPanel),
+                dataTabs: elDiag(dataTabs),
+                tab1: elDiag(tab1),
+                tab2: elDiag(tab2),
+                activeTab: elDiag(active),
+                // quick numeric check: does tab2 reach the container right edge?
+                rightEdge: (() => {
+                    const dt = dataTabs instanceof Element ? dataTabs.getBoundingClientRect() : null;
+                    const t2 = tab2 instanceof Element ? tab2.getBoundingClientRect() : null;
+                    if (!dt || !t2) return { ok: null };
+                    return { ok: Math.abs(dt.right - t2.right) < 0.75, delta: (dt.right - t2.right) };
+                })(),
             });
         });
     }, { capture: true });
