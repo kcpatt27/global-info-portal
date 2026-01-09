@@ -162,9 +162,7 @@
     box-shadow: none;
   }
   
-  /* Make the active tab visually sit “on top” at the seam by overlapping more (pronounced) */
-  .data-tab:first-child.active { margin-right: -5px; }
-  .data-tab:last-child.active { margin-left: -5px; }
+  /* Active tab sits "on top" via z-index + border ownership (no margin shift) */
 
   /* Remove the after indicator since we're using border-bottom style */
   .data-tab.active::after {
