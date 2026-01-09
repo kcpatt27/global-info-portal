@@ -84,9 +84,8 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     align-items: stretch;
-    /* Avoid clipping rounded corners/borders at the edges */
-    overflow-x: visible;
-    overflow-y: hidden;
+    /* Match desktop behavior: allow raised active tab + shadows without clipping */
+    overflow: visible;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none; /* Hide scrollbar on Firefox */
     -ms-overflow-style: none; /* Hide scrollbar on IE/Edge */
@@ -121,7 +120,8 @@
     border-width: 1px 1px 3px 1px;
     color: var(--color-text-secondary, #888);
     transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
-    box-shadow: none;
+    transform-origin: bottom center;
+    box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.2);
   }
 
   /* Rounded outer corners for the two-tab strip */
@@ -147,16 +147,16 @@
 
   /* Active tab styling */
   .data-tab.active {
-    /* Active tab should visually merge into the panel below */
-    background-color: var(--color-chart-bg, #2a2a2a);
-    border-color: var(--color-border-light, #555);
+    /* Match desktop active-tab treatment */
+    background-color: var(--color-border, #444);
+    border-color: var(--color-inactive-text, #888);
     border-bottom: none !important;
     color: var(--color-text-primary, #fff);
     font-weight: bold;
     z-index: 5;
-    /* Keep tabs stable (no vertical shift) */
-    transform: none;
-    box-shadow: none;
+    transform: translateY(-2px);
+    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.3);
+    will-change: transform, box-shadow;
   }
   
   /* Make the active tab visually sit “on top” at the seam by overlapping 1px */
