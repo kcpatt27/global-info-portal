@@ -24,7 +24,8 @@
 
   /* Base panel styles for mobile */
   .data-panels .data-panel {
-    padding: 12px;
+    /* Remove horizontal padding to prevent inward shift when switching tabs */
+    padding: 12px 0;
     border-radius: 0;
     box-shadow: none;
     border: none;
