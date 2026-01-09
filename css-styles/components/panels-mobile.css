@@ -74,8 +74,8 @@
     border-radius: 0;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
     background-color: var(--color-sidebar-bg);
-    /* Full-width tab bar (no inset padding, no gaps) */
-    padding: 0;
+    /* Tiny inset prevents right-edge anti-alias/border-radius from being clipped */
+    padding: 0 1px;
     gap: 0;
     position: sticky;
     top: 0;
@@ -84,8 +84,8 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     align-items: stretch;
-    /* Two tabs should span full width; avoid horizontal scrolling */
-    overflow-x: hidden;
+    /* Avoid clipping rounded corners/borders at the edges */
+    overflow-x: visible;
     overflow-y: hidden;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none; /* Hide scrollbar on Firefox */
@@ -108,6 +108,7 @@
     min-width: 0;
     text-align: center;
     position: relative;
+    z-index: 1;
     border-radius: 0;
     white-space: nowrap;
     font-size: 14px;
@@ -128,19 +129,16 @@
     border-top-left-radius: 12px;
     /* Inner seam should also be rounded (matches desired tab styling) */
     border-top-right-radius: 12px;
+    /* Default: seam border is owned by the first tab */
+    border-right-width: 1px;
   }
 
   .data-tab:last-child {
     border-top-right-radius: 12px;
     /* Inner seam should also be rounded (matches desired tab styling) */
     border-top-left-radius: 12px;
-  }
-
-  /* Avoid double border at the seam without affecting widths */
-  .data-tab + .data-tab {
+    /* Default: hide left seam border to avoid double border */
     border-left-width: 0;
-    /* Draw the seam as an inset line instead of a real border (prevents 1px width issues) */
-    box-shadow: inset 1px 0 0 var(--color-border, #3a3a45);
   }
   
   .data-tab:last-child {
@@ -155,7 +153,7 @@
     border-bottom: none !important;
     color: var(--color-text-primary, #fff);
     font-weight: bold;
-    z-index: 10;
+    z-index: 3;
     /* Keep tabs stable (no vertical shift) */
     transform: none;
     box-shadow: none;
@@ -167,9 +165,9 @@
   }
   
   /* Z-index stacking */
-  .data-tab:nth-child(1) { z-index: 4; }
-  .data-tab:nth-child(2) { z-index: 3; }
-  .data-tab.active { z-index: 10; }
+  /* Make the active tab own the seam border and sit above its sibling */
+  .data-tab:first-child:not(.active) { border-right-width: 0; }
+  .data-tab:last-child.active { border-left-width: 1px; }
   
   /* Hover effect for tablets with mouse/trackpad */
   @media (hover: hover) {
