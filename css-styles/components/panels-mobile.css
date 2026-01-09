@@ -80,8 +80,10 @@
     position: sticky;
     top: 0;
     z-index: 10;
-    display: flex;
-    justify-content: stretch;
+    /* Use a 2-col grid so both tabs are always exactly equal width (no 1px drift) */
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: stretch;
     /* Two tabs should span full width; avoid horizontal scrolling */
     overflow-x: hidden;
     overflow-y: hidden;
@@ -124,16 +126,21 @@
   /* Rounded outer corners for the two-tab strip */
   .data-tab:first-child {
     border-top-left-radius: 12px;
+    /* Inner seam should also be rounded (matches desired tab styling) */
+    border-top-right-radius: 12px;
   }
 
   .data-tab:last-child {
     border-top-right-radius: 12px;
+    /* Inner seam should also be rounded (matches desired tab styling) */
+    border-top-left-radius: 12px;
   }
 
-  /* Avoid double border AND avoid 1px width mismatch: overlap the center border */
+  /* Avoid double border at the seam without affecting widths */
   .data-tab + .data-tab {
-    margin-left: -1px;
-    border-left-color: var(--color-border, #3a3a45);
+    border-left-width: 0;
+    /* Draw the seam as an inset line instead of a real border (prevents 1px width issues) */
+    box-shadow: inset 1px 0 0 var(--color-border, #3a3a45);
   }
   
   .data-tab:last-child {
