@@ -110,13 +110,15 @@
     white-space: nowrap;
     font-size: 14px;
     font-weight: 500;
-    background-color: var(--color-surface-lighter, #2a2a35);
+    /* Inactive tabs match the surrounding bar for a cleaner, consistent look */
+    background-color: var(--color-sidebar-bg, #1c1c1c);
     /* Using explicit border properties to prevent cssnano reordering issues */
     border-style: solid;
     border-color: var(--color-border, #3a3a45);
     border-width: 1px 1px 3px 1px;
     color: var(--color-text-secondary, #888);
     transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: none;
   }
 
   /* Rounded outer corners for the two-tab strip */
@@ -134,6 +136,9 @@
 
   /* Avoid double border in the middle */
   .data-tab + .data-tab { border-left-width: 1px; }
+
+  /* Ensure divider color matches overall border system */
+  .data-tab + .data-tab { border-left-color: var(--color-border, #3a3a45); }
   
   .data-tab:last-child {
     margin-right: 0;
@@ -142,8 +147,8 @@
   /* Active tab styling */
   .data-tab.active {
     /* Active tab should visually merge into the panel below */
-    background-color: var(--color-chart-bg, #2d2d2d);
-    border-color: var(--color-inactive-text, #666);
+    background-color: var(--color-chart-bg, #2a2a2a);
+    border-color: var(--color-border-light, #555);
     border-bottom: none !important;
     color: var(--color-text-primary, #fff);
     font-weight: bold;
@@ -166,7 +171,7 @@
   /* Hover effect for tablets with mouse/trackpad */
   @media (hover: hover) {
     .data-tab:hover:not(.active) {
-      background-color: rgba(255, 255, 255, 0.05);
+      background-color: rgba(255, 255, 255, 0.06);
       /* Match desired styling: lighten only, no raise */
       transform: none;
     }
