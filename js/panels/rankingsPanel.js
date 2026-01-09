@@ -1207,9 +1207,11 @@ function createGlobalLeaderboard(container, currentCountryCode) {
   
   if (allCountryCodes.length === 0) {
     container.innerHTML = `
-      <div class="leaderboard-placeholder">
-        <p>Loading leaderboard data...</p>
-        <p class="leaderboard-hint">Select countries to build the global rankings</p>
+      <div class="global-leaderboard">
+        <div class="leaderboard-placeholder">
+          <p>Loading leaderboard data...</p>
+          <p class="leaderboard-hint">Select countries to build the global rankings</p>
+        </div>
       </div>
     `;
     return;

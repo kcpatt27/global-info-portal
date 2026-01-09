@@ -208,6 +208,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const tab1 = document.querySelector('#data-panel .data-tab:nth-child(1)');
             const tab2 = document.querySelector('#data-panel .data-tab:nth-child(2)');
             const active = document.querySelector('#data-panel .data-tab.active');
+            const panelRankings = document.querySelector('#data-panel .data-panel[data-panel="1"]');
+            const panelStats = document.querySelector('#data-panel .data-panel[data-panel="0"]');
+            const leaderboardBox = document.querySelector('#data-panel .data-panel[data-panel="1"] #global-leaderboard-container');
+            const leaderboardInner = document.querySelector('#data-panel .data-panel[data-panel="1"] .global-leaderboard');
 
             const elDiag = (el) => {
                 if (!(el instanceof Element)) return { exists: false };
@@ -261,6 +265,33 @@ document.addEventListener('DOMContentLoaded', () => {
                     return { ok: overlap > 0.25, overlap };
                 })(),
             });
+
+            __geeLog('H12', 'Rankings leaderboard alignment snapshot', {
+                viewport: { w: window.innerWidth, h: window.innerHeight, dpr: window.devicePixelRatio },
+                activeTabText: clickedTab.textContent?.trim() || null,
+                dataPanel: elDiag(dataPanel),
+                panelRankings: elDiag(panelRankings),
+                panelStats: elDiag(panelStats),
+                leaderboardContainer: elDiag(leaderboardBox),
+                leaderboardInner: elDiag(leaderboardInner),
+            });
+        });
+    }, { capture: true });
+
+    // Log when panel transitions end (to see if stats click leaves rankings shifted)
+    document.addEventListener('transitionend', (evt) => {
+        const t = evt.target;
+        if (!(t instanceof Element)) return;
+        if (!t.matches('#data-panel .data-panels .data-panel')) return;
+        if (evt.propertyName !== 'transform' && evt.propertyName !== 'opacity') return;
+        const cs = window.getComputedStyle(t);
+        __geeLog('H12', 'Data panel transitionend', {
+            viewport: { w: window.innerWidth, h: window.innerHeight, dpr: window.devicePixelRatio },
+            propertyName: evt.propertyName,
+            className: t.className,
+            dataPanelAttr: t.getAttribute('data-panel'),
+            transform: cs.transform,
+            opacity: cs.opacity
         });
     }, { capture: true });
     // #endregion
