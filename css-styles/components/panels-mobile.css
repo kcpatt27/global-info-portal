@@ -103,6 +103,10 @@
     display: none;
   }
 
+  /* Override generic mobile spacing rules from css-styles/mobile.css that can shrink the last tab */
+  #data-panel .data-tabs { gap: 0 !important; }
+  #data-panel .data-tab { margin-right: 0 !important; }
+
   /* Individual tabs - proper tab appearance */
   .data-tab {
     /* Grid items: fill their column */
