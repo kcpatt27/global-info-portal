@@ -45,7 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 sessionId: 'debug-session',
-                runId: 'layout-debug-3',
+                runId: 'layout-debug-4',
                 hypothesisId,
                 location: 'js/main.js:DOMContentLoaded',
                 message,
@@ -145,6 +145,54 @@ document.addEventListener('DOMContentLoaded', () => {
         if (t.closest('#data-panel .data-tab')) {
             requestAnimationFrame(() => __logLayoutState('data-tab-click'));
         }
+    }, { capture: true });
+
+    // Capture hover state on devices that support hover (desktop / trackpad) for the data tabs
+    document.addEventListener('pointerover', (evt) => {
+        const t = evt.target;
+        if (!(t instanceof Element)) return;
+        const tab = t.closest('#data-panel .data-tab');
+        if (!tab) return;
+        requestAnimationFrame(() => {
+            __geeLog('H7', 'Data tab pointerover snapshot', {
+                viewport: { w: window.innerWidth, h: window.innerHeight, dpr: window.devicePixelRatio },
+                active: tab.classList.contains('active'),
+                hovered: {
+                    className: tab.className,
+                    rect: tab.getBoundingClientRect(),
+                    style: (() => {
+                        const cs = window.getComputedStyle(tab);
+                        return {
+                            backgroundColor: cs.backgroundColor,
+                            color: cs.color,
+                            boxShadow: cs.boxShadow,
+                            transform: cs.transform,
+                            borderTopColor: cs.borderTopColor,
+                            borderBottomColor: cs.borderBottomColor,
+                            borderTopWidth: cs.borderTopWidth,
+                            borderBottomWidth: cs.borderBottomWidth
+                        };
+                    })()
+                },
+                activeTab: __elInfo('#data-panel .data-tab.active'),
+                inactiveTab: __elInfo('#data-panel .data-tab:not(.active)')
+            });
+        });
+    }, { capture: true });
+
+    document.addEventListener('pointerout', (evt) => {
+        const t = evt.target;
+        if (!(t instanceof Element)) return;
+        const tab = t.closest('#data-panel .data-tab');
+        if (!tab) return;
+        requestAnimationFrame(() => {
+            __geeLog('H7', 'Data tab pointerout snapshot', {
+                viewport: { w: window.innerWidth, h: window.innerHeight, dpr: window.devicePixelRatio },
+                active: tab.classList.contains('active'),
+                tabActive: __elInfo('#data-panel .data-tab.active'),
+                tabInactive: __elInfo('#data-panel .data-tab:not(.active)')
+            });
+        });
     }, { capture: true });
     // #endregion
     

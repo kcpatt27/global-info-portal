@@ -167,7 +167,8 @@
   @media (hover: hover) {
     .data-tab:hover:not(.active) {
       background-color: rgba(255, 255, 255, 0.05);
-      transform: translateY(-1px);
+      /* Match desired styling: lighten only, no raise */
+      transform: none;
     }
   }
   
