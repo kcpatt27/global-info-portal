@@ -135,12 +135,12 @@
         height: auto;
         min-height: 44px;
     }
-
+    
     .data-tab {
         padding: 6px 10px;
         font-size: 0.8rem;
     }
-
+    
     .data-tab.active {
         height: auto;
     }
