@@ -110,8 +110,8 @@
     white-space: nowrap;
     font-size: 14px;
     font-weight: 500;
-    /* Inactive tabs match the surrounding bar for a cleaner, consistent look */
-    background-color: var(--color-sidebar-bg, #1c1c1c);
+    /* Give tabs a distinct surface so they read as tabs (not flat text on the bar) */
+    background-color: var(--color-surface-lighter, #2a2a35);
     /* Using explicit border properties to prevent cssnano reordering issues */
     border-style: solid;
     border-color: var(--color-border, #3a3a45);
@@ -124,21 +124,17 @@
   /* Rounded outer corners for the two-tab strip */
   .data-tab:first-child {
     border-top-left-radius: 12px;
-    /* Avoid double border in the middle: left tab owns outer border, not divider */
-    border-right-width: 0;
   }
 
   .data-tab:last-child {
     border-top-right-radius: 12px;
-    /* Ensure the center divider exists */
-    border-left-width: 1px;
   }
 
-  /* Avoid double border in the middle */
-  .data-tab + .data-tab { border-left-width: 1px; }
-
-  /* Ensure divider color matches overall border system */
-  .data-tab + .data-tab { border-left-color: var(--color-border, #3a3a45); }
+  /* Avoid double border AND avoid 1px width mismatch: overlap the center border */
+  .data-tab + .data-tab {
+    margin-left: -1px;
+    border-left-color: var(--color-border, #3a3a45);
+  }
   
   .data-tab:last-child {
     margin-right: 0;
