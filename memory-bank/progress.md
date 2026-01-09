@@ -68,3 +68,8 @@
 - ✅ **Info Section Text:** Fixed cutoff issues and pagination indicator duplication.
 - ✅ **Population Formatting:** Fixed billion/million parsing error and restored year estimates.
 - ✅ **Quick Stats Layout:** Fixed forced height matching that caused layout issues.
+
+## Mobile Data Tabs + Rankings Leaderboard (Jan 2026)
+- âœ… Fixed mobile Rankings/Statistics tabs: full-width, no cut-off, correct active layering, and desktop-like panel border.
+- âœ… Search bar: visible on all sizes, aligned suggestions, mobile top placement, smaller clear button, desktop dropdown opens upward.
+- âœ… Rankings now shows Global Superpower Leaderboard by default even with no country selected.

@@ -6,6 +6,10 @@
 - **Code Quality:** Maintained duplicate file structure for now (pending refactor) to preserve working foundation.
 
 ## Recent Changes (Summarized)
+- **Mobile Data Tabs + Default Leaderboard:**
+  - Fixed mobile Rankings/Statistics tabs (full-width, no cut-off, active layering, consistent borders)
+  - Rankings shows Global Superpower Leaderboard by default even with no country selected
+
 - **Flag Display System:**
   - Created comprehensive FIPS to ISO country code mapping (`js/utils/countryCodeMap.js`) to fix flag mismatches (e.g., China CH→CN).
   - Integrated mapping into `normalizeIsoA2` function in `js/main.js`.
