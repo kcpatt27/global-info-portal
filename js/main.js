@@ -252,6 +252,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (!dt || !t2) return { ok: null };
                     return { ok: Math.abs(dt.right - t2.right) < 0.75, delta: (dt.right - t2.right) };
                 })(),
+                // seam overlap: positive means tabs overlap (active can sit “in front”)
+                seamOverlap: (() => {
+                    const t1r = tab1 instanceof Element ? tab1.getBoundingClientRect() : null;
+                    const t2r = tab2 instanceof Element ? tab2.getBoundingClientRect() : null;
+                    if (!t1r || !t2r) return { ok: null };
+                    const overlap = (t1r.right - t2r.left);
+                    return { ok: overlap > 0.25, overlap };
+                })(),
             });
         });
     }, { capture: true });

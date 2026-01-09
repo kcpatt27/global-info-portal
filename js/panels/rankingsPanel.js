@@ -11,6 +11,24 @@ import { calculateInfluenceScale, calculateCategoryScore, getMetricRanking } fro
 import { getMetricsByCategory } from '../utils/leaderboardMetrics.js';
 import { loadAllCountries, getCacheStats } from '../utils/globalPreCache.js';
 
+// #region gee debug logs
+const __geeRankLog = (hypothesisId, message, data) => {
+  fetch('http://127.0.0.1:7242/ingest/76a8a506-20d1-4901-a0b1-4cf77e091d37', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      sessionId: 'debug-session',
+      runId: 'layout-debug-5',
+      hypothesisId,
+      location: 'js/panels/rankingsPanel.js',
+      message,
+      data,
+      timestamp: Date.now()
+    })
+  }).catch(() => {});
+};
+// #endregion
+
 /**
  * Normalize country code from FIPS to ISO format
  * This ensures rankings lookups work correctly
@@ -1130,10 +1148,48 @@ function populateRegionalView(container, countryData) {
 
 // This function would be called from the main application to enhance the Rankings tab
 export function initRankingsPanel() {
-  // Initialize the Rankings panel enhancements if needed
-  const rankingsContainer = document.querySelector('.rankings-container');
-  if (rankingsContainer && !appState.rankingsTabEnhanced) {
-    enhanceRankingsTab(rankingsContainer);
+  const panelElement = document.querySelector('.data-panel[data-panel="1"]');
+  if (!panelElement) return;
+
+  const hasActiveCountry = !!document.querySelector('.country.active');
+  const hasLeaderboardContainer = !!panelElement.querySelector('#global-leaderboard-container');
+
+  __geeRankLog('H11', 'initRankingsPanel()', {
+    hasActiveCountry,
+    hasLeaderboardContainer,
+    globalIndexCount: Object.keys(globalDataIndex.countries || {}).length
+  });
+
+  // If a country is selected, the regular createRankingsPanel flow will render everything.
+  // When no country is selected, show the Global Superpower Leaderboard by default (no key metrics).
+  if (!hasActiveCountry && !hasLeaderboardContainer) {
+    panelElement.innerHTML = `
+      <div class="global-leaderboard-container" id="global-leaderboard-container">
+        <!-- Global Leaderboard will be inserted here -->
+      </div>
+      <div class="data-hint" style="padding: 10px 6px; color: var(--color-text-secondary, #888); font-size: 0.9rem;">
+        Select a country to view Key Metrics and detailed rankings.
+      </div>
+    `;
+  }
+
+  const container = panelElement.querySelector('#global-leaderboard-container');
+  if (container) {
+    createGlobalLeaderboard(container, null);
+  }
+
+  // Refresh leaderboard automatically as more countries get cached.
+  if (!appState.__leaderboardDefaultListenerAttached) {
+    appState.__leaderboardDefaultListenerAttached = true;
+    window.addEventListener('leaderboard-data-updated', () => {
+      const pe = document.querySelector('.data-panel[data-panel="1"]');
+      const c = pe ? pe.querySelector('#global-leaderboard-container') : null;
+      __geeRankLog('H11', 'leaderboard-data-updated', {
+        globalIndexCount: Object.keys(globalDataIndex.countries || {}).length,
+        hasContainer: !!c
+      });
+      if (c) createGlobalLeaderboard(c, null);
+    });
   }
 }
 

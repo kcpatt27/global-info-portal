@@ -153,12 +153,16 @@
     border-bottom: none !important;
     color: var(--color-text-primary, #fff);
     font-weight: bold;
-    z-index: 3;
+    z-index: 5;
     /* Keep tabs stable (no vertical shift) */
     transform: none;
     box-shadow: none;
   }
   
+  /* Make the active tab visually sit “on top” at the seam by overlapping 1px */
+  .data-tab:first-child.active { margin-right: -1px; }
+  .data-tab:last-child.active { margin-left: -1px; }
+
   /* Remove the after indicator since we're using border-bottom style */
   .data-tab.active::after {
     display: none;

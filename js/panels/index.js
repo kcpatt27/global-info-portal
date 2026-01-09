@@ -107,6 +107,11 @@ export function initPanels() {
     document.querySelector('.data-panel').classList.add('active');
   }
 
+  // Initialize default Rankings content (Global Superpower Leaderboard) even before a country is selected
+  import('./rankingsPanel.js')
+    .then(({ initRankingsPanel }) => initRankingsPanel())
+    .catch(() => {});
+
   // Set up refresh callbacks for mobile
   if (isMobileDevice()) {
     // Dynamically import mobile panel manager to avoid errors on desktop
