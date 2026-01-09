@@ -74,8 +74,8 @@
     border-radius: 0;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
     background-color: var(--color-sidebar-bg);
-    /* Inset so larger seam overlap doesn't get visually clipped at edges */
-    padding: 0 4px;
+    /* Fill the full strip width (no inset) */
+    padding: 0;
     gap: 0;
     position: sticky;
     top: 0;
@@ -100,8 +100,8 @@
 
   /* Individual tabs - proper tab appearance */
   .data-tab {
-    /* Fill available width evenly */
-    flex: 1 1 0;
+    /* Grid items: fill their column */
+    width: 100%;
     padding: 10px 16px;
     margin-right: 0;
     min-width: 0;
