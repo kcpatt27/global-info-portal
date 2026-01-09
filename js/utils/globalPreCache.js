@@ -106,7 +106,7 @@ const SECONDARY_COUNTRIES = [
   { code: 'ic', name: 'Iceland', folder: 'europe' },
   
   // More Middle East
-  { code: 'om', name: 'Oman', folder: 'middle-east' },
+  { code: 'mu', name: 'Oman', folder: 'middle-east' },
   { code: 'jo', name: 'Jordan', folder: 'middle-east' },
   { code: 'lb', name: 'Lebanon', folder: 'middle-east' },
   { code: 'ba', name: 'Bahrain', folder: 'middle-east' },
