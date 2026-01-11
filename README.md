@@ -338,28 +338,31 @@ Contributions are welcome! This project was built as a learning exercise and cer
 
 ## Roadmap
 
-For detailed roadmap information, see [ROADMAP.md](docs/ROADMAP.md).
+For detailed roadmap information, see [ROADMAP.md](ROADMAP.md).
 
-### Current Status: 90% Complete
+### Current Status: Major Features Complete (Jan 2026)
 
-**Now (Next 4 weeks)**
-- Final bug fixes and polish
-- Mobile experience refinements
-- Additional visualization types
-- Performance optimizations
+**Completed (Major Milestone)**
+- ✅ Complete Rankings Tab with Global Superpower Leaderboard and interactive Metric Insights charts
+- ✅ Complete Statistics Tab with dynamic Factbook JSON category loading and global rankings
+- ✅ Complete Mobile Experience with unified D3 zoom/pan and responsive navigation
+- ✅ Complete Data Processing with robust numeric extraction and country code mapping
+- ✅ JavaScript Architecture consolidation and state management improvements
 
-**Next (Months 2-3)**
+**Now (Next Phase)**
+- Stability testing and performance optimization
+- Code consolidation and architectural cleanup
+- Enhanced error handling and edge case coverage
+- Documentation finalization and testing
+
+**Next (Future Enhancements)**
 - Advanced filtering and comparison tools
-- Offline access
-- Export functionality (PDF, CSV)
-- User accounts and saved searches
-- User preferences and saved comparisons
-
-**Later (Exploratory)**
-- 3D globe visualization (Three.js exploration, would love to do the solar system with NASA data on all the planets and the formations on them)
-- API for programmatic access
-- Real-time data updates
-- Mobile app version
+- Resource efficiency metrics and production vs consumption ratios
+- Enhanced chart visualizations (bar charts, pie charts, choropleth maps)
+- Regional comparison tools and historical trends
+- Offline support with service workers
+- Data export functionality (CSV, JSON)
+- Embeddable widget mode and public API access
 
 ### Success Metrics
 
