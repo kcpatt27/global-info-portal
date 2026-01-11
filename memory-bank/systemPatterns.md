@@ -25,8 +25,8 @@
 - **State Management:** Centralized state management likely handled in `js/state.js` (as per `js-refactor-implementation.md`), possibly using a simple pub/sub pattern.
 - **Event Handling:** Centralized event listeners (`js/events.js`) and component-specific listeners. Ongoing optimization planned (`js-refactor-implementation.md`).
 - **Asynchronous Operations:** Data fetching (`js/utils/dataFetcher.js`) and potentially other operations handled using Promises or async/await.
-- **Refactoring Goals (from `js-refactor-implementation.md`):** Focus on standardizing module structure, improving code quality (smaller functions, error handling, types), optimizing performance (lazy loading, DOM batching, memoization), and modernizing syntax/patterns.
- - **Entry Point / Duplication Risk:** There are duplicate implementations of core UI functions across `js/main.js` and `js/index.js` (e.g., `handleCountrySelect`, `openSidebar`, `setupUIEventHandlers`). `package.json` / webpack use `js/index.js` as the canonical build entry, while `index.html` currently loads `js/main.js` directly. This mismatch creates a risk of divergent behavior between direct dev loads and built bundles. Recommend consolidating on a single entry (prefer `js/index.js`) and exporting shared utilities rather than duplicating implementations.
+- **Refactoring Goals (from `js-refactor-implementation.md`):** Focus on standardizing module structure, improving code quality (smaller functions, error handling, types), optimizing performance (lazy loading, DOM batching, memoization), and modernizing syntax/patterns. Major progress made in state management and event handling optimization.
+- **Entry Point / Duplication Risk:** There are duplicate implementations of core UI functions across `js/main.js` and `js/index.js` (e.g., `handleCountrySelect`, `openSidebar`, `setupUIEventHandlers`). `package.json` / webpack use `js/index.js` as the canonical build entry, while `index.html` currently loads `js/main.js` directly. This mismatch creates a risk of divergent behavior between direct dev loads and built bundles. Recommend consolidating on a single entry (prefer `js/index.js`) and exporting shared utilities rather than duplicating implementations. Status: Identified but deferred until stability confirmed.
 
 ### Data Handling
 - **Data Fetcher:** Dedicated module (`js/utils/dataFetcher.js`) likely handles API calls.
@@ -43,6 +43,8 @@
 - `statCycling.js`: Manages quick stats display and cycling functionality. Handles population/GDP/area/region formatting with year estimates.
 - `infoTextCycling.js`: Manages background info text cycling with pagination.
 - `utils/countryCodeMap.js`: FIPS to ISO country code mapping for flag display.
-- Panel Components (`js/panels/`, `js/components/panels/`): Manage the display and interaction within the info/data panels. Note: Duplicate structures exist, intentionally preserved until refactor.
-- Tab Components (`js/statsTab.js`, `js/rankingsTab.js`): Handle logic within specific data tabs.
-- `charts.js`/`components/charts/`: Responsible for generating data visualizations. 
+- Panel Components (`js/panels/`, `js/components/panels/`): Manage the display and interaction within the info/data panels. Rankings and Statistics panels now fully implemented with dynamic data loading and interactive charts. Note: Duplicate structures exist, intentionally preserved until refactor.
+- Rankings Panel (`js/panels/rankingsPanel.js`): Complete implementation with Global Superpower Leaderboard, interactive Metric Insights charts (Bar/Pie), and metric switching functionality.
+- Statistics Panel (`js/panels/statsPanel.js`): Complete implementation with dynamic Factbook JSON category loading and global rankings for all numeric data.
+- Chart Components (`charts.js`/`components/charts/`): Generate D3.js data visualizations including bar charts, pie charts, and ranking displays.
+- Utility Modules: Enhanced `countryCodeMap.js` (FIPS→ISO mapping), `globalPreCache.js` (data preprocessing), and numeric extraction utilities. 

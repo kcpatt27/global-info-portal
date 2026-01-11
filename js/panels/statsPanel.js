@@ -4,13 +4,13 @@
  * Also incorporates historical data visualization (originally from Trends tab)
  */
 
-import { addStatSection, extractStats, highlightText, extractNumber, formatLabel, formatValue } from '../utils.js';
+import { addStatSection, extractAllStats, highlightText, extractNumber, formatLabel, formatValue } from '../utils.js';
 import { detectTimeSeriesData, processText } from '../utils/dataFetcher.js';
 import { appState, globalDataIndex } from '../state.js';
 
 // Minimum countries required for meaningful ranking display
 // Without this, rankings are misleading (e.g., always #1 with sparse data)
-const MIN_COUNTRIES_FOR_RANKING = 10;
+const MIN_COUNTRIES_FOR_RANKING = 5;
 
 // Function to add a stat section with rankings
 function addStatSectionWithRankings(container, title, stats, countryCode) {
@@ -45,53 +45,108 @@ function addStatSectionWithRankings(container, title, stats, countryCode) {
 
 // Main export - creates/updates the Stats panel with country data
 export function createStatsPanel(data) {
-  const panelElement = document.querySelector('.data-panel[data-panel="0"]');
-  if (!panelElement) return;
 
-  if (!data) {
-    panelElement.innerHTML = '<div class="data-error">No country data available</div>';
-    return;
-  }
+  try {
+    const panelElement = document.querySelector('.data-panel[data-panel="0"]');
+    if (!panelElement) return;
 
-  // Get country code for rankings
-  const countryCode = data.Government?.['Country name']?.['Country name code']?.text ||
-                      data.Communications?.['Internet country code']?.text || '';
+    if (!data) {
+      panelElement.innerHTML = '<div class="data-error">No country data available</div>';
+      return;
+    }
 
-  // Create the basic panel structure
-  panelElement.innerHTML = `
-    <div class="stats-search-container">
-      <input type="text" class="stats-search" placeholder="Search statistics..." />
-      <button class="stats-search-clear" title="Clear search">×</button>
-    </div>
-    <div class="stats-container"></div>
-    <div class="stats-no-results" style="display: none;">No statistics found matching your search</div>
-  `;
+    // Get country code for rankings
+    const countryCode = data.Government?.['Country name']?.['Country name code']?.text ||
+                        data.Communications?.['Internet country code']?.text || '';
 
-  const statsContainer = panelElement.querySelector('.stats-container');
-  const searchInput = panelElement.querySelector('.stats-search');
-  const clearButton = panelElement.querySelector('.stats-search-clear');
-  const noResults = panelElement.querySelector('.stats-no-results');
+    // Create the basic panel structure
+    panelElement.innerHTML = `
+      <div class="stats-search-container">
+        <input type="text" class="stats-search" placeholder="Search statistics..." />
+        <button class="stats-search-clear" title="Clear search">×</button>
+      </div>
+      <button class="stats-collapse-toggle" type="button" aria-pressed="false">
+        <i class="fas fa-angle-double-up" aria-hidden="true"></i>
+        <span class="stats-collapse-toggle-text">Collapse all</span>
+      </button>
+      <div class="stats-container"></div>
+      <div class="stats-no-results" style="display: none;">No statistics found matching your search</div>
+    `;
 
-  // Add stats sections with rankings
-  addStatSectionWithRankings(statsContainer, 'People', extractStats(data['People and Society']), countryCode);
-  addStatSectionWithRankings(statsContainer, 'Transportation', extractStats(data.Transportation), countryCode);
-  addStatSectionWithRankings(statsContainer, 'Communications', extractStats(data.Communications), countryCode);
-  addStatSectionWithRankings(statsContainer, 'Economy', extractStats(data.Economy), countryCode);
-  addStatSectionWithRankings(statsContainer, 'Energy', extractStats(data.Energy), countryCode);
-  addStatSectionWithRankings(statsContainer, 'Environment', extractStats(data.Environment), countryCode);
-  addStatSectionWithRankings(statsContainer, 'Government', extractStats(data.Government), countryCode);
-  addStatSectionWithRankings(statsContainer, 'Space', extractStats(data.Space), countryCode);
-  addStatSectionWithRankings(statsContainer, 'Geography', extractStats(data.Geography), countryCode);
-  addStatSectionWithRankings(statsContainer, 'Military and Security', extractStats(data['Military and Security']), countryCode);
-  addStatSectionWithRankings(statsContainer, 'Terrorism', extractStats(data.Terrorism), countryCode);
-  addStatSectionWithRankings(statsContainer, 'Transnational Issues', extractStats(data['Transnational Issues']), countryCode);
+    const noResults = panelElement.querySelector('.stats-no-results');
+    const searchInput = panelElement.querySelector('.stats-search');
+    const clearButton = panelElement.querySelector('.stats-search-clear');
+    const collapseAllBtn = panelElement.querySelector('.stats-collapse-toggle');
+    const statsContainerEl = panelElement.querySelector('.stats-container');
+    // IMPORTANT: downstream logic expects `statsContainer`
+    const statsContainer = statsContainerEl;
 
-  // Set up search functionality
-  setupSearchFunctionality(searchInput, clearButton, noResults, statsContainer);
+    // Dynamically add all sections from the data object
+    const excludeKeys = ['countryCode', 'name', 'continent', 'a2Code', 'id', 'folder', 'coordinates'];
+    
+    // Preserve CIA/Factbook ordering: rely on object key insertion order (no alphabetical sort)
+    const sections = Object.keys(data)
+      .filter(key => !excludeKeys.includes(key) && typeof data[key] === 'object' && data[key] !== null);
 
-  // Check if the Stats tab has been enhanced
-  if (appState.statsTabEnhanced) {
-    enhanceWithHistoricalView(statsContainer, data);
+    let totalExtracted = 0;
+    let totalPureNumeric = 0;
+
+    sections.forEach(sectionKey => {
+      const extracted = extractAllStats(data[sectionKey]);
+      totalExtracted += extracted.length;
+      totalPureNumeric += extracted.filter(s => s.numericValue !== null && s.numericValue !== undefined).length;
+
+      addStatSectionWithRankings(statsContainer, sectionKey, extracted, countryCode);
+    });
+
+    // Collapse/Open all sections toggle
+    if (collapseAllBtn && statsContainer) {
+      const updateSectionHeaderState = (sectionEl, shouldCollapse) => {
+        const toggleBtn = sectionEl.querySelector('.stat-section-toggle');
+        if (!toggleBtn) return;
+        toggleBtn.setAttribute('aria-expanded', shouldCollapse ? 'false' : 'true');
+        const chevron = toggleBtn.querySelector('.stat-section-chevron');
+        if (chevron) {
+          chevron.className = `fas fa-chevron-${shouldCollapse ? 'right' : 'down'} stat-section-chevron`;
+        }
+      };
+
+      const setButtonState = (collapsed) => {
+        const textEl = collapseAllBtn.querySelector('.stats-collapse-toggle-text');
+        const iconEl = collapseAllBtn.querySelector('i');
+        if (textEl) textEl.textContent = collapsed ? 'Open all' : 'Collapse all';
+        if (iconEl) iconEl.className = `fas ${collapsed ? 'fa-angle-double-down' : 'fa-angle-double-up'}`;
+        collapseAllBtn.setAttribute('aria-pressed', collapsed ? 'true' : 'false');
+        collapseAllBtn.dataset.state = collapsed ? 'collapsed' : 'expanded';
+      };
+
+      // Initialize button based on current state (default: expanded)
+      setButtonState(false);
+
+      collapseAllBtn.addEventListener('click', () => {
+        const sectionEls = Array.from(statsContainer.querySelectorAll('.stat-section'));
+        const allCollapsed = sectionEls.length > 0 && sectionEls.every(s => s.classList.contains('collapsed'));
+        const shouldCollapse = !allCollapsed;
+
+        sectionEls.forEach(sectionEl => {
+          sectionEl.classList.toggle('collapsed', shouldCollapse);
+          updateSectionHeaderState(sectionEl, shouldCollapse);
+        });
+
+        setButtonState(shouldCollapse);
+      });
+    }
+
+
+    // Set up search functionality
+    setupSearchFunctionality(searchInput, clearButton, noResults, statsContainer);
+
+    // Check if the Stats tab has been enhanced
+    if (appState.statsTabEnhanced) {
+      enhanceWithHistoricalView(statsContainer, data);
+    }
+  } catch (err) {
+    throw err;
   }
 }
 
@@ -166,6 +221,17 @@ function filterStats(searchTerm, statsContainer, noResults) {
         if (rankingElement) rankingElement.innerHTML = rankingElement.textContent;
       }
     });
+
+    // If searching, auto-expand matching sections so results are visible
+    if (searchTerm !== '' && sectionHasVisibleItems) {
+      section.classList.remove('collapsed');
+      const toggleBtn = section.querySelector('.stat-section-toggle');
+      if (toggleBtn) {
+        toggleBtn.setAttribute('aria-expanded', 'true');
+        const chevron = toggleBtn.querySelector('.stat-section-chevron');
+        if (chevron) chevron.className = 'fas fa-chevron-down stat-section-chevron';
+      }
+    }
 
     section.style.display = sectionHasVisibleItems ? '' : 'none';
   });

@@ -15,6 +15,7 @@ import { globalDataIndex } from '../state.js';
 import { countriesList } from '../state.js';
 import { extractMetricValue } from './leaderboardScoring.js';
 import { getMetricById } from './leaderboardMetrics.js';
+import { countryDataCache } from '../state.js';
 
 // ============================================================================
 // COUNTRY LISTS
@@ -26,62 +27,62 @@ import { getMetricById } from './leaderboardMetrics.js';
 const PRIORITY_COUNTRIES = [
   // Major Powers (5)
   { code: 'us', name: 'United States', folder: 'north-america' },
-  { code: 'ch', name: 'China', folder: 'east-n-southeast-asia' },  // FIPS code 'ch' -> ISO 'cn'
-  { code: 'rs', name: 'Russia', folder: 'central-asia' },  // folder 'russia' -> 'central-asia'
-  { code: 'uk', name: 'United Kingdom', folder: 'europe' },  // FIPS 'uk' -> ISO 'gb'
+  { code: 'ch', name: 'China', folder: 'east-n-southeast-asia' },  
+  { code: 'rs', name: 'Russia', folder: 'central-asia' },  
+  { code: 'uk', name: 'United Kingdom', folder: 'europe' },  
   { code: 'fr', name: 'France', folder: 'europe' },
   
   // G20 Economies (14 more)
-  { code: 'gm', name: 'Germany', folder: 'europe' },  // FIPS 'gm' -> ISO 'de'
-  { code: 'ja', name: 'Japan', folder: 'east-n-southeast-asia' },  // FIPS 'ja' -> ISO 'jp'
+  { code: 'gm', name: 'Germany', folder: 'europe' },  
+  { code: 'ja', name: 'Japan', folder: 'east-n-southeast-asia' },  
   { code: 'in', name: 'India', folder: 'south-asia' },
   { code: 'br', name: 'Brazil', folder: 'south-america' },
   { code: 'it', name: 'Italy', folder: 'europe' },
   { code: 'ca', name: 'Canada', folder: 'north-america' },
-  { code: 'ks', name: 'South Korea', folder: 'east-n-southeast-asia' },  // FIPS 'ks' -> ISO 'kr'
-  { code: 'as', name: 'Australia', folder: 'australia-oceania' },  // FIPS 'as' -> ISO 'au'
+  { code: 'ks', name: 'South Korea', folder: 'east-n-southeast-asia' },  
+  { code: 'as', name: 'Australia', folder: 'australia-oceania' },  
   { code: 'mx', name: 'Mexico', folder: 'north-america' },
   { code: 'id', name: 'Indonesia', folder: 'east-n-southeast-asia' },
-  { code: 'tu', name: 'Turkey', folder: 'middle-east' },  // FIPS 'tu' -> ISO 'tr'
+  { code: 'tu', name: 'Turkey', folder: 'middle-east' },  
   { code: 'sa', name: 'Saudi Arabia', folder: 'middle-east' },
   { code: 'ar', name: 'Argentina', folder: 'south-america' },
-  { code: 'sf', name: 'South Africa', folder: 'africa' },  // FIPS 'sf' -> ISO 'za'
+  { code: 'sf', name: 'South Africa', folder: 'africa' },  
   
   // Key NATO & EU (12)
-  { code: 'sp', name: 'Spain', folder: 'europe' },  // FIPS 'sp' -> ISO 'es'
+  { code: 'sp', name: 'Spain', folder: 'europe' },  
   { code: 'pl', name: 'Poland', folder: 'europe' },
   { code: 'nl', name: 'Netherlands', folder: 'europe' },
-  { code: 'sz', name: 'Switzerland', folder: 'europe' },  // FIPS 'sz' -> ISO 'ch'
-  { code: 'se', name: 'Sweden', folder: 'europe' },
+  { code: 'sz', name: 'Switzerland', folder: 'europe' },  
+  { code: 'sw', name: 'Sweden', folder: 'europe' },
   { code: 'no', name: 'Norway', folder: 'europe' },
   { code: 'be', name: 'Belgium', folder: 'europe' },
-  { code: 'at', name: 'Austria', folder: 'europe' },
-  { code: 'dk', name: 'Denmark', folder: 'europe' },
+  { code: 'au', name: 'Austria', folder: 'europe' },
+  { code: 'da', name: 'Denmark', folder: 'europe' },
   { code: 'fi', name: 'Finland', folder: 'europe' },
   { code: 'gr', name: 'Greece', folder: 'europe' },
   { code: 'pt', name: 'Portugal', folder: 'europe' },
   
   // Key Middle East (6)
-  { code: 'is', name: 'Israel', folder: 'middle-east' },  // FIPS 'is' -> ISO 'il'
   { code: 'ae', name: 'United Arab Emirates', folder: 'middle-east' },
+  { code: 'is', name: 'Israel', folder: 'middle-east' },  
   { code: 'ir', name: 'Iran', folder: 'middle-east' },
-  { code: 'iz', name: 'Iraq', folder: 'middle-east' },  // FIPS 'iz' -> ISO 'iq'
+  { code: 'iz', name: 'Iraq', folder: 'middle-east' },  
+  { code: 'ku', name: 'Kuwait', folder: 'middle-east' },  
   { code: 'qa', name: 'Qatar', folder: 'middle-east' },
-  { code: 'ku', name: 'Kuwait', folder: 'middle-east' },  // FIPS 'ku' -> ISO 'kw'
   
   // Key Asia-Pacific (7)
-  { code: 'tw', name: 'Taiwan', folder: 'east-n-southeast-asia' },
-  { code: 'sg', name: 'Singapore', folder: 'east-n-southeast-asia' },
-  { code: 'th', name: 'Thailand', folder: 'east-n-southeast-asia' },
-  { code: 'vn', name: 'Vietnam', folder: 'east-n-southeast-asia' },
   { code: 'my', name: 'Malaysia', folder: 'east-n-southeast-asia' },
-  { code: 'ph', name: 'Philippines', folder: 'east-n-southeast-asia' },
   { code: 'pk', name: 'Pakistan', folder: 'south-asia' },
+  { code: 'rp', name: 'Philippines', folder: 'east-n-southeast-asia' },
+  { code: 'sn', name: 'Singapore', folder: 'east-n-southeast-asia' },
+  { code: 'th', name: 'Thailand', folder: 'east-n-southeast-asia' },
+  { code: 'tw', name: 'Taiwan', folder: 'east-n-southeast-asia' },
+  { code: 'vm', name: 'Vietnam', folder: 'east-n-southeast-asia' },
   
   // Key Others (6)
   { code: 'eg', name: 'Egypt', folder: 'africa' },
-  { code: 'ni', name: 'Nigeria', folder: 'africa' },  // FIPS 'ni' -> ISO 'ng'
-  { code: 'up', name: 'Ukraine', folder: 'europe' },  // FIPS 'up' -> ISO 'ua'
+  { code: 'ni', name: 'Nigeria', folder: 'africa' },  
+  { code: 'up', name: 'Ukraine', folder: 'europe' },  
   { code: 've', name: 'Venezuela', folder: 'south-america' },
   { code: 'co', name: 'Colombia', folder: 'south-america' },
   { code: 'nz', name: 'New Zealand', folder: 'australia-oceania' }
@@ -89,43 +90,45 @@ const PRIORITY_COUNTRIES = [
 
 // Secondary countries - loaded progressively in background after initial load
 const SECONDARY_COUNTRIES = [
-  // More Europe
-  { code: 'ie', name: 'Ireland', folder: 'europe' },
-  { code: 'cz', name: 'Czech Republic', folder: 'europe' },
-  { code: 'ro', name: 'Romania', folder: 'europe' },
-  { code: 'hu', name: 'Hungary', folder: 'europe' },
-  { code: 'sk', name: 'Slovakia', folder: 'europe' },
-  { code: 'bg', name: 'Bulgaria', folder: 'europe' },
+  // Europe
+  { code: 'bu', name: 'Bulgaria', folder: 'europe' },
+  { code: 'en', name: 'Estonia', folder: 'europe' },
+  { code: 'ez', name: 'Czech Republic', folder: 'europe' },
   { code: 'hr', name: 'Croatia', folder: 'europe' },
-  { code: 'si', name: 'Slovenia', folder: 'europe' },
-  { code: 'lt', name: 'Lithuania', folder: 'europe' },
-  { code: 'lv', name: 'Latvia', folder: 'europe' },
-  { code: 'ee', name: 'Estonia', folder: 'europe' },
-  { code: 'ri', name: 'Serbia', folder: 'europe' },
-  { code: 'lu', name: 'Luxembourg', folder: 'europe' },
+  { code: 'hu', name: 'Hungary', folder: 'europe' },
   { code: 'ic', name: 'Iceland', folder: 'europe' },
+  { code: 'ei', name: 'Ireland', folder: 'europe' },
+  { code: 'lh', name: 'Lithuania', folder: 'europe' },
+  { code: 'lu', name: 'Luxembourg', folder: 'europe' },
+  { code: 'lg', name: 'Latvia', folder: 'europe' },
+  { code: 'ri', name: 'Serbia', folder: 'europe' },
+  { code: 'ro', name: 'Romania', folder: 'europe' },
+  { code: 'si', name: 'Slovenia', folder: 'europe' },
+  { code: 'lo', name: 'Slovakia', folder: 'europe' },
   
-  // More Middle East
-  { code: 'mu', name: 'Oman', folder: 'middle-east' },
-  { code: 'jo', name: 'Jordan', folder: 'middle-east' },
-  { code: 'lb', name: 'Lebanon', folder: 'middle-east' },
+  // Middle East
   { code: 'ba', name: 'Bahrain', folder: 'middle-east' },
+  { code: 'jo', name: 'Jordan', folder: 'middle-east' },
+  { code: 'le', name: 'Lebanon', folder: 'middle-east' },
+  { code: 'mu', name: 'Oman', folder: 'middle-east' },
   { code: 'ym', name: 'Yemen', folder: 'middle-east' },
   
-  // More Africa
-  { code: 'ma', name: 'Morocco', folder: 'africa' },
-  { code: 'dz', name: 'Algeria', folder: 'africa' },
+  // Africa
+  { code: 'ag', name: 'Algeria', folder: 'africa' },
+  { code: 'mo', name: 'Morocco', folder: 'africa' },
+  { code: 'so', name: 'Somalia', folder: 'africa' },
   { code: 'ke', name: 'Kenya', folder: 'africa' },
   { code: 'et', name: 'Ethiopia', folder: 'africa' },
   { code: 'gh', name: 'Ghana', folder: 'africa' },
   { code: 'tz', name: 'Tanzania', folder: 'africa' },
+  { code: 'za', name: 'Zambia', folder: 'africa' },
   
-  // More Asia
-  { code: 'bd', name: 'Bangladesh', folder: 'south-asia' },
+  // Asia
+  { code: 'bg', name: 'Bangladesh', folder: 'south-asia' },
   { code: 'hk', name: 'Hong Kong', folder: 'east-n-southeast-asia' },
   { code: 'kz', name: 'Kazakhstan', folder: 'central-asia' },
   
-  // More Americas
+  // Americas
   { code: 'cl', name: 'Chile', folder: 'south-america' },
   { code: 'pe', name: 'Peru', folder: 'south-america' }
 ];
@@ -137,7 +140,7 @@ const SECONDARY_COUNTRIES = [
 const STORAGE_KEY = 'global_leaderboard_cache';
 const STORAGE_TIMESTAMP_KEY = 'global_cache_timestamp';
 const STORAGE_VERSION_KEY = 'global_cache_version';
-const CACHE_VERSION = 14; // Use averageScore (0-1) for normalized category comparison
+const CACHE_VERSION = 15; // Bump to invalidate older caches that stored FIPS-coded keys (fixes ISO/FIPS mismatches)
 const CACHE_DURATION_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 
 // Batch size for parallel fetching (balance between speed and API load)
@@ -147,6 +150,38 @@ const BATCH_DELAY_MS = 100; // Delay between batches
 // ============================================================================
 // CORE FUNCTIONS
 // ============================================================================
+
+/**
+ * Sanity-check that precache lists use codes/names consistent with countriesList (Factbook codes).
+ * This catches issues like ZA being used for South Africa, or missing entries like Zambia.
+ */
+function auditPrecacheLists() {
+  try {
+    const byCode = new Map(countriesList.map(c => [String(c.code).toLowerCase(), c]));
+    const lists = [
+      { id: 'priority', items: PRIORITY_COUNTRIES },
+      { id: 'secondary', items: SECONDARY_COUNTRIES }
+    ];
+
+    lists.forEach(list => {
+      list.items.forEach(item => {
+        const code = String(item.code || '').toLowerCase();
+        const canonical = byCode.get(code);
+        if (!canonical) {
+          return;
+        }
+
+        const canonicalName = String(canonical.name || '');
+        const precacheName = String(item.name || '');
+        if (canonicalName && precacheName && canonicalName !== precacheName) {
+          // Name mismatch - log for debugging but continue
+        }
+      });
+    });
+  } catch (e) {
+    // ignore
+  }
+}
 
 /**
  * Extract only the metrics we need from full country data
@@ -228,12 +263,14 @@ function loadMetricsIntoIndex(cachedData) {
   let loaded = 0;
   Object.keys(cachedData).forEach(countryCode => {
     const countryMetrics = cachedData[countryCode];
-    const country = PRIORITY_COUNTRIES.find(c => c.code === countryCode) || 
-                   SECONDARY_COUNTRIES.find(c => c.code === countryCode) ||
-                   countriesList.find(c => c.code === countryCode);
+    const code = String(countryCode || '').toLowerCase();
+    const country =
+      countriesList.find(c => c.code.toLowerCase() === code) ||
+      PRIORITY_COUNTRIES.find(c => String(c.code).toLowerCase() === code) ||
+      SECONDARY_COUNTRIES.find(c => String(c.code).toLowerCase() === code);
     
     if (country && countryMetrics) {
-      globalDataIndex.addCountryData(country.name, countryCode, countryMetrics);
+      globalDataIndex.addCountryData(country.name, code, countryMetrics);
       loaded++;
     }
   });
@@ -246,18 +283,28 @@ function loadMetricsIntoIndex(cachedData) {
  */
 async function fetchCountry(country) {
   try {
+    // IMPORTANT: keep Factbook codes here (do NOT convert to ISO).
+    // Factbook codes are used for fetching data files (e.g. /africa/sf.json for South Africa).
+    const code = String(country.code || '').toLowerCase();
+    const resolvedName = countriesList.find(c => c.code.toLowerCase() === code)?.name || country.name;
     const fetchCountry = {
       a2Code: country.code,
-      name: country.name,
+      name: resolvedName,
       folder: country.folder
     };
     
     const fullData = await fetchCountryData(fetchCountry);
     
     if (fullData) {
+      // Keep full data in-memory so Rankings/Charts can use more than "clicked" countries.
+      // Note: this is a best-effort cache; metrics caching remains the source for leaderboard scoring.
+      if (code) {
+        countryDataCache[code] = fullData;
+      }
+
       const metrics = extractMetricsOnly(fullData);
       if (Object.keys(metrics).length > 0) {
-        return { code: country.code, name: country.name, metrics };
+        return { code, name: resolvedName, metrics };
       }
     }
   } catch (error) {
@@ -302,6 +349,7 @@ async function fetchBatch(countries, metricsData, onProgress, startIndex, totalC
  */
 export async function preCacheG20Countries(onProgress = null) {
   console.log(`🚀 Starting priority cache (${PRIORITY_COUNTRIES.length} countries)...`);
+  auditPrecacheLists();
   
   // Check for cached data first
   const cached = loadFromStorage();

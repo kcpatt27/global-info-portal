@@ -1,14 +1,14 @@
 # Global Information Portal Roadmap
 
 ## Vision
-"Interactive map of the countries/territories, featuring detailed data points with various methods of visualizing and comparing them."
+"Interactive world map displaying comprehensive CIA World Factbook data for 240+ countries and territories, with advanced visualizations, comparative rankings, and geopolitical insights accessible to students, educators, travelers, and researchers worldwide."
 
-## Current Phase
-**Now** 
-- Global Superpower Leaderboard refinements
-- Spider chart and color bar visualization improvements
-- Fixed scoring system using raw data values (not ranks)
-- Mobile CSS fixes and responsive design
+## Current Phase: 90% Complete (Pre-release)
+
+**Now (Next 2-4 weeks)** 
+- Resource efficiency metrics implementation
+- Enhanced chart visualizations (bar, pie, choropleth, heat maps)
+- Mobile CSS refinements and touch interaction improvements
 
 ## Completed Recently
 - [x] **Global Superpower Leaderboard** — Composite ranking system based on 5 categories
@@ -50,6 +50,16 @@
   - Improve responsive breakpoints
   - Priority: Medium
   - Effort: ~1 week
+ 
+- [ ] **Fix chart bugs** — Resolve rendering and interaction issues in charts
+  - Identify and fix data binding and redraw problems in spider, bar, and color-bar visualizations
+  - Priority: High (affects data interpretation)
+  - Effort: ~2-4 days
+
+- [ ] **Fix mobile info panel disappearing** — Prevent info panel from being dismissed when scrolled to bottom on mobile
+  - Investigate touch/pointer handlers and panel height calculations; preserve header visibility when collapsing
+  - Priority: High (blocks mobile usability)
+  - Effort: ~2-3 days
 
 ### Next (Months 2-3)
 
@@ -66,7 +76,8 @@
   - Blocked by: Reliable historical data source
 
 - [ ] **Search & Filter** — Find countries quickly
-  - Search by name, code, or region
+  - [X] Search by name
+  - Search by code, region, rank in stat
   - Filter leaderboard by category strengths
   - Sort by specific metrics
 
@@ -94,9 +105,30 @@
 
 ## Risks & Dependencies
 
-- **Dependency:** CIA Factbook API availability and data freshness
-- **Risk:** FIPS code mismatches causing countries to not load (mitigation: comprehensive code mapping)
-- **Risk:** Large data payloads on mobile (mitigation: progressive loading, caching)
+- **Dependency:** CIA Factbook GitHub repository availability and data freshness
+- **Risk:** FIPS to ISO code mismatches causing countries to fail loading (mitigation: comprehensive code mapping, ongoing fixes)
+- **Risk:** Large data payloads on mobile devices (mitigation: progressive loading, aggressive caching, background fetching)
+- **Risk:** GitHub raw URL changes or rate limiting (mitigation: fallback URL patterns, localStorage caching)
+- **Dependency:** D3.js and TopoJSON CDN availability (mitigation: could bundle libraries in future)
+
+## Development Process
+
+**Built with:** Cursor AI (Claude 3.5 backend) + Webpack
+
+**AI-assisted elements:**
+- Initial HTML/CSS scaffolding and boilerplate structure
+- Documentation generation (README, ROADMAP, ARCHITECTURE)
+- Code refactoring suggestions and optimization proposals
+
+**Manual/human elements:**
+- Core application logic (map interactions, data fetching, state management)
+- Leaderboard scoring algorithms and influence calculations
+- All UI/UX design decisions and mobile optimizations
+- Performance optimizations and caching strategies
+- Testing and quality assurance
+- Architecture decisions and technical trade-offs
+
+**Why transparency?** Using AI strategically demonstrates tool fluency and judgment about what to automate vs. what requires human expertise. This transparency is especially important for technical writing and DevOps advocate roles.
 
 ## How This Roadmap Gets Updated
 
@@ -105,4 +137,14 @@
 - Priorities adjusted based on technical learnings
 
 ---
-*Last updated: Session with resource efficiency metric planning*
+
+## Project Links
+
+- **Live Site:** https://kcpatt27.github.io/global-information-portal/
+- **GitHub Repo:** https://github.com/kcpatt27/global-information-portal
+- **Data Source:** https://github.com/factbook/factbook.json
+- **Documentation:** README.md, ARCHITECTURE.md, PROJECT_SPECS.md
+
+---
+
+*Last updated: January 9, 2025 — Documentation comprehensive update for portfolio presentation*

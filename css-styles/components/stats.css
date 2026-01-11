@@ -20,13 +20,60 @@
   box-shadow: var(--shadow-md);
 }
 
+/* Collapsible section header */
+.stat-section-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: transparent;
+  border: none;
+  padding: 0 0 8px 0;
+  margin: 0 0 10px 0;
+  border-bottom: 1px solid var(--color-border);
+  cursor: pointer;
+  text-align: left;
+}
+
 .stat-section-title {
   font-size: var(--font-size-stat-title);
   font-weight: bold;
-  margin-bottom: 10px;
-  padding-bottom: 5px;
-  border-bottom: 1px solid var(--color-border);
   color: var(--color-accent);
+}
+
+.stat-section-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.stat-section-count {
+  font-size: 0.8rem;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background-color: rgba(105, 179, 162, 0.15);
+  color: var(--color-text-secondary);
+  font-family: 'Courier New', monospace;
+}
+
+.stat-section-chevron {
+  color: var(--color-text-secondary);
+  transition: transform var(--transition-fast) var(--easing-standard);
+}
+
+.stat-section-toggle:focus {
+  outline: none;
+}
+
+.stat-section-toggle:focus-visible {
+  box-shadow: 0 0 0 2px rgba(105, 179, 162, 0.25);
+  border-radius: var(--radius-xs);
+}
+
+.stat-section.collapsed .stat-items {
+  display: none;
 }
 
 .stat-items {
@@ -160,10 +207,49 @@
 .stats-search-container {
   display: flex;
   align-items: center;
-  margin-bottom: 15px;
+  margin-bottom: 10px;
   position: sticky;
   top: 0;
   z-index: 10; 
+}
+
+/* Collapse/Open all toggle (between search and stats list) */
+.stats-collapse-toggle {
+  /* Match the same horizontal inset as the stat cards below (.stats-container has 0 5px padding) */
+  width: calc(100% - 10px);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 6px 10px;
+  margin: 0 5px 12px 5px;
+  border-radius: 16px;
+  border: 1px solid var(--color-surface-lighter);
+  background-color: var(--color-surface);
+  color: var(--color-text-secondary);
+  font-size: 0.85rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background-color var(--transition-chart) var(--easing-standard),
+              border-color var(--transition-chart) var(--easing-standard),
+              transform var(--transition-fast) var(--easing-standard);
+}
+
+.stats-collapse-toggle:hover {
+  background-color: rgba(105, 179, 162, 0.08);
+  border-color: rgba(105, 179, 162, 0.35);
+}
+
+.stats-collapse-toggle:focus {
+  outline: none;
+}
+
+.stats-collapse-toggle:focus-visible {
+  box-shadow: 0 0 0 2px rgba(105, 179, 162, 0.25);
+}
+
+.stats-collapse-toggle i {
+  color: var(--color-accent);
 }
 
 .stats-search {

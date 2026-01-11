@@ -47,6 +47,84 @@ export function extractStats(section) {
 }
 
 /**
+ * Checks whether a text value is ONLY a number (optionally with commas/decimals/sign).
+ * This is used to decide whether a stat should receive a global ranking.
+ * @param {string} text
+ * @returns {boolean}
+ */
+export function isPureNumberText(text) {
+  if (typeof text !== 'string') return false;
+  const trimmed = text.trim();
+  // Allow: -1,234.56  |  1234  |  0.5
+  return /^-?\d{1,3}(,\d{3})*(\.\d+)?$/.test(trimmed) || /^-?\d+(\.\d+)?$/.test(trimmed);
+}
+
+/**
+ * Extract ALL stats from a Factbook section recursively.
+ * Includes non-numeric values; assigns numericValue ONLY when the text is purely numeric.
+ * @param {object|Array} section
+ * @param {object} [options]
+ * @param {number} [options.maxDepth=7]
+ * @returns {Array<{label:string,value:string,numericValue:number|null,isPrimary:boolean,rawText:string,path:string[]}>}
+ */
+export function extractAllStats(section, options = {}) {
+  if (!section) return [];
+
+  const maxDepth = typeof options.maxDepth === 'number' ? options.maxDepth : 7;
+  const stats = [];
+  const visited = typeof WeakSet !== 'undefined' ? new WeakSet() : null;
+
+  const pushStat = (path, rawText) => {
+    const labelRaw = path.join(' - ');
+    const label = formatLabel(labelRaw);
+    const isPrimary = path.some(k => isPrimaryStatistic(String(k)));
+    const numericValue = isPureNumberText(rawText) ? extractNumber(rawText) : null;
+
+    stats.push({
+      label,
+      value: formatValue(rawText),
+      numericValue,
+      isPrimary,
+      rawText,
+      path
+    });
+  };
+
+  const walk = (node, path, depth) => {
+    if (node == null) return;
+    if (depth > maxDepth) return;
+
+    if (typeof node === 'object') {
+      if (visited) {
+        if (visited.has(node)) return;
+        visited.add(node);
+      }
+
+      // If this node has a text leaf, treat it as a stat
+      if (typeof node.text === 'string' && node.text.trim() !== '') {
+        pushStat(path, node.text);
+      }
+
+      if (Array.isArray(node)) {
+        node.forEach((child, idx) => walk(child, [...path, String(idx)], depth + 1));
+        return;
+      }
+
+      Object.keys(node).forEach(key => {
+        if (key === 'text') return;
+        walk(node[key], [...path, key], depth + 1);
+      });
+    }
+  };
+
+  walk(section, [], 0);
+
+  // Preserve source order by default (CIA/Factbook ordering).
+  // If callers want sorting, they can sort the returned array themselves.
+  return stats;
+}
+
+/**
  * Formats a label to be more readable.
  * @param {string} label
  * @returns {string}
@@ -93,10 +171,29 @@ export function isPrimaryStatistic(key) {
  */
 export function extractNumber(text) {
   if (!text) return null;
-  const matches = text.match(/(\d+,?)+(\.\d+)?/);
-  if (matches && matches[0]) {
-    return parseFloat(matches[0].replace(/,/g, ''));
+  
+  // Clean the text
+  const cleanText = text.replace(/,/g, '').toLowerCase();
+  
+  // Check for common words like million, billion, trillion
+  const multiplierMatch = cleanText.match(/(-?\d+\.?\d*)\s*(trillion|billion|million)/i);
+  if (multiplierMatch) {
+    let num = parseFloat(multiplierMatch[1]);
+    const multiplier = multiplierMatch[2].toLowerCase();
+    
+    if (multiplier === 'trillion') num *= 1000000000000;
+    else if (multiplier === 'billion') num *= 1000000000;
+    else if (multiplier === 'million') num *= 1000000;
+    
+    return num;
   }
+  
+  // Standard number extraction
+  const matches = cleanText.match(/-?\d+\.?\d*/);
+  if (matches && matches[0]) {
+    return parseFloat(matches[0]);
+  }
+  
   return null;
 }
 
@@ -111,7 +208,13 @@ export function addStatSection(container, title, stats) {
   const sectionElement = document.createElement('div');
   sectionElement.className = 'stat-section';
   sectionElement.innerHTML = `
-    <h3 class="stat-section-title">${title}</h3>
+    <button class="stat-section-toggle" type="button" aria-expanded="true">
+      <span class="stat-section-title">${title}</span>
+      <span class="stat-section-meta">
+        <span class="stat-section-count">${stats.length}</span>
+        <i class="fas fa-chevron-down stat-section-chevron" aria-hidden="true"></i>
+      </span>
+    </button>
     <div class="stat-items"></div>
   `;
   const statItemsContainer = sectionElement.querySelector('.stat-items');
@@ -144,6 +247,20 @@ export function addStatSection(container, title, stats) {
     
     statItemsContainer.appendChild(statItem);
   });
+
+  // Collapsible behavior
+  const toggleBtn = sectionElement.querySelector('.stat-section-toggle');
+  if (toggleBtn) {
+    toggleBtn.addEventListener('click', () => {
+      const isCollapsed = sectionElement.classList.toggle('collapsed');
+      toggleBtn.setAttribute('aria-expanded', isCollapsed ? 'false' : 'true');
+      const chevron = toggleBtn.querySelector('.stat-section-chevron');
+      if (chevron) {
+        chevron.className = `fas fa-chevron-${isCollapsed ? 'right' : 'down'} stat-section-chevron`;
+      }
+    });
+  }
+
   container.appendChild(sectionElement);
 }
 

@@ -239,6 +239,81 @@ function initEnhancedTabs() {
 
 import { fipsToIso } from './utils/countryCodeMap.js';
 
+// Build ISO -> Factbook mapping ONLY from our canonical Factbook list (`countriesList`).
+// This avoids polluted inversions like ISO "as" -> Factbook "aq" (American Samoa) which we don't even support in `countriesList`.
+const __isoToFactbook = countriesList.reduce((acc, c) => {
+    const fb = String(c.code || '').toLowerCase();
+    const iso = String((fipsToIso[fb] || fb) || '').toLowerCase();
+    if (iso && !acc[iso]) acc[iso] = fb;
+    return acc;
+}, {});
+
+function __normName(s) {
+    return String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+}
+
+function toFactbookCode(code, countryName) {
+    const c = String(code || '').toLowerCase().replace(/^\./, '');
+    const name = __normName(countryName);
+    const byCode = countriesList.find(x => String(x.code || '').toLowerCase() === c);
+
+    // If this code exists in our Factbook code list, treat it as Factbook ONLY if the name matches.
+    // This avoids collisions like ISO 'za' (South Africa) vs Factbook 'za' (Zambia).
+    if (byCode) {
+        const canonicalName = __normName(byCode.name);
+        const matchesName =
+            canonicalName &&
+            name &&
+            (canonicalName === name || canonicalName.includes(name) || name.includes(canonicalName));
+
+        if (matchesName) return c;
+
+        // Otherwise, treat `c` as ISO and convert to Factbook if possible.
+        if (__isoToFactbook[c]) return __isoToFactbook[c];
+        return c;
+    }
+
+    // If it's not a known Factbook code, the map might be sending the actual Factbook code.
+    // Since the map sends Factbook codes directly, prefer the original code if it doesn't have an ISO mapping.
+    // Only use name matching if the original code has an ISO mapping (suggesting it's an ISO code, not Factbook).
+    const hasIsoMapping = !!__isoToFactbook[c];
+    
+    // If the code has an ISO mapping, try name matching first (to prevent wrong ISO conversions).
+    // BUT: If the code from the map doesn't exist in countriesList, trust it as the Factbook code
+    // (the map sends Factbook codes directly, and they're the source of truth for JSON filenames).
+    if (hasIsoMapping && name) {
+        const byName = countriesList.find(x => {
+            const listName = __normName(x.name);
+            return listName === name || listName.includes(name) || name.includes(listName);
+        });
+        if (byName) {
+            // CRITICAL: The map sends Factbook codes directly. If the code doesn't exist in countriesList,
+            // trust it as the correct Factbook code, even if name matching finds a different code.
+            // The Factbook JSON files use the codes the map sends, not the codes in countriesList.
+            // Only use the matched code if the original code exists in countriesList (meaning it's already verified).
+            // Since we're here (code not in countriesList), use the original code.
+            return c;
+        }
+        // CRITICAL: If name matching failed and the code doesn't exist in countriesList,
+        // trust the map code as the Factbook code (even if it has an ISO mapping).
+        // The map sends Factbook codes directly, and they're the source of truth for JSON filenames.
+        // Don't fall through to ISO conversion - use the original code.
+        const codeInList = countriesList.find(x => String(x.code || '').toLowerCase() === c);
+        if (!codeInList) {
+            return c;
+        }
+    }
+
+    // If the code doesn't have an ISO mapping, it's likely a Factbook code not in countriesList.
+    // Use it directly (the map sends Factbook codes).
+    if (!hasIsoMapping) {
+        return c;
+    }
+
+    // If it has an ISO mapping and name matching failed, try ISO->Factbook conversion
+    return __isoToFactbook[c];
+}
+
 /**
  * Normalize ISO A2 code and fix common anomalies
  * @param {string} a2Code
@@ -463,8 +538,11 @@ async function handleCountrySelect(country) {
     openSidebar();
     
     try {
-        // Fetch country data
-        const data = await fetchCountryData(country);
+        // Factbook fetch requires Factbook/FIPS codes (e.g., sf=South Africa, za=Zambia, as=Australia, au=Austria)
+        const rawA2 = String(country.a2Code || '').toLowerCase();
+        const factbookA2 = toFactbookCode(rawA2, country.name);
+        // Fetch country data (clone country so flag logic keeps ISO code, while fetch uses Factbook code)
+        const data = await fetchCountryData({ ...country, a2Code: factbookA2 });
         
         // Remove any existing centered-text wrapper if it exists
         if (document.querySelector(".background-info .centered-text")) {
@@ -475,7 +553,7 @@ async function handleCountrySelect(country) {
         setupBackgroundInfoCycling(data);
 
         // Cache the country data
-        const countryCode = country.a2Code.toLowerCase();
+        const countryCode = factbookA2;
         if (window.countryDataCache) {
             window.countryDataCache[countryCode] = data;
             console.log(`Cached data for ${country.name} (${countryCode})`);

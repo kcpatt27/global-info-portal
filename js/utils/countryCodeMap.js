@@ -15,7 +15,9 @@ export const fipsToIso = {
     'aq': 'as', // American Samoa
     'ar': 'ar', // Argentina
     'as': 'au', // Australia
-    'at': 'at', // Ashmore and Cartier Islands (No ISO, mapped to AT? No, AU usually, but AT is Austria in ISO. Skip or map to AU if needed, but flag likely unavailable)
+    // 'at' is NOT Austria in Factbook/FIPS; avoid mapping it to ISO 'at' (Austria) to prevent collisions.
+    // If a Factbook entry uses a non-standard code without a real ISO, we leave it unmapped.
+    'at': '',   // Ashmore and Cartier Islands (no ISO)
     'au': 'at', // Austria
     'av': 'ai', // Anguilla
     'ay': 'aq', // Antarctica
@@ -191,6 +193,7 @@ export const fipsToIso = {
     'sc': 'kn', // Saint Kitts and Nevis
     'se': 'sc', // Seychelles
     'sf': 'za', // South Africa
+    'za': 'zm', // Zambia (FIPS ZA -> ISO ZM) - avoids collision with South Africa ISO 'za'
     'sg': 'sn', // Senegal
     'sh': 'sh', // Saint Helena
     'si': 'si', // Slovenia
@@ -249,3 +252,24 @@ export const fipsToIso = {
     'zi': 'zw', // Zimbabwe
 };
 
+/**
+ * Inverted mapping: ISO 3166-1 alpha-2 -> Factbook/FIPS code.
+ * Used when we receive an ISO code from the map or "Internet country code"
+ * but need the Factbook code to fetch `.../{folder}/{code}.json`.
+ *
+ * NOTE: Only includes truthy ISO targets to avoid collisions like the removed 'at' mapping.
+ */
+export const isoToFactbook = Object.entries(fipsToIso).reduce((acc, [factbookCode, isoCode]) => {
+    if (!isoCode) return acc;
+    // Preserve first-seen mapping (most entries are 1:1); special cases are handled by fipsToIso itself.
+    if (!acc[isoCode]) acc[isoCode] = factbookCode;
+    return acc;
+}, {});/**
+ * Convert ISO code to Factbook code when possible.
+ * @param {string} code
+ * @returns {string}
+ */
+export function toFactbookFromIso(code) {
+    const c = String(code || '').toLowerCase().replace(/^\./, '');
+    return isoToFactbook[c] || c;
+}

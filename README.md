@@ -38,13 +38,13 @@ Traditional country data sources are often fragmented, hard to navigate, or requ
 
 ## Key Features
 
-- **Interactive World Map**: Click any country on the map to instantly view detailed information
-- **Comprehensive Country Data**: Access statistics across 7+ categories: Geography, People & Society, Economy, Energy, Military, Transportation, and Communications
-- **Global & Regional Rankings**: Compare countries based on various metrics with customizable filters and sorting
-- **Data Visualization**: Charts and visualizations help you interpret complex data at a glance
-- **Search Functionality**: Quickly filter through thousands of statistics to find specific information
-- **Historical Trends**: View time-series data for countries where available, showing changes over time
-- **Responsive Design**: Seamless experience across desktop, tablet, and mobile devices with optimized touch interactions
+- **Interactive World Map**: Click any country on the D3.js-powered map to instantly view detailed information
+- **Comprehensive Country Data**: Access statistics across 7+ categories including Geography, People & Society, Economy, Energy, Military, Transportation, and Communications
+- **Global Superpower Leaderboard**: Composite ranking system analyzing countries across 5 key categories (Economic, Military, Diplomatic, Resources, Quality) with visual spider charts
+- **Progressive Data Loading**: Smart caching system loads priority countries first, then progressively loads additional data in the background
+- **Search Functionality**: Quickly find countries and filter through thousands of statistics
+- **Data Visualization**: Spider charts, category color bars, and influence scores help you interpret complex geopolitical data at a glance
+- **Responsive Design**: Seamless experience across desktop, tablet, and mobile devices with optimized touch interactions and mobile-first CSS
 - **Quick Stats Display**: Cycling display of key statistics (Population, GDP, Area, Land Boundaries) for rapid insights
 
 ---
@@ -90,17 +90,9 @@ Traditional country data sources are often fragmented, hard to navigate, or requ
 
 The simplest way to use the Global Information Portal is to visit the live site on GitHub Pages. No installation required!
 
-If you want to run it locally:
+**Live Site:** [https://kcpatt27.github.io/global-information-portal/](https://kcpatt27.github.io/global-information-portal/)
 
-1. **Download or clone the repository**
-   ```bash
-   git clone https://github.com/kcpatt27/global-information-portal.git
-   cd global-information-portal
-   ```
-
-2. **Open the HTML file**
-   - Simply open `index.html` in your web browser
-   - Or use a local server (see Development Setup below)
+If you want to run it locally, you'll need to build the project first (see Development Setup below) since the application uses Webpack for bundling.
 
 ### Development Setup
 
@@ -149,14 +141,16 @@ No environment variables or API keys are required. The application uses publicly
 
 ### Example Workflow
 
-**Scenario**: You want to compare the GDP of G20 countries.
+**Scenario**: You want to explore the global superpowers and their influence scores.
 
-1. Click on any G20 country (e.g., United States)
-2. Navigate to the Data panel
-3. Switch to the Rankings tab
-4. Select "GDP" from the metrics dropdown
-5. View the global rankings to see where all countries stand
-6. Use the region filter to focus on specific areas
+1. Load the application and view the interactive world map
+2. Click on any country (e.g., United States)
+3. Navigate to the Data panel
+4. Switch to the Rankings tab to see the Global Superpower Leaderboard
+5. View the country's composite influence score broken down by 5 categories
+6. Expand the country entry to see a spider chart visualization of its strengths
+7. Use "Load All Countries" to see complete global rankings
+8. Search for specific countries to compare their positions
 
 ### Mobile Usage
 
@@ -184,11 +178,13 @@ The Global Information Portal follows a modular, client-side architecture with c
 
 **Frontend (Client-Side)**
 - **Map Visualization** (`js/map.js`): Handles D3.js map rendering, country selection, and geospatial interactions
-- **Data Management** (`js/utils/dataFetcher.js`): Fetches and processes country data from the Factbook API
+- **Data Management** (`js/utils/dataFetcher.js`): Fetches and processes country data from the CIA Factbook GitHub repository
+- **Global Pre-Cache** (`js/utils/globalPreCache.js`): Progressive loading and caching system for priority countries (G20, NATO, BRICS, etc.)
 - **State Management** (`js/state.js`): Maintains application state across country changes
 - **UI Panels** (`js/panels/`): Modular panel system for Info, Statistics, and Rankings displays
+- **Leaderboard System** (`js/panels/leaderboard/`): Global Superpower Leaderboard with influence scoring and visualizations
 - **Event Handling** (`js/events.js`): Centralized event management
-- **Charts & Visualizations** (`js/charts.js`): D3.js-based data visualization components
+- **Charts & Visualizations** (`js/charts.js`): D3.js-based spider charts and data visualization components
 
 **Data Flow**
 
@@ -246,12 +242,13 @@ Visualization Rendering (Charts/Map Highlights)
 
 ### Key Design Decisions
 
-- **Vanilla JavaScript**: No framework dependencies for maximum performance and simplicity
-- **ES Modules**: Modern JavaScript module system for better code organization
-- **Modular CSS**: Component-based styling for maintainability
-- **Client-Side Only**: No backend required, reducing complexity and hosting costs
-- **API Caching**: Prevents duplicate requests and improves performance
-- **Progressive Enhancement**: Core functionality works without JavaScript, enhanced with it
+- **Vanilla JavaScript**: No framework dependencies (React, Vue, Angular) for maximum performance and simplicity
+- **ES Modules**: Modern JavaScript module system for better code organization and tree-shaking
+- **Modular CSS**: Component-based styling (`css-styles/components/`, `css-styles/layout/`) for maintainability
+- **Client-Side Only**: No backend or database required, just static file hosting
+- **Progressive Caching**: Smart loading strategy prioritizes important countries (G20, NATO, BRICS) and loads others progressively
+- **Mobile-First CSS**: Extensive mobile optimizations with device-specific styling
+- **GitHub as CDN**: Uses GitHub raw URLs for data fetching, eliminating API rate limits
 
 ---
 
@@ -379,13 +376,32 @@ This project is currently unlicensed. All rights reserved.
 
 **Data Sources**:
 - CIA World Factbook data is in the public domain (U.S. Government work)
-- Geospatial data sources may have their own licensing terms
+- Geospatial data (TopoJSON world atlas) may have their own licensing terms
 
 **Third-Party Libraries**:
 - D3.js: BSD 3-Clause License
 - TopoJSON: BSD 3-Clause License
 - Font Awesome: Font Awesome Free License (Icons: CC BY 4.0, Fonts: SIL OFL 1.1)
 - Flag Icon CSS: MIT License
+
+## Development Process
+
+**Built with:** Cursor AI (Claude 3.5 backend) + Webpack
+
+**AI-assisted elements:**
+- Initial HTML/CSS scaffolding and boilerplate structure
+- Documentation generation and README drafts
+- Code refactoring suggestions and optimization
+
+**Manual/human elements:**
+- Core application logic (map interactions, data fetching, state management)
+- Leaderboard scoring algorithms and influence calculations
+- All UI/UX design decisions and mobile optimizations
+- Performance optimizations and caching strategies
+- Testing and quality assurance
+- Architecture decisions and technical trade-offs
+
+**Why transparency?** Using AI strategically demonstrates tool fluency and judgment about what to automate vs. what requires human expertise.
 
 ---
 

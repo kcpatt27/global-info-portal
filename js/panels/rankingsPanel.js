@@ -7,6 +7,19 @@
 import { extractNumber, formatLabel, formatValue, highlightText, escapeRegExp } from '../utils.js';
 import { appState, countryDataCache, globalDataIndex, countriesList, countryFolders } from '../state.js';
 import { fipsToIso } from '../utils/countryCodeMap.js';
+
+// ISO -> Factbook mapping ONLY from our canonical Factbook list (`countriesList`).
+const __isoToFactbook = countriesList.reduce((acc, c) => {
+  const fb = String(c.code || '').toLowerCase();
+  const iso = String((fipsToIso[fb] || fb) || '').toLowerCase();
+  if (iso && !acc[iso]) acc[iso] = fb;
+  return acc;
+}, {});
+
+function toFactbookFromIso(code) {
+  const c = String(code || '').toLowerCase().replace(/^\./, '');
+  return __isoToFactbook[c] || c;
+}
 import { calculateInfluenceScale, calculateCategoryScore, getMetricRanking } from '../utils/leaderboardScoring.js';
 import { getMetricsByCategory } from '../utils/leaderboardMetrics.js';
 import { loadAllCountries, getCacheStats } from '../utils/globalPreCache.js';
@@ -21,27 +34,11 @@ import { loadAllCountries, getCacheStats } from '../utils/globalPreCache.js';
  */
 function normalizeCountryCode(code, countryName) {
   if (!code) return '';
-  const lower = code.toLowerCase();
-  
-  // Check FIPS to ISO mapping first
-  if (fipsToIso[lower]) {
-    return fipsToIso[lower];
-  }
-  
-  // Handle known anomalies
-  const anomalies = {
-    'uk': 'gb',
-    'el': 'gr',
-    'tp': 'tl',
-    'bu': 'mm',
-    'zr': 'cd',
-    'fx': 'fr',
-    'cs': 'rs'
-  };
-  
-  if (anomalies[lower]) {
-    return anomalies[lower];
-  }
+  // Handle internet country codes like ".il"
+  // IMPORTANT:
+  // Rankings/leaderboard/chart fetch use **Factbook codes** (e.g. sf=South Africa, za=Zambia, as=Australia, au=Austria, fr=France, ch=China, sz=Switzerland).
+  // We should NOT convert these to ISO or FIPS here, otherwise we create collisions (e.g. sf -> za) and mis-label countries. Always use the source of truth, the Factbook code list.
+  const lower = String(code).toLowerCase().replace(/^\./, '');
   
   // If it's already a valid 2-letter code, return it
   if (/^[a-z]{2}$/.test(lower)) {
@@ -68,11 +65,12 @@ export function createRankingsPanel(data) {
                       data.Government?.['Country name']?.text ||
                       data.name ||
                       'Unknown Country';
-  const rawCountryCode = data.Government?.['Country name']?.['Country name code']?.text ||
-                         data.Communications?.['Internet country code']?.text ||
-                         '';
-  // Normalize country code to ensure it matches the format used in globalDataIndex
-  const countryCode = normalizeCountryCode(rawCountryCode, countryName);
+  const rawFactbookCode = data.Government?.['Country name']?.['Country name code']?.text || '';
+  const rawInternetCode = data.Communications?.['Internet country code']?.text || '';
+  // Prefer Factbook code when available; otherwise convert ISO internet code -> Factbook code.
+  const countryCode = rawFactbookCode
+    ? normalizeCountryCode(rawFactbookCode, countryName)
+    : toFactbookFromIso(rawInternetCode);
 
   // Set up basic panel structure
   panelElement.innerHTML = `
@@ -81,22 +79,7 @@ export function createRankingsPanel(data) {
     </div>
     <div class="rankings-controls">
       <div class="rankings-control-row">
-        <div class="control-group">
-          <select class="ranking-sort" id="ranking-sort">
-            <option value="desc">High to Low</option>
-            <option value="asc">Low to High</option>
-          </select>
-        </div>
-        <div class="control-group">
-          <select class="ranking-filter" id="ranking-filter">
-            <option value="all">All Regions</option>
-            <option value="africa">Africa</option>
-            <option value="americas">Americas</option>
-            <option value="asia">Asia</option>
-            <option value="europe">Europe</option>
-            <option value="oceania">Oceania</option>
-          </select>
-        </div>
+        <!-- Sort removed; region filter moved into Metric Insights -->
       </div>
     </div>
     <div class="metrics-grid-container">
@@ -126,9 +109,8 @@ export function createRankingsPanel(data) {
   // Separate key metrics from all metrics
   const { keyMetrics, otherMetrics } = separateKeyMetrics(numericMetrics);
   
-  // Sort key metrics by priority, other metrics alphabetically
+  // Sort key metrics by priority
   keyMetrics.sort((a, b) => getKeyMetricPriority(a) - getKeyMetricPriority(b));
-  otherMetrics.sort((a, b) => a.label.localeCompare(b.label));
   
   // Create metric cards grid
   const metricsGrid = panelElement.querySelector('#metrics-grid');
@@ -144,76 +126,41 @@ export function createRankingsPanel(data) {
     metricsGrid.appendChild(keyMetricsSection);
   }
   
-  // Create section for all other metrics (collapsible)
-  if (otherMetrics.length > 0) {
-    const otherMetricsSection = document.createElement('div');
-    otherMetricsSection.className = 'other-metrics-section';
-    otherMetricsSection.innerHTML = `
-      <div class="metrics-section-header">
-        <h3 class="metrics-section-title">All Metrics</h3>
-        <button class="toggle-metrics-btn" id="toggle-other-metrics">
-          <i class="fas fa-chevron-down"></i>
-          <span>Show All</span>
-        </button>
+  // Create section for charts
+  const chartSection = document.createElement('div');
+  chartSection.className = 'rankings-charts-section';
+  chartSection.innerHTML = `
+    <div class="charts-header">
+      <h3 class="metrics-section-title">Metric Insights</h3>
+      <div class="chart-controls">
+        <select class="chart-metric-select" id="chart-metric-select">
+          ${keyMetrics.map(m => `<option value="${m.id}">${m.label.split(':').pop().trim()}</option>`).join('')}
+        </select>
+        <select class="chart-region-select" id="chart-region-filter" title="Filter chart by region">
+          <option value="all">All Regions</option>
+          <option value="africa">Africa</option>
+          <option value="americas">Americas</option>
+          <option value="asia">Asia</option>
+          <option value="europe">Europe</option>
+          <option value="oceania">Oceania</option>
+        </select>
+        <div class="chart-type-toggle">
+          <button class="chart-type-btn active" data-type="bar" title="Bar Chart"><i class="fas fa-chart-bar"></i></button>
+          <button class="chart-type-btn" data-type="pie" title="Pie Chart"><i class="fas fa-chart-pie"></i></button>
+        </div>
       </div>
-      <div class="other-metrics-grid collapsed" id="other-metrics-grid"></div>
-    `;
-    metricsGrid.appendChild(otherMetricsSection);
-    
-    // Add toggle functionality
-    const toggleBtn = otherMetricsSection.querySelector('#toggle-other-metrics');
-    const otherMetricsGrid = otherMetricsSection.querySelector('#other-metrics-grid');
-    toggleBtn.addEventListener('click', function() {
-      otherMetricsGrid.classList.toggle('collapsed');
-      const icon = this.querySelector('i');
-      const span = this.querySelector('span');
-      if (otherMetricsGrid.classList.contains('collapsed')) {
-        icon.className = 'fas fa-chevron-down';
-        span.textContent = 'Show All';
-      } else {
-        icon.className = 'fas fa-chevron-up';
-        span.textContent = 'Hide';
-      }
-    });
-  }
-  
-  // Create cards first with placeholder rankings
-  const metricCards = [];
+    </div>
+    <div class="rankings-chart-container" id="rankings-chart-container">
+      <div class="chart-placeholder">Select a metric to view chart</div>
+    </div>
+  `;
+  metricsGrid.appendChild(chartSection);
   
   // Create cards for key metrics
   const keyMetricsGrid = panelElement.querySelector('#key-metrics-grid');
+  const metricCards = [];
   if (keyMetricsGrid) {
     keyMetrics.forEach(metric => {
-    const card = document.createElement('div');
-    card.className = 'metric-card';
-    card.dataset.metricId = metric.id;
-    const rankElement = document.createElement('div');
-    rankElement.className = 'metric-card-rank';
-    rankElement.textContent = '…'; // Loading indicator
-    card.appendChild(rankElement);
-    
-    const contentDiv = document.createElement('div');
-    contentDiv.className = 'metric-card-content';
-    contentDiv.innerHTML = `
-      <div class="metric-card-label">${metric.label.split(':').pop().trim()}</div>
-      <div class="metric-card-value">${formatValue(metric.text)}</div>
-    `;
-    card.appendChild(contentDiv);
-    
-    const arrowDiv = document.createElement('div');
-    arrowDiv.className = 'metric-card-arrow';
-    arrowDiv.innerHTML = '<i class="fas fa-chevron-right"></i>';
-    card.appendChild(arrowDiv);
-    
-      keyMetricsGrid.appendChild(card);
-      metricCards.push({ card, rankElement, metric });
-    });
-  }
-  
-  // Create cards for other metrics
-  const otherMetricsGrid = panelElement.querySelector('#other-metrics-grid');
-  if (otherMetricsGrid) {
-    otherMetrics.forEach(metric => {
       const card = document.createElement('div');
       card.className = 'metric-card';
       card.dataset.metricId = metric.id;
@@ -235,7 +182,7 @@ export function createRankingsPanel(data) {
       arrowDiv.innerHTML = '<i class="fas fa-chevron-right"></i>';
       card.appendChild(arrowDiv);
       
-      otherMetricsGrid.appendChild(card);
+      keyMetricsGrid.appendChild(card);
       metricCards.push({ card, rankElement, metric });
     });
   }
@@ -257,7 +204,7 @@ export function createRankingsPanel(data) {
     
     // Only add if we have a valid name
     if (validCountryName && validCountryName !== 'Unknown' && validCountryName !== 'Unknown Country') {
-      const allMetricsToProcess = [...keyMetrics, ...otherMetrics];
+      const allMetricsToProcess = keyMetrics; // Only process key metrics now
       allMetricsToProcess.forEach(metric => {
         const metrics = {};
         metrics[metric.id] = metric.value;
@@ -298,7 +245,7 @@ export function createRankingsPanel(data) {
       }
       
       // Extract all metrics for this country
-      const allMetricsToProcess = [...keyMetrics, ...otherMetrics];
+      const allMetricsToProcess = keyMetrics;
       allMetricsToProcess.forEach(metric => {
         const metricValue = extractMetricFromCountry(countryData, metric.path);
         if (metricValue !== null) {
@@ -339,6 +286,9 @@ export function createRankingsPanel(data) {
         rankElement.textContent = '—';
       }
     });
+
+    // Initialize charts after data is processed
+    initRankingsCharts(panelElement, keyMetrics, countryCode, countryName);
   };
   
   // Process all metrics asynchronously
@@ -346,29 +296,6 @@ export function createRankingsPanel(data) {
   
   // Rankings container reference
   const rankingsContainer = panelElement.querySelector('.rankings-container');
-  
-  // Set the previously selected sort order and region filter
-  const sortSelector = panelElement.querySelector('#ranking-sort');
-  const filterSelector = panelElement.querySelector('#ranking-filter');
-  
-  // Set values from app state
-  if (appState.rankingSortOrder) {
-    sortSelector.value = appState.rankingSortOrder;
-  }
-  
-  if (appState.rankingFilterRegion) {
-    filterSelector.value = appState.rankingFilterRegion;
-  }
-  
-  // Handle sort order change (no longer used since ranking display is removed)
-  sortSelector.addEventListener('change', function() {
-    appState.rankingSortOrder = this.value;
-  });
-  
-  // Handle region filter change (no longer used since ranking display is removed)
-  filterSelector.addEventListener('change', function() {
-    appState.rankingFilterRegion = this.value;
-  });
   
   // Handle metric card clicks - removed ranking display, just update active state
   const allMetricCards = panelElement.querySelectorAll('.metric-card');
@@ -431,10 +358,13 @@ export function createRankingsPanel(data) {
 function separateKeyMetrics(metrics) {
   // Define key metric identifiers (match common patterns)
   const keyMetricPatterns = [
-    { pattern: /population/i, preferRecent: false },
-    { pattern: /^economy.*gdp.*ppp|^economy.*gdp.*official|^money.*real.*gdp/i, preferRecent: true },
+    // Total Population (avoid sex ratio, urban %, poverty %, etc.)
+    { pattern: /\btotal\b[\s\S]*\bpopulation\b(?![\s\S]*(sex ratio|male|female|urban|poverty|below poverty|growth|distribution|density|median|age))/i, preferRecent: false },
+    // GDP (avoid per-capita variants)
+    { pattern: /\bgdp\b(?![\s\S]*per[\s\S]*capita)[\s\S]*(ppp|official|real)/i, preferRecent: true },
     { pattern: /^geography.*area.*total|^reach.*area/i, preferRecent: false },
-    { pattern: /gdp.*per.*capita|gdp.*capita/i, preferRecent: false },
+    // Prefer most recent Real GDP per Capita
+    { pattern: /real[\s\S]*gdp[\s\S]*per[\s\S]*capita/i, preferRecent: true },
     { pattern: /unemployment/i, preferRecent: true },
     { pattern: /life.*expectancy/i, preferRecent: false }
   ];
@@ -513,10 +443,10 @@ function getKeyMetricPriority(metric) {
   const label = metric.label.toLowerCase();
   const id = metric.id.toLowerCase();
   
-  if (/population/i.test(label) || /population/i.test(id)) return 1;
-  if (/gdp.*ppp|real.*gdp/i.test(label) || /money.*real.*gdp/i.test(id)) return 2;
+  if (/\bpopulation\b/.test(label) || /\bpopulation\b/.test(id)) return 1;
+  if (/\bgdp\b(?![\s\S]*per[\s\S]*capita)[\s\S]*(ppp|official|real)/.test(label) || /\bgdp\b(?![\s\S]*per[\s\S]*capita)[\s\S]*(ppp|official|real)/.test(id)) return 2;
   if (/area.*total/i.test(label) || /reach.*area/i.test(id)) return 3;
-  if (/gdp.*per.*capita/i.test(label) || /money.*gdp.*per.*capita/i.test(id)) return 4;
+  if (/real[\s\S]*gdp[\s\S]*per[\s\S]*capita/i.test(label) || /real[\s\S]*gdp[\s\S]*per[\s\S]*capita/i.test(id)) return 4;
   if (/unemployment/i.test(label) || /money.*unemployment/i.test(id)) return 5;
   if (/life.*expectancy/i.test(label) || /people.*life/i.test(id)) return 6;
   
@@ -529,7 +459,7 @@ function findRankingMetrics(data) {
   const processedKeys = new Set(); // To avoid duplicates
   
   // Process main sections like Economy, Geography, etc.
-  const processSection = (section, sectionName, path = []) => {
+  const processSection = (section, sectionName, rootKey, path = []) => {
     if (!section || typeof section !== 'object') return;
     
     Object.keys(section).forEach(key => {
@@ -578,26 +508,28 @@ function findRankingMetrics(data) {
               label: `${sectionName}: ${formatLabel(key)}`,
               value: numericValue,
               text: value.text,
-              path: currentPath
+              // IMPORTANT: include root section key so extraction works for other countries
+              // e.g. ['Economy','Real GDP per capita 2024']
+              path: rootKey ? [rootKey, ...currentPath] : currentPath
             });
             processedKeys.add(metricId);
           }
         }
       } else if (value && typeof value === 'object') {
         // Continue recursively
-        processSection(value, sectionName, currentPath);
+        processSection(value, sectionName, rootKey, currentPath);
       }
     });
   };
   
   // Process main sections that might have numeric data
-  if (data.Economy) processSection(data.Economy, 'Economy');
-  if (data.Geography) processSection(data.Geography, 'Geography');
-  if (data.People) processSection(data.People, 'People');
-  if (data['People and Society']) processSection(data['People and Society'], 'People');
-  if (data.Demographics) processSection(data.Demographics, 'Demographics');
-  if (data.Energy) processSection(data.Energy, 'Energy');
-  if (data.Government) processSection(data.Government, 'Government');
+  if (data.Economy) processSection(data.Economy, 'Economy', 'Economy');
+  if (data.Geography) processSection(data.Geography, 'Geography', 'Geography');
+  if (data.People) processSection(data.People, 'People', 'People');
+  if (data['People and Society']) processSection(data['People and Society'], 'People', 'People and Society');
+  if (data.Demographics) processSection(data.Demographics, 'Demographics', 'Demographics');
+  if (data.Energy) processSection(data.Energy, 'Energy', 'Energy');
+  if (data.Government) processSection(data.Government, 'Government', 'Government');
   
   // Filter to ensure we only have numeric metrics
   return metrics.filter(metric => !isNaN(metric.value) && metric.value !== null);
@@ -1197,8 +1129,9 @@ function createGlobalLeaderboard(container, currentCountryCode) {
     const country = globalDataIndex.countries[code];
     if (!country) return;
     
-    // Normalize country code to lowercase for deduplication
-    const normalizedCode = code.toLowerCase();
+    // Normalize country code to ISO-like for deduplication + region mapping
+    const normalizedCode = normalizeCountryCode(code, country.name).toLowerCase();
+
     
     // Skip if we've already processed this country code
     if (seenCodes.has(normalizedCode)) {
@@ -1228,9 +1161,11 @@ function createGlobalLeaderboard(container, currentCountryCode) {
            reach.metricsCounted > 0 ||
            resources.metricsCounted > 0 ||
            quality.metricsCounted > 0)) {
+        // Prefer canonical country names from countriesList when possible
+        const nameFromList = countriesList.find(c => c.code.toLowerCase() === normalizedCode)?.name;
         leaderboardEntries.push({
           code: normalizedCode, // Use normalized code
-          name: country.name,
+          name: nameFromList || country.name,
           influenceScale: influenceScale.influenceScale,
           people: people,
           money: money,
@@ -1318,9 +1253,10 @@ function createGlobalLeaderboard(container, currentCountryCode) {
   const currentCountryRank = currentCountryIndex >= 0 ? currentCountryIndex + 1 : null;
   const currentCountryEntry = currentCountryIndex >= 0 ? topCountries[currentCountryIndex] : null;
 
-  // Build HTML
+  // Build HTML (collapsible)
+  const miniTop = topCountries.slice(0, 5);
   let html = `
-    <div class="global-leaderboard">
+    <div class="global-leaderboard" data-collapsed="false">
       <div class="leaderboard-header">
         <h2 class="leaderboard-title">
           <i class="fas fa-globe"></i>
@@ -1329,6 +1265,20 @@ function createGlobalLeaderboard(container, currentCountryCode) {
         <p class="leaderboard-description">
           Composite ranking based on People, Money, Reach, and Resources metrics. Higher score = higher influence (better rank).
         </p>
+        <button class="leaderboard-collapse-btn" type="button" aria-expanded="true" title="Collapse leaderboard">
+          <i class="fas fa-chevron-up" aria-hidden="true"></i>
+          <span>Collapse</span>
+        </button>
+        <div class="leaderboard-mini" aria-hidden="true">
+          <ol class="leaderboard-mini-list">
+            ${miniTop.map((c, idx) => `
+              <li class="leaderboard-mini-item" data-country-code="${c.code}">
+                <span class="mini-rank">#${idx + 1}</span>
+                <span class="mini-name">${c.name}</span>
+              </li>
+            `).join('')}
+          </ol>
+        </div>
       </div>
       
       ${currentCountryEntry ? `
@@ -1438,6 +1388,23 @@ function createGlobalLeaderboard(container, currentCountryCode) {
 
   container.innerHTML = html;
 
+  // Collapse/expand leaderboard
+  const collapseBtn = container.querySelector('.leaderboard-collapse-btn');
+  const leaderboardRoot = container.querySelector('.global-leaderboard');
+  if (collapseBtn && leaderboardRoot) {
+    collapseBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isCollapsed = leaderboardRoot.getAttribute('data-collapsed') === 'true';
+      const next = !isCollapsed;
+      leaderboardRoot.setAttribute('data-collapsed', next ? 'true' : 'false');
+      collapseBtn.setAttribute('aria-expanded', next ? 'false' : 'true');
+      const icon = collapseBtn.querySelector('i');
+      const text = collapseBtn.querySelector('span');
+      if (icon) icon.className = `fas fa-chevron-${next ? 'down' : 'up'}`;
+      if (text) text.textContent = next ? 'Expand' : 'Collapse';
+    });
+  }
+
   // Add click handlers to leaderboard entries for expand/collapse
   container.querySelectorAll('.leaderboard-entry-wrapper').forEach(wrapper => {
     const entry = wrapper.querySelector('.leaderboard-entry');
@@ -1447,6 +1414,10 @@ function createGlobalLeaderboard(container, currentCountryCode) {
     entry.addEventListener('click', function(e) {
       // Toggle expanded state
       const isExpanded = expandedContent.style.display !== 'none';
+
+      // Ensure clicked entry is visibly selected (name highlight)
+      container.querySelectorAll('.leaderboard-entry').forEach(el => el.classList.remove('selected'));
+      entry.classList.add('selected');
       
       if (isExpanded) {
         expandedContent.style.display = 'none';
@@ -1933,4 +1904,292 @@ function drawSpiderChart(canvas) {
     ctx.fillStyle = colors[i];
     ctx.fillText(labelText, x, y);
   }
+}
+
+// Initialize charts in the rankings panel
+function initRankingsCharts(panelElement, keyMetrics, countryCode, countryName) {
+  const chartContainer = panelElement.querySelector('#rankings-chart-container');
+  const metricSelect = panelElement.querySelector('#chart-metric-select');
+  const regionSelect = panelElement.querySelector('#chart-region-filter');
+  const typeBtns = panelElement.querySelectorAll('.chart-type-btn');
+  
+  if (!chartContainer || !metricSelect) return;
+  
+  let currentType = 'bar';
+  let currentMetricId = metricSelect.value;
+  let currentRegion = regionSelect ? regionSelect.value : 'all';
+
+  const getRegionForCountryCode = (code) => {
+    const c = (code || '').toLowerCase();
+    const info = countriesList.find(x => x.code.toLowerCase() === c);
+    const folder = (info?.folder || '').toLowerCase();
+    if (!folder) return null;
+    if (folder.includes('africa')) return 'africa';
+    if (folder.includes('europe')) return 'europe';
+    if (folder.includes('oceania') || folder.includes('australia-oceania')) return 'oceania';
+    if (folder.includes('north-america') || folder.includes('south-america') || folder.includes('central-america')) return 'americas';
+    if (folder.includes('asia') || folder.includes('south-asia') || folder.includes('middle-east')) return 'asia';
+    return null;
+  };
+  
+  const updateChart = () => {
+    const metric = keyMetrics.find(m => m.id === currentMetricId);
+    if (!metric) return;
+    
+    // Get top 10 countries for this metric + current country if not in top 10
+    const allCountries = globalDataIndex.getCountriesWithMetric(currentMetricId);
+    const finiteCountries = (allCountries || []).filter(c => typeof c.value === 'number' && isFinite(c.value));
+
+    const filteredByRegion = currentRegion === 'all'
+      ? finiteCountries
+      : finiteCountries.filter(c => getRegionForCountryCode(c.code) === currentRegion);
+
+
+    if (!filteredByRegion || filteredByRegion.length < 2) {
+      const regionLabel = currentRegion === 'all' ? 'All Regions' : currentRegion;
+      // If user is trying to use regional filtering but we only have a small cache, auto-load all countries once.
+      const cacheStats = (() => {
+        try { return getCacheStats(); } catch { return null; }
+      })();
+      const canAutoLoad = currentRegion !== 'all' && cacheStats && !cacheStats.isComplete && !appState.__autoLoadAllForChartsStarted;
+
+      if (canAutoLoad) {
+        appState.__autoLoadAllForChartsStarted = true;
+
+
+        chartContainer.innerHTML = `<div class="chart-placeholder">Loading all countries for region charts…</div>`;
+        loadAllCountries((p) => {
+          if (!chartContainer) return;
+          if (p && p.complete) {
+            chartContainer.innerHTML = `<div class="chart-placeholder">Data loaded. Rendering…</div>`;
+            requestAnimationFrame(updateChart);
+          } else if (p && typeof p.processed === 'number' && typeof p.total === 'number') {
+            chartContainer.innerHTML = `<div class="chart-placeholder">Loading… ${p.processed}/${p.total}</div>`;
+          }
+        }).catch(() => {
+          chartContainer.innerHTML = `<div class="chart-placeholder">Could not load all countries. Try again later.</div>`;
+        });
+        return;
+      }
+
+      chartContainer.innerHTML = `<div class="chart-placeholder">Not enough data for <strong>${metric.label.split(':').pop().trim()}</strong> in <strong>${regionLabel}</strong>. Try <strong>All Regions</strong> or load more countries.</div>`;
+      return;
+    }
+    
+    // Sort descending
+    filteredByRegion.sort((a, b) => b.value - a.value);
+    
+    let chartData = filteredByRegion.slice(0, 10);
+    
+    // Check if current country is in top 10, if not, add it
+    const currentIndex = filteredByRegion.findIndex(c => c.code.toLowerCase() === countryCode.toLowerCase());
+    if (currentIndex >= 10 && currentIndex !== -1) {
+      chartData.push(filteredByRegion[currentIndex]);
+    }
+    
+    renderChart(chartContainer, chartData, currentType, metric, countryCode);
+  };
+  
+  // Metric select change
+  metricSelect.addEventListener('change', (e) => {
+    currentMetricId = e.target.value;
+    updateChart();
+  });
+
+  // Region filter change
+  if (regionSelect) {
+    regionSelect.addEventListener('change', (e) => {
+      currentRegion = e.target.value || 'all';
+      appState.rankingFilterRegion = currentRegion;
+      updateChart();
+    });
+    // Default to All Regions on load to avoid empty charts on small caches
+    regionSelect.value = 'all';
+    currentRegion = 'all';
+  }
+  
+  // Type toggle
+  typeBtns.forEach(btn => {
+    btn.addEventListener('click', function() {
+      typeBtns.forEach(b => b.classList.remove('active'));
+      this.classList.add('active');
+      currentType = this.dataset.type;
+      updateChart();
+    });
+  });
+  
+  // Initial render
+  // Wait one frame so layout can settle (avoids 0x0 containers on first paint)
+  requestAnimationFrame(updateChart);
+}
+
+// Render the chart using D3
+function renderChart(container, data, type, metric, currentCountryCode) {
+  const d3 = window.d3;
+  if (!d3) return;
+  
+  container.innerHTML = '';
+  const width = container.clientWidth;
+  const height = container.clientHeight;
+  const margin = { top: 20, right: 20, bottom: 70, left: 60 };
+  
+  const svg = d3.select(container)
+    .append('svg')
+    .attr('width', width)
+    .attr('height', height);
+    
+  if (type === 'bar') {
+    renderBarChart(svg, data, width, height, margin, metric, currentCountryCode);
+  } else {
+    renderPieChart(svg, data, width, height, margin, metric, currentCountryCode);
+  }
+}
+
+function renderBarChart(svg, data, width, height, margin, metric, currentCountryCode) {
+  const d3 = window.d3;
+  const chartWidth = width - margin.left - margin.right;
+  const chartHeight = height - margin.top - margin.bottom;
+  
+  const x = d3.scaleBand()
+    .domain(data.map(d => d.name))
+    .range([0, chartWidth])
+    .padding(0.2);
+    
+  const y = d3.scaleLinear()
+    .domain([0, d3.max(data, d => d.value) * 1.1])
+    .nice()
+    .range([chartHeight, 0]);
+    
+  const g = svg.append('g')
+    .attr('transform', `translate(${margin.left},${margin.top})`);
+    
+  // X axis
+  g.append('g')
+    .attr('transform', `translate(0,${chartHeight})`)
+    .call(d3.axisBottom(x))
+    .selectAll('text')
+    .attr('transform', 'rotate(-30)')
+    .style('text-anchor', 'end')
+    .attr('dx', '-.8em')
+    .attr('dy', '.15em')
+    .text(d => d.length > 12 ? d.substring(0, 10) + '...' : d);
+    
+  // Y axis
+  g.append('g')
+    .call(d3.axisLeft(y).ticks(5).tickFormat(d => formatRankingValue(d, metric)));
+    
+  // Bars
+  g.selectAll('.bar')
+    .data(data)
+    .enter()
+    .append('rect')
+    .attr('class', d => `bar ${d.code.toLowerCase() === currentCountryCode.toLowerCase() ? 'highlight' : ''}`)
+    .attr('x', d => x(d.name))
+    .attr('y', chartHeight)
+    .attr('width', x.bandwidth())
+    .attr('height', 0)
+    .attr('fill', d => d.code.toLowerCase() === currentCountryCode.toLowerCase() ? 'var(--color-accent)' : 'var(--color-accent-dim, #2c5e5e)')
+    .transition()
+    .duration(800)
+    .attr('y', d => y(d.value))
+    .attr('height', d => chartHeight - y(d.value));
+    
+  // Tooltips
+  const tooltip = d3.select('body').append('div')
+    .attr('class', 'chart-tooltip')
+    .style('opacity', 0);
+    
+  g.selectAll('rect')
+    .on('mouseover', function(d) {
+      tooltip.transition().duration(200).style('opacity', .9);
+      tooltip.html(`<strong>${d.name}</strong><br>${formatRankingValue(d.value, metric)}`)
+        .style('left', (d3.event.pageX + 10) + 'px')
+        .style('top', (d3.event.pageY - 28) + 'px');
+      d3.select(this).attr('fill', 'var(--color-accent-light, #4fd1d1)');
+    })
+    .on('mouseout', function(d) {
+      tooltip.transition().duration(500).style('opacity', 0);
+      d3.select(this).attr('fill', d.code.toLowerCase() === currentCountryCode.toLowerCase() ? 'var(--color-accent)' : 'var(--color-accent-dim, #2c5e5e)');
+      // Remove tooltip after a delay
+      setTimeout(() => tooltip.remove(), 500);
+    });
+}
+
+function renderPieChart(svg, data, width, height, margin, metric, currentCountryCode) {
+  const d3 = window.d3;
+  const radius = Math.min(width, height) / 2 - 30;
+  
+  const g = svg.append('g')
+    .attr('transform', `translate(${width / 2},${height / 2})`);
+    
+  const color = d3.scaleOrdinal()
+    .domain(data.map(d => d.code))
+    .range(d3.quantize(t => d3.interpolateSpectral(t * 0.8 + 0.1), data.length).reverse());
+    
+  const pie = d3.pie()
+    .value(d => d.value)
+    .sort(null);
+    
+  const arc = d3.arc()
+    .innerRadius(0)
+    .outerRadius(radius);
+    
+  const hoverArc = d3.arc()
+    .innerRadius(0)
+    .outerRadius(radius + 10);
+    
+  const arcs = g.selectAll('.arc')
+    .data(pie(data))
+    .enter()
+    .append('g')
+    .attr('class', 'arc');
+    
+  arcs.append('path')
+    .attr('d', arc)
+    .attr('fill', d => d.data.code.toLowerCase() === currentCountryCode.toLowerCase() ? 'var(--color-accent)' : color(d.data.code))
+    .attr('stroke', 'var(--color-bg)')
+    .style('stroke-width', '2px')
+    .style('opacity', 0.8)
+    .transition()
+    .duration(800)
+    .attrTween('d', function(d) {
+      const i = d3.interpolate(d.startAngle + 0.1, d.startAngle);
+      return function(t) {
+        d.startAngle = i(t);
+        return arc(d);
+      };
+    });
+    
+  // Tooltips
+  const tooltip = d3.select('body').append('div')
+    .attr('class', 'chart-tooltip')
+    .style('opacity', 0);
+
+  // Labels (abbreviated country names) on slices
+  arcs.append('text')
+    .attr('transform', d => `translate(${arc.centroid(d)})`)
+    .attr('text-anchor', 'middle')
+    .attr('alignment-baseline', 'middle')
+    .style('fill', '#e0e0e0')
+    .style('font-size', '10px')
+    .style('pointer-events', 'none')
+    .text(d => {
+      const name = d.data.name || '';
+      if (!name) return '';
+      return name.length > 10 ? name.slice(0, 9) + '…' : name;
+    });
+    
+  arcs.on('mouseover', function(d) {
+    tooltip.transition().duration(200).style('opacity', .9);
+    tooltip.html(`<strong>${d.data.name}</strong><br>${formatRankingValue(d.data.value, metric)}`)
+      .style('left', (d3.event.pageX + 10) + 'px')
+      .style('top', (d3.event.pageY - 28) + 'px');
+    d3.select(this).select('path').transition().duration(200).attr('d', hoverArc).style('opacity', 1);
+  })
+  .on('mouseout', function(d) {
+    tooltip.transition().duration(500).style('opacity', 0);
+    d3.select(this).select('path').transition().duration(200).attr('d', arc).style('opacity', 0.8);
+    // Remove tooltip after a delay
+    setTimeout(() => tooltip.remove(), 500);
+  });
 } 
