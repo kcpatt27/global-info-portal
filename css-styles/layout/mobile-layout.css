@@ -112,6 +112,7 @@
   .info-container.collapsed {
     /* Don't translate - just reduce height to show only header */
     transform: none;
+    opacity: 1 !important; /* Override desktop sidebar.css opacity: 0 to keep panel visible on mobile */
     transition: height 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
                 transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     min-height: 100px; /* Ensure header is always visible */

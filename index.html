@@ -300,6 +300,94 @@
           // Initial nav bar visibility update
           updateNavBarVisibility();
           
+          // #region agent log - Debug instrumentation for visibility bug
+          const logDebug = (message, data) => {
+            fetch('http://127.0.0.1:7242/ingest/76a8a506-20d1-4901-a0b1-4cf77e091d37', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                location: 'index.html:mobile-script',
+                message: message,
+                data: data,
+                timestamp: Date.now(),
+                sessionId: 'debug-session',
+                runId: 'run1'
+              })
+            }).catch(() => {});
+          };
+          
+          const checkPanelVisibility = (context) => {
+            const infoPanel = document.getElementById('info-panel');
+            const computed = window.getComputedStyle(infoContainer);
+            const panelComputed = infoPanel ? window.getComputedStyle(infoPanel) : null;
+            const rect = infoContainer.getBoundingClientRect();
+            
+            logDebug('Panel visibility check', {
+              hypothesisId: 'A',
+              context: context,
+              infoContainer: {
+                classes: Array.from(infoContainer.classList),
+                opacity: computed.opacity,
+                visibility: computed.visibility,
+                display: computed.display,
+                transform: computed.transform,
+                backgroundColor: computed.backgroundColor,
+                zIndex: computed.zIndex,
+                bottom: computed.bottom,
+                position: computed.position,
+                height: computed.height,
+                rect: { top: rect.top, bottom: rect.bottom, left: rect.left, right: rect.right, width: rect.width, height: rect.height }
+              },
+              contentPanel: {
+                hasActive: infoPanel?.classList.contains('active'),
+                opacity: panelComputed?.opacity,
+                visibility: panelComputed?.visibility,
+                display: panelComputed?.display,
+                transform: panelComputed?.transform
+              }
+            });
+          };
+          
+          // Log initial state
+          setTimeout(() => checkPanelVisibility('initial'), 100);
+          
+          // Monitor class changes
+          const classObserver = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+              if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+                logDebug('Class change detected', {
+                  hypothesisId: 'B',
+                  target: mutation.target.className,
+                  addedClasses: Array.from(mutation.target.classList).filter(c => !mutation.oldValue?.includes(c)),
+                  removedClasses: mutation.oldValue?.split(' ').filter(c => c && !mutation.target.classList.contains(c))
+                });
+                checkPanelVisibility('class-change');
+              }
+            });
+          });
+          
+          classObserver.observe(infoContainer, { attributes: true, attributeOldValue: true });
+          const infoPanel = document.getElementById('info-panel');
+          if (infoPanel) {
+            classObserver.observe(infoPanel, { attributes: true, attributeOldValue: true });
+          }
+          
+          // Monitor style changes
+          const styleObserver = new MutationObserver(() => {
+            checkPanelVisibility('style-change');
+          });
+          styleObserver.observe(infoContainer, { attributes: true, attributeFilter: ['style'] });
+          
+          // Periodic check when panel is at bottom
+          setInterval(() => {
+            const rect = infoContainer.getBoundingClientRect();
+            const isAtBottom = rect.bottom >= window.innerHeight - 5; // Within 5px of bottom
+            if (isAtBottom) {
+              checkPanelVisibility('periodic-bottom-check');
+            }
+          }, 1000);
+          // #endregion
+          
           // Panel drag gesture - smooth continuous movement with snap on release
           let touchStartY = 0;
           let touchCurrentY = 0;
@@ -372,6 +460,14 @@
             // Apply the height directly for smooth 1:1 tracking
             infoContainer.style.height = `${newHeight}px`;
             
+            // #region agent log
+            logDebug('Height changed during drag', {
+              hypothesisId: 'C',
+              newHeight: newHeight,
+              isAtBottom: newHeight <= MIN_HEIGHT + 10
+            });
+            // #endregion
+            
             // Visual feedback
             infoContainer.classList.add('swiping');
           }, { passive: true });
@@ -412,6 +508,16 @@
               targetClass = '';
             }
             
+            // #region agent log
+            logDebug('Panel snap after drag', {
+              hypothesisId: 'D',
+              currentHeight: currentHeight,
+              targetHeight: targetHeight,
+              targetClass: targetClass,
+              isAtBottom: targetHeight <= MIN_HEIGHT + 10
+            });
+            // #endregion
+            
             // Enable smooth transition for snap animation
             infoContainer.style.transition = 'height 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
             infoContainer.style.height = `${targetHeight}px`;
@@ -428,7 +534,14 @@
             // Reset after transition
             setTimeout(() => {
               infoContainer.style.transition = '';
+              // #region agent log
+              checkPanelVisibility('after-snap-transition');
+              // #endregion
             }, 300);
+            
+            // #region agent log
+            setTimeout(() => checkPanelVisibility('after-snap'), 50);
+            // #endregion
           });
           
           // Handle touch cancel
