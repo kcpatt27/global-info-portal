@@ -146,8 +146,8 @@
 
 ## Project Links
 
-- **Live Site:** https://kcpatt27.github.io/global-information-portal/
-- **GitHub Repo:** https://github.com/kcpatt27/global-information-portal
+- **Live Site:** https://kcpatt27.github.io/global-info-portal/
+- **GitHub Repo:** https://github.com/kcpatt27/global-info-portal
 - **Data Source:** https://github.com/factbook/factbook.json
 - **Documentation:** README.md, ARCHITECTURE.md, PROJECT_SPECS.md
 
