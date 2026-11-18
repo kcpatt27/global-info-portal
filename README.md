@@ -24,7 +24,7 @@ All three were captured on 2026-11-18 from a production build of this repository
 
 Everything runs in the browser. The path from a click to a rendered panel is:
 
-1. **Map data.** `js/map.js` fetches two files from the `world-atlas-2-world-factbook` repository: a 50m TopoJSON file of country boundaries and a TSV of row attributes. The TopoJSON is projected with `d3.geoNaturalEarth1`, and each feature becomes a country record carrying its name, FIPS id and `iso_a2` code.
+1. **Map data.** `js/map.js` fetches two files from the `world-atlas-2-world-factbook` repository: a 50m TopoJSON file of country boundaries and a TSV of row attributes. The TopoJSON is projected with `d3.geoNaturalEarth1`, and each feature is matched to a TSV row by ISO numeric code (`iso_n3`), giving a country record with its name, continent, Factbook folder and `iso_a2` code.
 
 2. **Selection.** Clicking a country fires a selection event. `determineFolder()` resolves which Factbook folder holds that country: an explicit `folder` on the record, then a hardcoded special-case map (for countries whose Factbook folder differs from their continent), then the continent name slugified.
 
